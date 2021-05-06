@@ -43,7 +43,7 @@ piece in a round that players can connect to from 4 directions, so ends up influ
 is a **spinner**, players can play on both sides of the **left** chain. For example, in a round that has no **spinner** and only 
 a **left**, where the **left** is `[6,2] - [2,3]`, players could play tiles with at least one 3 to the right or tiles with
 at least one 6 to the left. If all 4 directions off of the **spinner** have some tiles, players can no longer play off of the 
-**spinner**.
+**spinner**. To see some sample play, [here](https://github.com/alinden/dominoes_bot/blob/main/best_of_11.txt) are some games between the AI and a greedy algorithm playing as human.
 
 If a player doesn't have any legal moves, they have to **draw**. By drawing, they take one tile from the boneyard and
 then have a new turn. If the piece they drew doesn't connect to the board, they will have to draw again.
