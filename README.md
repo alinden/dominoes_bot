@@ -2,7 +2,7 @@
 Beats you at dominoes.
 
 ## How to run the program
-To try it, install sbt and then run `sbt "run --play_human"`.
+To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt "run --play_human"`.
 
 ## How to play
 When it's your turn, you'll see a `*` next to **human** in the score. You're **human** and it's **robot**.  It'll 
