@@ -27,7 +27,7 @@ object Robot {
     depth: Int,
     numSimulations: Int,
     limitToMoves: List[Action] = List(),
-  ): (Double, Action) = {
+  ): (Score, Action) = {
     val robotName = "robot"
     val robotHand = game.playerByName(robotName).hand
     val perspective = Perspective(
@@ -70,7 +70,7 @@ object Robot {
       // Actual time will be around 3x expected time with first moves taking
       // much longer. With (5,20), the first turn takes around 2 mins.
       val moveParams = List((5,20),(7,20),(9,30),(10,30))
-      val expectedTime = 7000.0
+      val expectedTime = 3000.0
       var dt = 0.0
       var i = 0
       var move: Action = null

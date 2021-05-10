@@ -7,10 +7,10 @@ case class MinNode(
   numSimulations: Int,
   isRoot: Boolean = false,
 ) extends MinMaxNode with EvalNode {
-  def isBetterScore(candidate: Double, previousBest: Double, margin: Double = 0.0): Boolean = {
-    candidate - margin < previousBest
+  def isBetterScore(candidate: Score, previousBest: Score, margin: Double = 0.0): Boolean = {
+    candidate.value - margin < previousBest.value
   }
-  def getScoredMoves(limitToMoves: List[Action] = List()): List[(Double,Action)] = {
+  def getScoredMoves(limitToMoves: List[Action] = List()): List[(Score,Action)] = {
     possibleFutures()
       .withFilter{ case (_, move) => {
         limitToMoves.isEmpty || limitToMoves.contains(move)

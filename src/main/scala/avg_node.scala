@@ -1,5 +1,7 @@
 package game
 
+import cats.implicits._
+
 case class AvgNode(
   perspective: Perspective,
   beforeGame: Game,
@@ -12,7 +14,7 @@ case class AvgNode(
    * Score a game that could be complete or ongoing only by looking at
    * its current state combined with the game log.
    */
-  def heuristic(): Double = {
+  def heuristic(): Score = {
     val robotScore = afterGame.playerByName("robot").score.toFloat
     val humanScore = afterGame.playerByName("human").score.toFloat
     val isLockedGame = afterGame.playerOne.hand.isEmpty && afterGame.playerTwo.hand.isEmpty
@@ -21,7 +23,12 @@ case class AvgNode(
     (isDominoes, isLockedGame) match {
       case (_, true) => {
         // Locked game.
-        robotScore - humanScore
+        val runway = math.max(0.0, 150.0 - math.max(robotScore, humanScore))
+        if (runway == 0.0) {
+          Score(robotScore - humanScore)
+        } else {
+          Score((robotScore - humanScore)/runway)
+        }
       }
       case (true, _) => {
         // Dominoes.
@@ -83,44 +90,22 @@ case class AvgNode(
           case (false, true) => (-1)*afterGame.board.score()
           case (_, false) => 0.0
         }
-        beforeRobotScore - beforeHumanScore + turnBonus + tileBonus + lastTurnScore
+        val robotScoreWithBonuses = beforeRobotScore + turnBonus + tileBonus + lastTurnScore
+        val runway = math.max(0.0, 150.0 - math.max(robotScoreWithBonuses, beforeHumanScore))
+        if (runway == 0.0) {
+          Score(robotScoreWithBonuses - beforeHumanScore)
+        } else {
+          Score((robotScoreWithBonuses - beforeHumanScore)/runway)
+        }
       }
       case (false, _) => {
         // Mid-game.
-        val forcedDominoes: Boolean = if (perspective.hand.length != 1) {
-            false
-          } else {
-            val movesWithoutAnswers: List[Move] = Domino.all()
-              .flatMap( (domino) => {
-                Direction.all.flatMap( (direction) => {
-                  if (
-                    perspective.hand.contains(domino) ||
-                    afterGame.board.contains(domino)
-                  ) {
-                    List()
-                  } else {
-                    val move = Move(domino, direction)
-                    val future: Option[Game] = afterGame.forceMove(move)
-                    future.map((g) => {
-                      val hasAnswer = perspective.hand.exists((d) => {
-                        Direction.all.exists((dir) => {
-                          val m = Move(d, dir)
-                          !g.forceMove(m).isEmpty
-                        })
-                      })
-                      if (hasAnswer) List() else List(move)
-                    }).getOrElse(List())
-                  }
-                })
-              })
-            movesWithoutAnswers.isEmpty
-          }
-        val fd = (if (forcedDominoes) 10.0 else 0.0)*(if (perspective.name == "robot") 1.0 else -1.0)
-        // val scoringPotential = afterGame.scoringMoves
-        //   .filter{ case (move,_) => opponentHand.contains(move.domino) }
-        //   .map{ case (_, score) => score }
-        //   .sum
-        robotScore - humanScore + fd
+        val runway = math.max(0.0, 150.0 - math.max(robotScore, humanScore))
+        if (runway == 0.0) {
+          Score(robotScore - humanScore)
+        } else {
+          Score((robotScore - humanScore)/runway)
+        }
       }
     }
   }
@@ -144,7 +129,7 @@ case class AvgNode(
    *    in order to find its best move. Once the best opponent move is found, play it and convert that node
    *    into a Max/MinNode.
    */
-  def score(): Double = {
+  def score(): Score = {
     if (
       afterGame.isOver ||
       afterGame.playerOne.hand.isEmpty ||
@@ -157,16 +142,15 @@ case class AvgNode(
     }
   }
 
-  def recursiveScore(): Double = {
+  def recursiveScore(): Score = {
     val isRobotTurn = (afterGame.activePlayer().name == "robot")
     val opponentHands = if (perspective.maybeOpponentHand.isEmpty) {
       (1 to numSimulations)
         .map((_) => perspective.opponentHand.getSample())
-        .distinct
     } else {
       List(perspective.maybeOpponentHand.get)
     }
-    val opponentSum = opponentHands
+    opponentHands
       .map((hand) => {
         if (action == Draw) {
           val updatedPerspective = perspective
@@ -179,39 +163,36 @@ case class AvgNode(
                 afterGame,
                 depthRemaining,
                 numSimulations,
-              ).toMinNode().map(_.score()).getOrElse(0.0)
+              ).toMinNode().map(_.score()).getOrElse(Score(0.0))
             } else {
               MinNode(
                 updatedPerspective.update(beforeGame, afterGame),
                 afterGame,
                 depthRemaining,
                 numSimulations,
-              ).toMaxNode().map(_.score()).getOrElse(0.0)
+              ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
             }
-          })
+          }).reduce(_ |+| _)
         } else {
           val safeGame = afterGame.withReplacedActiveHand(hand)
           val updatedPerspective = perspective.assumeOpponentHand(hand,beforeGame.board.tiles()).update(beforeGame, afterGame)
           if (isRobotTurn) {
-            List(MaxNode(
+            MaxNode(
               updatedPerspective.swap(),
               safeGame,
               depthRemaining,
               numSimulations,
-            ).toMinNode().map(_.score()).getOrElse(0.0))
+            ).toMinNode().map(_.score()).getOrElse(Score(0.0))
           } else {
-            List(MinNode(
+            MinNode(
               updatedPerspective.swap(),
               safeGame,
               depthRemaining,
               numSimulations,
-            ).toMaxNode().map(_.score()).getOrElse(0.0))
+            ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
           }
         }
       })
-      .foldRight[Double](0.0)( (xs, z) => {
-        z + xs.sum/xs.length
-      })
-    opponentSum/opponentHands.length.toFloat
+      .reduce(_ |+| _)
   }
 }

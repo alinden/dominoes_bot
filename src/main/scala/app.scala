@@ -115,7 +115,7 @@ object App {
       return
     }
     val mode = args.head
-    val bestOf = if (mode == "--play_human") 3 else 19
+    val bestOf = if (mode == "--play_human") 3 else 39
     var matchScore = MatchScore(0,0,bestOf)
     while(!matchScore.isOver) {
       matchScore = playGame(mode, matchScore)

@@ -5,14 +5,14 @@ trait MinMaxNode {
   val depthRemaining: Int;
   val game: Game;
   val perspective: Perspective;
-  def isBetterScore(candidate: Double, previousBest: Double, margin: Double = 0.0): Boolean;
-  def getScoredMoves(limitToMoves: List[Action] = List()): List[(Double,Action)];
+  def isBetterScore(candidate: Score, previousBest: Score, margin: Double = 0.0): Boolean;
+  def getScoredMoves(limitToMoves: List[Action] = List()): List[(Score,Action)];
 
-  def score(): Double = {
-    bestScoredMove().map(_._1).getOrElse(0.toFloat)
+  def score(): Score = {
+    bestScoredMove().map(_._1).getOrElse(Score(0.toFloat))
   }
-  def bestAction(limitToMoves: List[Action] = List()): (Double,Action) = {
-    bestScoredMove(limitToMoves).getOrElse((0.0,Pass))
+  def bestAction(limitToMoves: List[Action] = List()): (Score,Action) = {
+    bestScoredMove(limitToMoves).getOrElse((Score(0.0),Pass))
   }
   def goodActions(): List[Action] = {
     if (possibleFutures().length == 1) {
@@ -34,8 +34,8 @@ trait MinMaxNode {
   def safeGame(): Game = {
     game.withReplacedActiveHand(perspective.hand)
   }
-  def bestScoredMove(limitToMoves: List[Action] = List()): Option[(Double,Action)] = {
-    getScoredMoves(limitToMoves).foldRight[Option[(Double,Action)]](None){ case ((score, move), z) => z match {
+  def bestScoredMove(limitToMoves: List[Action] = List()): Option[(Score,Action)] = {
+    getScoredMoves(limitToMoves).foldRight[Option[(Score,Action)]](None){ case ((score, move), z) => z match {
       case None => Some((score, move))
       case Some((zScore, zMove)) => if (isBetterScore(score, zScore)) Some((score, move)) else z
     }}

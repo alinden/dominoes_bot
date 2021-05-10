@@ -1,7 +1,7 @@
 package game
 
 trait EvalNode {
-  def score(): Double;
+  def score(): Score;
   val depthRemaining: Int;
   val perspective: Perspective;
 }
