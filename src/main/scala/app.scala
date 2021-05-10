@@ -9,8 +9,7 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 
 object App {
   def playGame(mode: String, matchScore: MatchScore): MatchScore = {
-    // val debug = (mode == "--play_greedy")
-    val debug = true
+    val debug = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
     var action: Action = Reshuffle
     println("New Game!")
