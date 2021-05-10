@@ -9,7 +9,8 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 
 object App {
   def playGame(mode: String, matchScore: MatchScore): MatchScore = {
-    val debug = (mode == "--play_greedy")
+    // val debug = (mode == "--play_greedy")
+    val debug = true
     var g: Option[Game] = Some(Game.setup("human", "robot"))
     var action: Action = Reshuffle
     println("New Game!")
@@ -115,7 +116,7 @@ object App {
       return
     }
     val mode = args.head
-    val bestOf = if (mode == "--play_human") 3 else 19
+    val bestOf = if (mode == "--play_human") 3 else 39
     var matchScore = MatchScore(0,0,bestOf)
     while(!matchScore.isOver) {
       matchScore = playGame(mode, matchScore)

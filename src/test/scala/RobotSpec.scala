@@ -109,8 +109,10 @@ class RobotSpec extends AnyFlatSpec {
     // Then it needs to add 6.25 for the opponent's tiles EV and
     // then 5 points for starting first on the next round.
     val expectedScore = 43
-    assert(score < expectedScore + 1.5)
-    assert(score > expectedScore - 1.5)
+    assert(score.value < expectedScore + 1.5)
+    assert(score.value > expectedScore - 1.5)
+    // There should be different scores for different opponent hands,
+    // meaning the stddev will be nonzero.
   }
 
   "A Robot" should "know the score at the move before a locked game" in {
@@ -222,7 +224,9 @@ class RobotSpec extends AnyFlatSpec {
     val (score, action) = maxNode.bestAction()
     assert(action == Move(Domino(6,3),Up))
     // Robot is winning by 15 and will score 30 points with a locked
-    // game.
-    assert(score == 45)
+    // game. That outcome doesn't depend on the opponent's tiles,
+    // so should have a stddev of 0.
+    assert(score.value == 45)
+    assert(score.stddev == 0.0)
   }
 }
