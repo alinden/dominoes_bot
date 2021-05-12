@@ -2,6 +2,9 @@ package game
 
 import scala.util.Random
 
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+
 object Robot {
   def getRandomLegalAction(game: Game): Option[Action] = {
     val options = game.allLegalActions()
@@ -27,7 +30,7 @@ object Robot {
     depth: Int,
     numSimulations: Int,
     limitToMoves: List[Action] = List(),
-  ): (Score, Action) = {
+  ): Task[(Score, Action)] = {
     val robotName = "robot"
     val robotHand = game.playerByName(robotName).hand
     val perspective = Perspective(
@@ -39,7 +42,7 @@ object Robot {
       None,
     )
     val maxNode = MaxNode(perspective, game, depth, numSimulations, debug)
-    maxNode.bestAction(limitToMoves)
+    maxNode.asyncBestAction(limitToMoves)
   }
 
   def act(
@@ -74,7 +77,7 @@ object Robot {
       var move: Action = null
       while((dt < expectedTime) && (i < moveParams.length)) {
         val t1 = System.nanoTime()/1000000.0
-        move = getBestMove(game, guess, debug, moveParams(i)._1, moveParams(i)._2)._2
+        move = getBestMove(game, guess, debug, moveParams(i)._1, moveParams(i)._2).runSyncUnsafe()._2
         val t2 = System.nanoTime()/1000000.0
         dt = t2 - t1
         i = i + 1
