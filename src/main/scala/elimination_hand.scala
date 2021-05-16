@@ -5,7 +5,7 @@ import cats.implicits._
 
 case class EliminationHand(
   playerName: String,
-  possibilities: List[PossibleHand],
+  possibilities: Vector[PossibleHand],
   impossible: Set[Domino],
 ) {
   override def toString(): String = {
@@ -74,7 +74,7 @@ case class EliminationHand(
         .reduce(_ |+| _)
       EliminationHand(
         playerName,
-        m.toList.map{ case (hand, likelihood) => {
+        m.toVector.map{ case (hand, likelihood) => {
           cl = cl + multiplier*likelihood
           PossibleHand(hand, multiplier*likelihood, cl)
         }}.sortBy(_.cumulativeLikelihood),
@@ -116,9 +116,9 @@ case class EliminationHand(
         playerName,
         possibilities.flatMap((ph) => {
           if (ph.contains(tile) && !higherDoubles.exists((hd) => ph.contains(hd))) {
-            List(ph.removeTile(tile))
+            Vector(ph.removeTile(tile))
           } else {
-            List()
+            Vector()
           }
         }),
         impossible + tile,
@@ -144,9 +144,9 @@ case class EliminationHand(
         playerName,
         possibilities.flatMap((ph) => {
           if (ph.contains(move.domino)) {
-            List(ph.removeTile(move.domino))
+            Vector(ph.removeTile(move.domino))
           } else {
-            List()
+            Vector()
           }
         }),
         impossible + move.domino,
@@ -232,7 +232,7 @@ object EliminationHand {
   ): EliminationHand = {
     val impossible = opponentHand.toSet
     val possibleTiles = Domino.all().filterNot(impossible.contains(_)).toSet
-    val possibleHands = possibleTiles.subsets(initialHandSize).toList
+    val possibleHands = possibleTiles.subsets(initialHandSize).toVector
     val likelihood = 1.0/possibleHands.length.toFloat
     var totalLikelihood = 0.0
     EliminationHand(

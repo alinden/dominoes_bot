@@ -59,7 +59,7 @@ class RobotSpec extends AnyFlatSpec {
     )
     val guess = EliminationHand(
       "human",
-      List(
+      Vector(
         PossibleHand(
           Set(Domino(3,3),Domino(1,1)),
           0.5,
@@ -173,7 +173,7 @@ class RobotSpec extends AnyFlatSpec {
     )
     val guess = EliminationHand(
       "human",
-      List(
+      Vector(
         PossibleHand(
           Set(Domino(3,3),Domino(1,1)),
           0.5,
