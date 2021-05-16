@@ -70,7 +70,7 @@ object Robot {
       // Call getBestMove with the following params until it takes longer than
       // expectedTime to get a result. This should lead to quicker first turns
       // and better later turns.
-      val moveParams = List((5,50),(7,50),(9,50))
+      val moveParams = List((5,30),(7,30),(9,30),(11,30))
       val expectedTime = 3000.0
       var dt = 0.0
       var i = 0

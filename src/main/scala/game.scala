@@ -5,6 +5,8 @@ import scala.util.Random
 import scala.io.StdIn
 import java.util.Scanner
 
+import cats.implicits._
+
 case class Game(
   board: Board,
   playerOne: Player,
@@ -110,21 +112,31 @@ case class Game(
   // one move onto an empty chain. It should also only allow one move
   // onto two chains of equal end value.
   def simplify(actions: List[Action]): List[Action] = {
-    if (board.isEmpty()) {
-      return actions.filter((action) => action match {
-        case Move(_, direction) => (direction == Left)
-        case _ => false
-      })
-    }
     val emptyDirections = Direction.all.filter((dir) => dir match {
       case Left => board.left.isEmpty
       case Right => board.right.isEmpty
       case Up => board.up.isEmpty
       case Down => board.down.isEmpty
     })
-    if (board.spinner.isEmpty) {
-      if (emptyDirections.length == 3) {
-        // Snake
+    def filterRedundant(xs: List[Action], extraRedundantDirs: List[Direction] = List()): List[Action] = {
+      if (emptyDirections.isEmpty) {
+        xs
+      } else {
+        xs.filterNot((action) => action match {
+          case Move(_, direction) => emptyDirections.tail.contains(direction) || extraRedundantDirs.contains(direction)
+          case _ => false
+        })
+      }
+    }
+    board.state() match {
+      case Empty => {
+        actions.filter((action) => action match {
+          case Move(_, direction) => (direction == Left)
+          case _ => false
+        })
+      }
+      case SpinnerOnly => filterRedundant(actions)
+      case Snake => {
         val nonEmptyChain = Direction.all
           .filterNot((dir) =>
             emptyDirections.contains(dir)
@@ -141,16 +153,35 @@ case class Game(
             case Move(_, direction) => emptyDirections.contains(direction)
             case _ => false
           })
+        } else {
+          filterRedundant(actions)
         }
       }
-      return actions
+      case Tee => filterRedundant(actions)
+      case Cross => {
+        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction.all
+          .filterNot((dir) => dir match {
+            case Left => board.left.isEmpty
+            case Right => board.right.isEmpty
+            case Up => board.up.isEmpty
+            case Down => board.down.isEmpty
+          }).map((dir) => dir match {
+            case Left => (Left, board.left.head)
+            case Right => (Right, board.right.head)
+            case Up => (Up, board.up.head)
+            case Down => (Down, board.down.head)
+          }).filterNot((x) => {
+            val tile = x._2.tile
+            tile.isDouble() && (tile != Domino(0,0))
+          })
+        val redundantDirections: List[Direction] = nonEmptyChainHeads
+          .map{ case (dir, PlayedDomino(_, v)) => Map(v -> List(dir)) }
+          .reduce(_ |+| _) // will ++ dirs
+          .toList
+          .flatMap{ case (_, dirs) => dirs.drop(1) }
+        filterRedundant(actions, redundantDirections)
+      }
     }
-    if (emptyDirections.isEmpty) return actions
-    val redundantDirections = emptyDirections.tail
-    actions.filterNot((action) => action match {
-      case Move(_, direction) => redundantDirections.contains(direction)
-      case _ => false
-    })
   }
 
   def playHighestDouble(domino: Domino): Option[(Game,String)] = {
