@@ -155,17 +155,7 @@ case class AvgNode(
         if (action == Draw) {
           val updatedPerspective = perspective
             .assumeOpponentHand(hand,beforeGame.board.tiles())
-          val previousMoveWasADraw = beforeGame.log.log.headOption.map((entry) => entry match {
-            case DrawLogEntry(_,_,_) => true
-            case _ => false
-          }).getOrElse(false)
-          val numDraws = if (previousMoveWasADraw) {
-            1
-          } else if (beforeGame.board.tiles().length <= 1) {
-            3
-          } else {
-            10
-          }
+          val numDraws = if (beforeGame.board.tiles().length <= 1) 3 else 10
           (0 to numDraws).map((t) => {
             // perspective update will choose a random tile
             if (isRobotTurn) {
