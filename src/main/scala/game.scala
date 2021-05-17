@@ -18,7 +18,7 @@ case class Game(
   isOver: Boolean = false,
 ) {
   override def toString(): String = {
-    val showRobotTiles = false
+    val showRobotTiles = true
     val robotHand = if (showRobotTiles) {
       s"${playerTwo.name}${if (activePlayer() == playerTwo) "*" else ""}(${playerTwo.score}): ${playerTwo.hand.mkString(" ")}"
     } else {
