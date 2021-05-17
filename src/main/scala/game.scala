@@ -18,7 +18,7 @@ case class Game(
   isOver: Boolean = false,
 ) {
   override def toString(): String = {
-    val showRobotTiles = true
+    val showRobotTiles = false
     val robotHand = if (showRobotTiles) {
       s"${playerTwo.name}${if (activePlayer() == playerTwo) "*" else ""}(${playerTwo.score}): ${playerTwo.hand.mkString(" ")}"
     } else {
@@ -119,14 +119,11 @@ case class Game(
       case Down => board.down.isEmpty
     })
     def filterRedundant(xs: List[Action], extraRedundantDirs: List[Direction] = List()): List[Action] = {
-      if (emptyDirections.isEmpty) {
-        xs
-      } else {
-        xs.filterNot((action) => action match {
-          case Move(_, direction) => emptyDirections.tail.contains(direction) || extraRedundantDirs.contains(direction)
-          case _ => false
-        })
-      }
+      val dirsToRemove = emptyDirections.drop(1) ++ extraRedundantDirs
+      xs.filterNot((action) => action match {
+        case Move(_, direction) => dirsToRemove.contains(direction)
+        case _ => false
+      })
     }
     board.state() match {
       case Empty => {
@@ -174,12 +171,16 @@ case class Game(
             val tile = x._2.tile
             tile.isDouble() && (tile != Domino(0,0))
           })
-        val redundantDirections: List[Direction] = nonEmptyChainHeads
-          .map{ case (dir, PlayedDomino(_, v)) => Map(v -> List(dir)) }
-          .reduce(_ |+| _) // will ++ dirs
-          .toList
-          .flatMap{ case (_, dirs) => dirs.drop(1) }
-        filterRedundant(actions, redundantDirections)
+        if (nonEmptyChainHeads.isEmpty) {
+          filterRedundant(actions)
+        } else {
+          val redundantDirections: List[Direction] = nonEmptyChainHeads
+            .map{ case (dir, PlayedDomino(_, v)) => Map(v -> List(dir)) }
+            .reduce(_ |+| _) // will ++ dirs
+            .toList
+            .flatMap{ case (_, dirs) => dirs.drop(1) }
+          filterRedundant(actions, redundantDirections)
+        }
       }
     }
   }
