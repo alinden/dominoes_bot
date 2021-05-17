@@ -184,4 +184,139 @@ class GameSpec extends AnyFlatSpec {
     ).toSet
     assert(x.legalTilesToPlay.toSet == expectedLegalTilesToPlay)
   }
+
+  "A Game" should "simplify moves: snake" in {
+    val x = Game(
+      Board(
+        None,
+        List(
+          PlayedDomino(Domino(6,4),6),
+          PlayedDomino(Domino(4,3),4),
+          PlayedDomino(Domino(3,6),6),
+        ),
+        List(),
+        List(),
+        List(),
+      ),
+      Player(
+        "human",
+        List(), // pone hand should be irrelevant
+        0,
+      ),
+      Player(
+        "robot",
+        List(Domino(6,6)),
+        0,
+      ),
+      PlayerTwoTurn,
+      List(), // boneyard should be irrelevant
+      GameLog.empty,
+      false,
+      false,
+    )
+    val simplifiedMoves = x.allLegalActions()
+    val expectedSimplifiedMoves = List(
+      Move(Domino(6,6), Left),
+    )
+    assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
+  }
+
+  "A Game" should "simplify moves: spinner" in {
+    val x = Game(
+      Board(
+        Some(PlayedDomino(Domino(6,6), 6)),
+        List(),
+        List(),
+        List(),
+        List(),
+      ),
+      Player(
+        "human",
+        List(), // pone hand should be irrelevant
+        0,
+      ),
+      Player(
+        "robot",
+        List(Domino(6,3)),
+        0,
+      ),
+      PlayerTwoTurn,
+      List(), // boneyard should be irrelevant
+      GameLog.empty,
+      false,
+      false,
+    )
+    val simplifiedMoves = x.allLegalActions()
+    val expectedSimplifiedMoves = List(
+      Move(Domino(6,3), Left),
+    )
+    assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
+  }
+
+  "A Game" should "simplify moves: spinner with some chains" in {
+    val x = Game(
+      Board(
+        Some(PlayedDomino(Domino(6,6), 6)),
+        List(PlayedDomino(Domino(6,4), 4)),
+        List(PlayedDomino(Domino(6,2), 2)),
+        List(),
+        List(),
+      ),
+      Player(
+        "human",
+        List(), // pone hand should be irrelevant
+        0,
+      ),
+      Player(
+        "robot",
+        List(Domino(6,3)),
+        0,
+      ),
+      PlayerTwoTurn,
+      List(), // boneyard should be irrelevant
+      GameLog.empty,
+      false,
+      false,
+    )
+    val simplifiedMoves = x.allLegalActions()
+    val expectedSimplifiedMoves = List(
+      Move(Domino(6,3), Up),
+    )
+    assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
+  }
+
+  "A Game" should "simplify moves: spinner with equal value chains" in {
+    val x = Game(
+      Board(
+        Some(PlayedDomino(Domino(6,6), 6)),
+        List(
+          PlayedDomino(Domino(4,2), 2),
+          PlayedDomino(Domino(6,4), 4),
+        ),
+        List(PlayedDomino(Domino(6,2), 2)),
+        List(),
+        List(),
+      ),
+      Player(
+        "human",
+        List(), // pone hand should be irrelevant
+        0,
+      ),
+      Player(
+        "robot",
+        List(Domino(2,2)),
+        0,
+      ),
+      PlayerTwoTurn,
+      List(), // boneyard should be irrelevant
+      GameLog.empty,
+      false,
+      false,
+    )
+    val simplifiedMoves = x.allLegalActions()
+    val expectedSimplifiedMoves = List(
+      Move(Domino(2,2), Left),
+    )
+    assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
+  }
 }

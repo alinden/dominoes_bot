@@ -155,7 +155,8 @@ case class AvgNode(
         if (action == Draw) {
           val updatedPerspective = perspective
             .assumeOpponentHand(hand,beforeGame.board.tiles())
-          (0 to 5).map((t) => {
+          val numDraws = if (beforeGame.board.tiles().length <= 1) 3 else 10
+          (0 to numDraws).map((t) => {
             // perspective update will choose a random tile
             if (isRobotTurn) {
               MaxNode(

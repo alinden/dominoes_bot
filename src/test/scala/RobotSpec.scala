@@ -59,7 +59,7 @@ class RobotSpec extends AnyFlatSpec {
     )
     val guess = EliminationHand(
       "human",
-      List(
+      Vector(
         PossibleHand(
           Set(Domino(3,3),Domino(1,1)),
           0.5,
@@ -100,17 +100,17 @@ class RobotSpec extends AnyFlatSpec {
       guess,
       None,
     )
-    val depth = 5 // not relevant
-    val numSimulations = 30
+    val depth = 13
+    val numSimulations = 10
     val maxNode = MaxNode(perspective, game, depth, numSimulations, true)
     val (score, action) = maxNode.bestAction()
     assert(action == Move(Domino(5,3),Left))
     // Robot is winning by 15 and will score 5 points with its last move.
     // Then it needs to add 6.25 for the opponent's tiles EV and
     // then 5 points for starting first on the next round.
-    val expectedScore = 43
-    assert(score.value < expectedScore + 1.5)
-    assert(score.value > expectedScore - 1.5)
+    val expectedScore = .65
+    assert(score.value < expectedScore + .1)
+    assert(score.value > expectedScore - .1)
     // There should be different scores for different opponent hands,
     // meaning the stddev will be nonzero.
   }
@@ -173,7 +173,7 @@ class RobotSpec extends AnyFlatSpec {
     )
     val guess = EliminationHand(
       "human",
-      List(
+      Vector(
         PossibleHand(
           Set(Domino(3,3),Domino(1,1)),
           0.5,
@@ -219,14 +219,14 @@ class RobotSpec extends AnyFlatSpec {
       None,
     )
     val depth = 13
-    val numSimulations = 30
+    val numSimulations = 10
     val maxNode = MaxNode(perspective, game, depth, numSimulations, true)
     val (score, action) = maxNode.bestAction()
     assert(action == Move(Domino(6,3),Up))
     // Robot is winning by 15 and will score 30 points with a locked
     // game. That outcome doesn't depend on the opponent's tiles,
     // so should have a stddev of 0.
-    assert(score.value == 45)
+    assert(score.value == 0.75)
     assert(score.stddev == 0.0)
   }
 }
