@@ -19,7 +19,7 @@ object Domino {
   def all(): List[Domino] = {
     for {
       high <- (0 to 6).toList
-      low  <- (0 to 6).toList
+      low <- (0 to 6).toList
       if (high >= low)
     } yield Domino(high, low)
   }

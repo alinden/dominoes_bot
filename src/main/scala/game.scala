@@ -221,10 +221,10 @@ case class Game(
   }
 
   def playHighestDouble(domino: Domino): Option[(Game, String)] = {
-    var t: Turn         = HighestDouble
+    var t: Turn = HighestDouble
     var message: String = ""
-    var (pOne, pTwo)    = (playerOne, playerTwo)
-    val dominoScore     = domino.high + domino.low
+    var (pOne, pTwo) = (playerOne, playerTwo)
+    val dominoScore = domino.high + domino.low
     if (playerOne.hand.contains(domino)) {
       t = PlayerTwoTurn
       val maybePOne =
@@ -332,7 +332,7 @@ case class Game(
     if (!legalMoves().isEmpty || boneyard.isEmpty) {
       return None
     }
-    val index       = luckyNumber.getOrElse(0)
+    val index = luckyNumber.getOrElse(0)
     val tileAtIndex = forceTile.getOrElse(boneyard(index))
     val (pOne, pTwo) =
       orderPlayers(activePlayer().addTile(tileAtIndex), inactivePlayer())
@@ -372,8 +372,8 @@ case class Game(
       .all()
       .filterNot((d) => board.contains(d) || hand.contains(d))
     val shuffledTiles = Random.shuffle(remainingTiles)
-    val newBoneyard   = shuffledTiles.take(boneyard.length)
-    val newPTwoHand   = shuffledTiles.drop(boneyard.length)
+    val newBoneyard = shuffledTiles.take(boneyard.length)
+    val newPTwoHand = shuffledTiles.drop(boneyard.length)
     val (pOne, pTwo) = orderPlayers(
       Player(activePlayer().name, hand, activePlayer().score),
       Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score),
@@ -463,7 +463,7 @@ case class Game(
       direction: Direction,
   ): Option[Game] = {
     for {
-      b            <- updateBoard(domino, direction)
+      b <- updateBoard(domino, direction)
       (pOne, pTwo) <- updatePlayers(domino, b.score())
     } yield {
       Game(
@@ -483,8 +483,8 @@ case class Game(
   }
 
   def getUserInput(): Option[Game] = {
-    val maxAttempts        = 10
-    var i                  = 0
+    val maxAttempts = 10
+    var i = 0
     var game: Option[Game] = None
     while ((i < maxAttempts) && game.isEmpty) {
       game = getUserInputOnce()
@@ -506,9 +506,9 @@ case class Game(
     }
     if (input.take(1) != "m") return None
     if (activePlayer().hand.isEmpty) return None
-    val scanner      = new Scanner(input)
-    val _            = scanner.next
-    val index        = scanner.nextInt
+    val scanner = new Scanner(input)
+    val _ = scanner.next
+    val index = scanner.nextInt
     val rawDirection = scanner.next
     if (rawDirection.isEmpty) return None
     val direction = rawDirection.take(1).toLowerCase() match {
@@ -540,7 +540,7 @@ case class Game(
   }
 
   def getUserInputOnce(): Option[Game] = {
-    val input: String          = StdIn.readLine()
+    val input: String = StdIn.readLine()
     val action: Option[Action] = Try(parseInput(input)).toOption.flatten
     action.flatMap((a) => act(a))
   }
@@ -692,7 +692,7 @@ object Game {
       val winnerMinusLoserCount =
         math.round((rawLoserTileCount - rawWinnerTileCount) / 5) * 5
       val lockedGameWinnerAdd = math.max(winnerMinusLoserCount, 0)
-      val lockedGameLoserAdd  = math.max(-winnerMinusLoserCount, 0)
+      val lockedGameLoserAdd = math.max(-winnerMinusLoserCount, 0)
       val (pOne, pTwo) = g.orderPlayers(
         Player(
           g.activePlayer().name,

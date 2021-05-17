@@ -115,7 +115,7 @@ case class MaxNode(
 
   def toMinNode(): Option[MinNode] = {
     val (_, action) = bestAction()
-    val after       = game.act(action, false, true)
+    val after = game.act(action, false, true)
     if (action == Draw) {
       after.flatMap((g) =>
         MaxNode(

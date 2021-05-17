@@ -6,7 +6,7 @@ case class Player(
     score: Int,
 ) {
   def removeTile(domino: Domino): Option[Player] = {
-    val filteredHand    = hand.filterNot(_ == domino)
+    val filteredHand = hand.filterNot(_ == domino)
     val playerHasDomino = filteredHand.length != hand.length
     if (!playerHasDomino) return None
     Some(Player(name, filteredHand, score))

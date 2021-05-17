@@ -36,14 +36,14 @@ case class EliminationHand(
     if (possibilities.isEmpty) {
       List()
     } else {
-      val xs    = this.possibilities
-      val rv    = Random.nextDouble()
-      var low   = 0
-      var high  = xs.length - 1
+      val xs = this.possibilities
+      val rv = Random.nextDouble()
+      var low = 0
+      var high = xs.length - 1
       var index = -1
       while ((index == -1) && (low <= high)) {
-        val middle     = low + (high - low) / 2
-        val x          = xs(middle)
+        val middle = low + (high - low) / 2
+        val x = xs(middle)
         val lowerBound = x.cumulativeLikelihood - x.likelihood
         val upperBound = x.cumulativeLikelihood
         if (lowerBound <= rv && rv <= upperBound) {
@@ -67,8 +67,8 @@ case class EliminationHand(
       this
     } else {
       val totalLikelihood = possibilities.map(_.likelihood).sum
-      val multiplier      = 1.0 / totalLikelihood
-      var cl              = 0.0
+      val multiplier = 1.0 / totalLikelihood
+      var cl = 0.0
       val m: Map[Set[Domino], Double] = possibilities
         .map((ph) => Map(ph.hand -> ph.likelihood))
         .reduce(_ |+| _)
@@ -287,10 +287,10 @@ object EliminationHand {
       opponentHand: List[Domino],
       initialHandSize: Int = 7,
   ): EliminationHand = {
-    val impossible      = opponentHand.toSet
-    val possibleTiles   = Domino.all().filterNot(impossible.contains(_)).toSet
-    val possibleHands   = possibleTiles.subsets(initialHandSize).toVector
-    val likelihood      = 1.0 / possibleHands.length.toFloat
+    val impossible = opponentHand.toSet
+    val possibleTiles = Domino.all().filterNot(impossible.contains(_)).toSet
+    val possibleHands = possibleTiles.subsets(initialHandSize).toVector
+    val likelihood = 1.0 / possibleHands.length.toFloat
     var totalLikelihood = 0.0
     EliminationHand(
       playerName,

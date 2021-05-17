@@ -1,11 +1,11 @@
 package game
 
 sealed trait BoardState
-case object Empty       extends BoardState
+case object Empty extends BoardState
 case object SpinnerOnly extends BoardState
-case object Snake       extends BoardState
-case object Tee         extends BoardState
-case object Cross       extends BoardState
+case object Snake extends BoardState
+case object Tee extends BoardState
+case object Cross extends BoardState
 
 case class Board(
     spinner: Option[PlayedDomino],
