@@ -8,11 +8,11 @@ case class AvgNode(
     afterGame: Game,
     action: Action,
     depthRemaining: Int,
-    numSimulations: Int
+    numSimulations: Int,
 ) extends EvalNode {
 
-  /** Score a game that could be complete or ongoing only by looking at its
-    * current state combined with the game log.
+  /** Score a game that could be complete or ongoing only by looking at its current state combined
+    * with the game log.
     */
   def heuristic(): Score = {
     val robotScore = afterGame.playerByName("robot").score.toFloat
@@ -45,7 +45,8 @@ case class AvgNode(
           case (false, _, _) => 0.0
           case (true, false, true) => {
             // robot thinking about human dominoes
-            (-1) * perspective.hand
+            (-1) * perspective
+              .hand
               .foldRight(0) { (domino, z) =>
                 {
                   domino.high + domino.low + z
@@ -57,7 +58,8 @@ case class AvgNode(
             // human thinking about human dominoes
             (-1) * ((0 to numSimulations)
               .map((_) => {
-                val rawCount = perspective.opponentHand
+                val rawCount = perspective
+                  .opponentHand
                   .getSample()
                   .foldRight(0) { (domino, z) =>
                     {
@@ -74,7 +76,8 @@ case class AvgNode(
             // robot thinking about robot dominoes
             ((0 to numSimulations)
               .map((_) => {
-                val rawCount = perspective.opponentHand
+                val rawCount = perspective
+                  .opponentHand
                   .getSample()
                   .foldRight(0) { (domino, z) =>
                     {
@@ -89,7 +92,8 @@ case class AvgNode(
           }
           case (true, true, false) => {
             // human thinking about robot dominoes
-            perspective.hand
+            perspective
+              .hand
               .foldRight(0) { (domino, z) =>
                 {
                   domino.high + domino.low + z
@@ -110,7 +114,7 @@ case class AvgNode(
           beforeRobotScore + turnBonus + tileBonus + lastTurnScore
         val runway = math.max(
           0.0,
-          150.0 - math.max(robotScoreWithBonuses, beforeHumanScore)
+          150.0 - math.max(robotScoreWithBonuses, beforeHumanScore),
         )
         if (runway == 0.0) {
           Score(robotScoreWithBonuses - beforeHumanScore)
@@ -130,23 +134,21 @@ case class AvgNode(
     }
   }
 
-  /** Score a game after applying the given action. Works primarily by averaging
-    * the values from multiple simluations.
+  /** Score a game after applying the given action. Works primarily by averaging the values from
+    * multiple simluations.
     *
-    * 1) If there is no reason to look farther into the future, either because
-    * the game is over or one player got dominoes, we use the heuristic.
+    * 1) If there is no reason to look farther into the future, either because the game is over or
+    * one player got dominoes, we use the heuristic.
     *
     * 2) If we reached our max depth, use the heuristic.
     *
-    * 3) If the action is a draw, we need to consider all possible draw tiles.
-    * For each one, create a new MaxNode with that tile and return the average
-    * of the score of those MaxNodes.
+    * 3) If the action is a draw, we need to consider all possible draw tiles. For each one, create
+    * a new MaxNode with that tile and return the average of the score of those MaxNodes.
     *
-    * 4) If the action is a move or pass, play the best opponent move and then
-    * reconsider the position. In order to do this concretely, simulate the
-    * opponent's hand and for each hand, create a Min/MaxNode with that hand.
-    * Then, consider that position from the opponent's perspective in order to
-    * find its best move. Once the best opponent move is found, play it and
+    * 4) If the action is a move or pass, play the best opponent move and then reconsider the
+    * position. In order to do this concretely, simulate the opponent's hand and for each hand,
+    * create a Min/MaxNode with that hand. Then, consider that position from the opponent's
+    * perspective in order to find its best move. Once the best opponent move is found, play it and
     * convert that node into a Max/MinNode.
     */
   def score(): Score = {
@@ -184,14 +186,14 @@ case class AvgNode(
                   updatedPerspective.update(beforeGame, afterGame),
                   afterGame,
                   depthRemaining,
-                  numSimulations
+                  numSimulations,
                 ).toMinNode().map(_.score()).getOrElse(Score(0.0))
               } else {
                 MinNode(
                   updatedPerspective.update(beforeGame, afterGame),
                   afterGame,
                   depthRemaining,
-                  numSimulations
+                  numSimulations,
                 ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
               }
             })
@@ -206,14 +208,14 @@ case class AvgNode(
               updatedPerspective.swap(),
               safeGame,
               depthRemaining,
-              numSimulations
+              numSimulations,
             ).toMinNode().map(_.score()).getOrElse(Score(0.0))
           } else {
             MinNode(
               updatedPerspective.swap(),
               safeGame,
               depthRemaining,
-              numSimulations
+              numSimulations,
             ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
           }
         }

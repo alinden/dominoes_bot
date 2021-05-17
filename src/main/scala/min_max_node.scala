@@ -8,7 +8,7 @@ trait MinMaxNode {
   def isBetterScore(
       candidate: Score,
       previousBest: Score,
-      margin: Double = 0.0
+      margin: Double = 0.0,
   ): Boolean;
   def getScoredMoves(
       limitToMoves: List[Action] = List()

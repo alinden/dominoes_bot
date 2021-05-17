@@ -3,7 +3,7 @@ package game
 case class PossibleHand(
     hand: Set[Domino],
     likelihood: Double,
-    cumulativeLikelihood: Double
+    cumulativeLikelihood: Double,
 ) {
   def multiplyLikelihood(x: Double): PossibleHand = {
     PossibleHand(hand, x * likelihood, cumulativeLikelihood)

@@ -9,15 +9,15 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 
 object App {
   def playGame(mode: String, matchScore: MatchScore): MatchScore = {
-    val debug = (mode == "--play_greedy")
+    val debug           = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
-    var action: Action = Reshuffle
+    var action: Action  = Reshuffle
     println("New Game!")
     println(s"Playing a best of ${matchScore.bestOf}")
     println("")
     println(g.get)
     if (!debug) Thread.sleep(2000)
-    var t = g
+    var t                              = g
     var guess: Option[EliminationHand] = None
     while (!g.map(_.isOver).getOrElse(true)) {
       if (g.get.turn == HighestDouble) {
@@ -28,7 +28,10 @@ object App {
         g = g.orElse(Some(t.get.reshuffle()))
         if (
           !g.isEmpty &&
-          g.get.log.log.headOption
+          g.get
+            .log
+            .log
+            .headOption
             .map(_.action == PlayHighestDouble)
             .getOrElse(false)
         ) {
@@ -75,7 +78,7 @@ object App {
               EliminationHand
                 .createFromOpponentHand("human", g.get.playerTwo.hand)
             ),
-            debug
+            debug,
           )
           .get
         g = g.get.act(action, true)
@@ -120,13 +123,13 @@ object App {
       MatchScore(
         matchScore.pOneScore + 1,
         matchScore.pTwoScore,
-        matchScore.bestOf
+        matchScore.bestOf,
       )
     } else {
       MatchScore(
         matchScore.pOneScore,
         matchScore.pTwoScore + 1,
-        matchScore.bestOf
+        matchScore.bestOf,
       )
     }
   }
@@ -136,8 +139,8 @@ object App {
       println("""Usage: sbt "run [--play_human|--play_greedy]"""")
       return
     }
-    val mode = args.head
-    val bestOf = if (mode == "--play_human") 3 else 39
+    val mode       = args.head
+    val bestOf     = if (mode == "--play_human") 3 else 39
     var matchScore = MatchScore(0, 0, bestOf)
     while (!matchScore.isOver) {
       matchScore = playGame(mode, matchScore)

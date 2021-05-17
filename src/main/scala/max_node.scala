@@ -7,7 +7,7 @@ case class MaxNode(
     game: Game,
     depthRemaining: Int,
     numSimulations: Int,
-    debug: Boolean = false
+    debug: Boolean = false,
 ) extends MinMaxNode
     with EvalNode {
   def asyncBestAction(
@@ -36,7 +36,7 @@ case class MaxNode(
               score.min,
               (1.0 - score.positiveLikelihood(-1.0)),
               score.positiveLikelihood(1.0),
-              score.positiveLikelihood(0.0)
+              score.positiveLikelihood(0.0),
             ).map(firstFourLetters(_))}"
           }
           .foreach(println(_))
@@ -71,9 +71,9 @@ case class MaxNode(
                 future,
                 move,
                 depthRemaining - 1,
-                numSimulations
+                numSimulations,
               ).score(),
-              move
+              move,
             )
           }
         }
@@ -83,7 +83,7 @@ case class MaxNode(
   def isBetterScore(
       candidate: Score,
       previousBest: Score,
-      margin: Double = 0.0
+      margin: Double = 0.0,
   ): Boolean = {
     candidate.value + margin > previousBest.value
   }
@@ -105,9 +105,9 @@ case class MaxNode(
               future,
               move,
               depthRemaining - 1,
-              numSimulations
+              numSimulations,
             ).score(),
-            move
+            move,
           )
         }
       }
@@ -115,14 +115,14 @@ case class MaxNode(
 
   def toMinNode(): Option[MinNode] = {
     val (_, action) = bestAction()
-    val after = game.act(action, false, true)
+    val after       = game.act(action, false, true)
     if (action == Draw) {
       after.flatMap((g) =>
         MaxNode(
           perspective.update(game, g),
           g,
           depthRemaining - 1,
-          numSimulations
+          numSimulations,
         ).toMinNode()
       )
     } else {
@@ -131,7 +131,7 @@ case class MaxNode(
           perspective.update(game, g).swap(),
           g,
           depthRemaining - 1,
-          numSimulations
+          numSimulations,
         )
       )
     }

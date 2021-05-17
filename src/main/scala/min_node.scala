@@ -5,13 +5,13 @@ case class MinNode(
     game: Game,
     depthRemaining: Int,
     numSimulations: Int,
-    isRoot: Boolean = false
+    isRoot: Boolean = false,
 ) extends MinMaxNode
     with EvalNode {
   def isBetterScore(
       candidate: Score,
       previousBest: Score,
-      margin: Double = 0.0
+      margin: Double = 0.0,
   ): Boolean = {
     candidate.value - margin < previousBest.value
   }
@@ -38,23 +38,23 @@ case class MinNode(
               future,
               move,
               d,
-              numSimulations
+              numSimulations,
             ).score(),
-            move
+            move,
           )
         }
       }
   }
   def toMaxNode(): Option[MaxNode] = {
     val (_, action) = bestAction()
-    val after = game.act(action, false, true)
+    val after       = game.act(action, false, true)
     if (action == Draw) {
       after.flatMap((g) => {
         MinNode(
           perspective.update(game, g),
           g,
           depthRemaining - 1,
-          numSimulations
+          numSimulations,
         ).toMaxNode()
       })
     } else {
@@ -63,7 +63,7 @@ case class MinNode(
           perspective.update(game, g).swap(),
           g,
           depthRemaining - 1,
-          numSimulations
+          numSimulations,
         )
       })
     }

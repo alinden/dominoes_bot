@@ -1,18 +1,18 @@
 package game
 
 sealed trait BoardState
-case object Empty extends BoardState
+case object Empty       extends BoardState
 case object SpinnerOnly extends BoardState
-case object Snake extends BoardState
-case object Tee extends BoardState
-case object Cross extends BoardState
+case object Snake       extends BoardState
+case object Tee         extends BoardState
+case object Cross       extends BoardState
 
 case class Board(
     spinner: Option[PlayedDomino],
     left: List[PlayedDomino],
     right: List[PlayedDomino],
     up: List[PlayedDomino],
-    down: List[PlayedDomino]
+    down: List[PlayedDomino],
 ) {
   override def toString(): String = {
     List(
@@ -21,7 +21,7 @@ case class Board(
       s"right: ${Board.formatChain(right).mkString(" - ")}",
       s"up: ${Board.formatChain(up).mkString(" - ")}",
       s"down: ${Board.formatChain(down).mkString(" - ")}",
-      s"board score: ${score()}"
+      s"board score: ${score()}",
     ).mkString("\n")
   }
 
@@ -82,20 +82,24 @@ case class Board(
     if (!spinner.isEmpty) None
     val newSpinner = Some(PlayedDomino(domino, domino.high + domino.low))
     if (direction == Left) {
-      left.headOption.flatMap((x) => {
-        x.connectTo(domino)
-          .map((_) => {
-            Board(
-              newSpinner,
-              this.left.map(_.backwards()).reverse,
-              List(),
-              List(),
-              List()
-            )
-          })
-      })
+      left
+        .headOption
+        .flatMap((x) => {
+          x.connectTo(domino)
+            .map((_) => {
+              Board(
+                newSpinner,
+                this.left.map(_.backwards()).reverse,
+                List(),
+                List(),
+                List(),
+              )
+            })
+        })
     } else {
-      left.reverse.headOption
+      left
+        .reverse
+        .headOption
         .map(_.backwards())
         .flatMap((x) => {
           x.connectTo(domino)
@@ -105,7 +109,7 @@ case class Board(
                 this.left,
                 List(),
                 List(),
-                List()
+                List(),
               )
             })
         })
@@ -124,12 +128,14 @@ case class Board(
               List(PlayedDomino(domino, value)),
               this.right,
               this.up,
-              this.down
+              this.down,
             )
           })
       })
     } else {
-      this.left.head
+      this
+        .left
+        .head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -137,18 +143,20 @@ case class Board(
             PlayedDomino(domino, value) :: this.left,
             this.right,
             this.up,
-            this.down
+            this.down,
           )
         })
     }
   }
 
-  /** Add a domino to the right chain of the board. Or, in the case that there
-    * is no spinner yet, add to the end of the left chain.
+  /** Add a domino to the right chain of the board. Or, in the case that there is no spinner yet,
+    * add to the end of the left chain.
     */
   def addRight(domino: Domino): Option[Board] = {
     if (right.isEmpty && spinner.isEmpty) {
-      this.left.last
+      this
+        .left
+        .last
         .backwards()
         .connectTo(domino)
         .map((value) => {
@@ -157,7 +165,7 @@ case class Board(
             this.left ++ List(PlayedDomino(domino, value).backwards()),
             this.right,
             this.up,
-            this.down
+            this.down,
           )
         })
     } else if (right.isEmpty && !spinner.isEmpty) {
@@ -169,12 +177,14 @@ case class Board(
               this.left,
               List(PlayedDomino(domino, value)),
               this.up,
-              this.down
+              this.down,
             )
           })
       })
     } else {
-      this.right.head
+      this
+        .right
+        .head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -182,7 +192,7 @@ case class Board(
             this.left,
             PlayedDomino(domino, value) :: this.right,
             this.up,
-            this.down
+            this.down,
           )
         })
     }
@@ -200,12 +210,14 @@ case class Board(
               this.left,
               this.right,
               List(PlayedDomino(domino, value)),
-              this.down
+              this.down,
             )
           })
       })
     } else {
-      this.up.head
+      this
+        .up
+        .head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -213,7 +225,7 @@ case class Board(
             this.left,
             this.right,
             PlayedDomino(domino, value) :: this.up,
-            this.down
+            this.down,
           )
         })
     }
@@ -231,12 +243,14 @@ case class Board(
               this.left,
               this.right,
               this.up,
-              List(PlayedDomino(domino, value))
+              List(PlayedDomino(domino, value)),
             )
           })
       })
     } else {
-      this.down.head
+      this
+        .down
+        .head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -244,7 +258,7 @@ case class Board(
             this.left,
             this.right,
             this.up,
-            PlayedDomino(domino, value) :: this.down
+            PlayedDomino(domino, value) :: this.down,
           )
         })
     }
@@ -271,7 +285,7 @@ object Board {
       List(),
       List(),
       List(),
-      List()
+      List(),
     )
   }
 

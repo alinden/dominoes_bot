@@ -15,7 +15,7 @@ case class Game(
     boneyard: List[Domino],
     log: GameLog,
     lastTurnPass: Boolean = false,
-    isOver: Boolean = false
+    isOver: Boolean = false,
 ) {
   override def toString(): String = {
     val showRobotTiles = true
@@ -36,13 +36,14 @@ case class Game(
         s"boneyard: ${boneyard.map((_) => "[x,x]").mkString(" ")}",
         s"tiles: ${boneyard.length + playerOne.hand.length + playerTwo.hand.length + board.length()}",
         board.toString(),
-        ""
-      )
+        "",
+      ),
     ).mkString("\n")
   }
 
   def playHighestDouble(): Option[Game] = {
-    val highestDoubleRank: List[Domino] = (0 to 6).toList
+    val highestDoubleRank: List[Domino] = (0 to 6)
+      .toList
       .map((n) => Domino(n, n))
     highestDoubleRank
       .foldRight[Option[(Game, String)]](None) { (d, z) =>
@@ -52,10 +53,10 @@ case class Game(
               afterGame.log(
                 HighestDoubleEntry(
                   afterGame.inactivePlayer().name,
-                  d
+                  d,
                 )
               ),
-              message
+              message,
             )
           })
         }
@@ -75,16 +76,16 @@ case class Game(
             Player(
               playerOne.name,
               newGame.playerOne.hand,
-              playerOne.score
+              playerOne.score,
             ),
             Player(
               playerTwo.name,
               newGame.playerTwo.hand,
-              playerTwo.score
+              playerTwo.score,
             ),
             HighestDouble,
             newGame.boneyard,
-            GameLog.empty()
+            GameLog.empty(),
           )
         )
       }
@@ -106,16 +107,16 @@ case class Game(
       Player(
         playerOne.name,
         newGame.playerOne.hand,
-        playerOne.score
+        playerOne.score,
       ),
       Player(
         playerTwo.name,
         newGame.playerTwo.hand,
-        playerTwo.score
+        playerTwo.score,
       ),
       turn,
       newGame.boneyard,
-      GameLog.empty()
+      GameLog.empty(),
     )
   }
 
@@ -124,17 +125,19 @@ case class Game(
   // one move onto an empty chain. It should also only allow one move
   // onto two chains of equal end value.
   def simplify(actions: List[Action]): List[Action] = {
-    val emptyDirections = Direction.all.filter((dir) =>
-      dir match {
-        case Left  => board.left.isEmpty
-        case Right => board.right.isEmpty
-        case Up    => board.up.isEmpty
-        case Down  => board.down.isEmpty
-      }
-    )
+    val emptyDirections = Direction
+      .all
+      .filter((dir) =>
+        dir match {
+          case Left  => board.left.isEmpty
+          case Right => board.right.isEmpty
+          case Up    => board.up.isEmpty
+          case Down  => board.down.isEmpty
+        }
+      )
     def filterRedundant(
         xs: List[Action],
-        extraRedundantDirs: List[Direction] = List()
+        extraRedundantDirs: List[Direction] = List(),
     ): List[Action] = {
       val dirsToRemove = emptyDirections.drop(1) ++ extraRedundantDirs
       xs.filterNot((action) =>
@@ -155,7 +158,8 @@ case class Game(
       }
       case SpinnerOnly => filterRedundant(actions)
       case Snake => {
-        val nonEmptyChain = Direction.all
+        val nonEmptyChain = Direction
+          .all
           .filterNot((dir) => emptyDirections.contains(dir))
           .map((dir) =>
             dir match {
@@ -180,7 +184,8 @@ case class Game(
       }
       case Tee => filterRedundant(actions)
       case Cross => {
-        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction.all
+        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction
+          .all
           .filterNot((dir) =>
             dir match {
               case Left  => board.left.isEmpty
@@ -216,10 +221,10 @@ case class Game(
   }
 
   def playHighestDouble(domino: Domino): Option[(Game, String)] = {
-    var t: Turn = HighestDouble
+    var t: Turn         = HighestDouble
     var message: String = ""
-    var (pOne, pTwo) = (playerOne, playerTwo)
-    val dominoScore = domino.high + domino.low
+    var (pOne, pTwo)    = (playerOne, playerTwo)
+    val dominoScore     = domino.high + domino.low
     if (playerOne.hand.contains(domino)) {
       t = PlayerTwoTurn
       val maybePOne =
@@ -245,9 +250,9 @@ case class Game(
           pTwo,
           t,
           boneyard,
-          log
+          log,
         ),
-        message
+        message,
       )
     )
   }
@@ -255,7 +260,7 @@ case class Game(
   def act(
       action: Action,
       debug: Boolean = true,
-      dontShuffle: Boolean = false
+      dontShuffle: Boolean = false,
   ): Option[Game] = action match {
     case Pass => {
       if (debug) {
@@ -315,19 +320,19 @@ case class Game(
         incrementTurn(),
         List(),
         log.log(PassLogEntry(activePlayer().name)),
-        true
+        true,
       )
     )
   }
 
   def draw(
       luckyNumber: Option[Int] = None,
-      forceTile: Option[Domino] = None
+      forceTile: Option[Domino] = None,
   ): Option[Game] = {
     if (!legalMoves().isEmpty || boneyard.isEmpty) {
       return None
     }
-    val index = luckyNumber.getOrElse(0)
+    val index       = luckyNumber.getOrElse(0)
     val tileAtIndex = forceTile.getOrElse(boneyard(index))
     val (pOne, pTwo) =
       orderPlayers(activePlayer().addTile(tileAtIndex), inactivePlayer())
@@ -342,9 +347,9 @@ case class Game(
           DrawLogEntry(
             activePlayer().name,
             activePlayer().hand.length,
-            legalTilesToPlay()
+            legalTilesToPlay(),
           )
-        )
+        ),
       )
     )
   }
@@ -358,7 +363,7 @@ case class Game(
       boneyard,
       log.log(entry),
       lastTurnPass,
-      isOver
+      isOver,
     )
   }
 
@@ -367,11 +372,11 @@ case class Game(
       .all()
       .filterNot((d) => board.contains(d) || hand.contains(d))
     val shuffledTiles = Random.shuffle(remainingTiles)
-    val newBoneyard = shuffledTiles.take(boneyard.length)
-    val newPTwoHand = shuffledTiles.drop(boneyard.length)
+    val newBoneyard   = shuffledTiles.take(boneyard.length)
+    val newPTwoHand   = shuffledTiles.drop(boneyard.length)
     val (pOne, pTwo) = orderPlayers(
       Player(activePlayer().name, hand, activePlayer().score),
-      Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score)
+      Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score),
     )
     val updated = Game(
       board,
@@ -381,7 +386,7 @@ case class Game(
       newBoneyard,
       log,
       lastTurnPass,
-      isOver
+      isOver,
     )
     updated
   }
@@ -393,7 +398,7 @@ case class Game(
   def allLegalActions(): List[Action] = {
     val nonMoveActions = List(
       (Pass, pass()),
-      (Draw, draw())
+      (Draw, draw()),
     )
       .filterNot(_._2.isEmpty)
       .map(_._1)
@@ -443,9 +448,11 @@ case class Game(
     Game
       .allDirections()
       .flatMap((direction) => {
-        activePlayer().hand.map((domino) => {
-          (Move(domino, direction), move(domino, direction))
-        })
+        activePlayer()
+          .hand
+          .map((domino) => {
+            (Move(domino, direction), move(domino, direction))
+          })
       })
       .filterNot(_._2.isEmpty)
       .map(_._1)
@@ -453,10 +460,10 @@ case class Game(
 
   def move(
       domino: Domino,
-      direction: Direction
+      direction: Direction,
   ): Option[Game] = {
     for {
-      b <- updateBoard(domino, direction)
+      b            <- updateBoard(domino, direction)
       (pOne, pTwo) <- updatePlayers(domino, b.score())
     } yield {
       Game(
@@ -468,16 +475,16 @@ case class Game(
         log.log(
           MoveLogEntry(
             activePlayer().name,
-            Move(domino, direction)
+            Move(domino, direction),
           )
-        )
+        ),
       )
     }
   }
 
   def getUserInput(): Option[Game] = {
-    val maxAttempts = 10
-    var i = 0
+    val maxAttempts        = 10
+    var i                  = 0
     var game: Option[Game] = None
     while ((i < maxAttempts) && game.isEmpty) {
       game = getUserInputOnce()
@@ -499,9 +506,9 @@ case class Game(
     }
     if (input.take(1) != "m") return None
     if (activePlayer().hand.isEmpty) return None
-    val scanner = new Scanner(input)
-    val _ = scanner.next
-    val index = scanner.nextInt
+    val scanner      = new Scanner(input)
+    val _            = scanner.next
+    val index        = scanner.nextInt
     val rawDirection = scanner.next
     if (rawDirection.isEmpty) return None
     val direction = rawDirection.take(1).toLowerCase() match {
@@ -521,7 +528,9 @@ case class Game(
     println("Your turn")
     println("Tiles: ")
     println(
-      activePlayer().hand.zipWithIndex
+      activePlayer()
+        .hand
+        .zipWithIndex
         .map { case (domino, i) => s"${i}: ${domino}" }
         .mkString("\n")
     )
@@ -531,7 +540,7 @@ case class Game(
   }
 
   def getUserInputOnce(): Option[Game] = {
-    val input: String = StdIn.readLine()
+    val input: String          = StdIn.readLine()
     val action: Option[Action] = Try(parseInput(input)).toOption.flatten
     action.flatMap((a) => act(a))
   }
@@ -556,7 +565,7 @@ case class Game(
 
   def orderPlayers(
       active: Player,
-      inactive: Player
+      inactive: Player,
   ): (Player, Player) = turn match {
     case PlayerOneTurn => (active, inactive)
     case PlayerTwoTurn => (inactive, active)
@@ -565,14 +574,14 @@ case class Game(
 
   private def updatePlayers(
       domino: Domino,
-      score: Int
+      score: Int,
   ): Option[(Player, Player)] = {
     activePlayer()
       .removeTile(domino)
       .map((ap) => {
         orderPlayers(
           ap.incrementScore(score),
-          inactivePlayer()
+          inactivePlayer(),
         )
       })
   }
@@ -585,14 +594,14 @@ case class Game(
         playerTwo,
         incrementTurn(),
         boneyard,
-        log
+        log,
       )
     })
   }
 
   private def updateBoard(
       domino: Domino,
-      direction: Direction
+      direction: Direction,
   ): Option[Board] = (board.state(), direction) match {
     case (Empty, _)       => Some(board.addFirstTile(domino))
     case (SpinnerOnly, _) => board.addLeft(domino)
@@ -629,7 +638,7 @@ object Game {
       Player(playerTwoName, shuffledTiles.slice(7, 14), 0),
       HighestDouble,
       shuffledTiles.slice(14, 28),
-      GameLog.empty()
+      GameLog.empty(),
     )
   }
 
@@ -638,7 +647,7 @@ object Game {
   def endGame(
       game: Game,
       debug: Boolean = true,
-      dontShuffle: Boolean = false
+      dontShuffle: Boolean = false,
   ): Option[Game] = {
     // println("endgame")
     // println("game")
@@ -651,7 +660,9 @@ object Game {
       game.boneyard,
       game.log,
       game.lastTurnPass,
-      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game.playerOne.score != game.playerTwo.score)
+      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game
+        .playerOne
+        .score != game.playerTwo.score),
     )
 
     val rawLoserTileCount = g
@@ -681,18 +692,18 @@ object Game {
       val winnerMinusLoserCount =
         math.round((rawLoserTileCount - rawWinnerTileCount) / 5) * 5
       val lockedGameWinnerAdd = math.max(winnerMinusLoserCount, 0)
-      val lockedGameLoserAdd = math.max(-winnerMinusLoserCount, 0)
+      val lockedGameLoserAdd  = math.max(-winnerMinusLoserCount, 0)
       val (pOne, pTwo) = g.orderPlayers(
         Player(
           g.activePlayer().name,
           List(),
-          g.activePlayer().score + lockedGameWinnerAdd
+          g.activePlayer().score + lockedGameWinnerAdd,
         ),
         Player(
           g.inactivePlayer().name,
           List(),
-          g.inactivePlayer().score + lockedGameLoserAdd
-        )
+          g.inactivePlayer().score + lockedGameLoserAdd,
+        ),
       )
       Some(
         Game(
@@ -703,7 +714,7 @@ object Game {
           List(),
           g.log,
           true,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score)
+          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
         )
       )
     } else if (loserTileCount > 0) {
@@ -717,7 +728,7 @@ object Game {
       val ap = Player(
         g.activePlayer().name,
         g.activePlayer().hand,
-        g.activePlayer().score + loserTileCount
+        g.activePlayer().score + loserTileCount,
       )
       val (pOne, pTwo) = g.orderPlayers(ap, g.inactivePlayer())
       Some(
@@ -729,7 +740,7 @@ object Game {
           g.boneyard,
           g.log,
           g.lastTurnPass,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score)
+          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
         )
       )
     } else {
