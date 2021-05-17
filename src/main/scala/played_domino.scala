@@ -1,8 +1,8 @@
 package game
 
 case class PlayedDomino(
-  tile: Domino,
-  value: Int,
+    tile: Domino,
+    value: Int
 ) {
 
   def score: Int = {

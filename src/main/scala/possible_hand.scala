@@ -1,8 +1,12 @@
 package game
 
-case class PossibleHand(hand: Set[Domino], likelihood: Double, cumulativeLikelihood: Double) {
+case class PossibleHand(
+    hand: Set[Domino],
+    likelihood: Double,
+    cumulativeLikelihood: Double
+) {
   def multiplyLikelihood(x: Double): PossibleHand = {
-    PossibleHand(hand, x*likelihood, cumulativeLikelihood)
+    PossibleHand(hand, x * likelihood, cumulativeLikelihood)
   }
   def addTile(tile: Domino): PossibleHand = {
     PossibleHand(hand + tile, likelihood, cumulativeLikelihood)
@@ -17,7 +21,6 @@ case class PossibleHand(hand: Set[Domino], likelihood: Double, cumulativeLikelih
     hand.contains(tile)
   }
   override def toString(): String = {
-    s"${likelihood*100}%: ${hand.mkString(",")}"
+    s"${likelihood * 100}%: ${hand.mkString(",")}"
   }
 }
-

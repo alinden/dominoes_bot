@@ -5,14 +5,20 @@ trait MinMaxNode {
   val depthRemaining: Int;
   val game: Game;
   val perspective: Perspective;
-  def isBetterScore(candidate: Score, previousBest: Score, margin: Double = 0.0): Boolean;
-  def getScoredMoves(limitToMoves: List[Action] = List()): List[(Score,Action)];
+  def isBetterScore(
+      candidate: Score,
+      previousBest: Score,
+      margin: Double = 0.0
+  ): Boolean;
+  def getScoredMoves(
+      limitToMoves: List[Action] = List()
+  ): List[(Score, Action)];
 
   def score(): Score = {
     bestScoredMove().map(_._1).getOrElse(Score(0.toFloat))
   }
-  def bestAction(limitToMoves: List[Action] = List()): (Score,Action) = {
-    bestScoredMove(limitToMoves).getOrElse((Score(0.0),Pass))
+  def bestAction(limitToMoves: List[Action] = List()): (Score, Action) = {
+    bestScoredMove(limitToMoves).getOrElse((Score(0.0), Pass))
   }
   def goodActions(): List[Action] = {
     if (possibleFutures().length == 1) {
@@ -20,31 +26,42 @@ trait MinMaxNode {
     } else {
       val margin = 4.0
       val sortedMoves = getScoredMoves()
-        .sortWith{ case ((xScore, _), (yScore, _)) => {
-          isBetterScore(xScore, yScore)
-        }}
+        .sortWith {
+          case ((xScore, _), (yScore, _)) => {
+            isBetterScore(xScore, yScore)
+          }
+        }
       val bestScore = sortedMoves.head._1
       sortedMoves
-        .withFilter{ case (score, move) => {
-          isBetterScore(score, bestScore, margin)
-        }}
+        .withFilter {
+          case (score, move) => {
+            isBetterScore(score, bestScore, margin)
+          }
+        }
         .map(_._2)
     }
   }
   def safeGame(): Game = {
     game.withReplacedActiveHand(perspective.hand)
   }
-  def bestScoredMove(limitToMoves: List[Action] = List()): Option[(Score,Action)] = {
-    getScoredMoves(limitToMoves).foldRight[Option[(Score,Action)]](None){ case ((score, move), z) => z match {
-      case None => Some((score, move))
-      case Some((zScore, zMove)) => if (isBetterScore(score, zScore)) Some((score, move)) else z
-    }}
+  def bestScoredMove(
+      limitToMoves: List[Action] = List()
+  ): Option[(Score, Action)] = {
+    getScoredMoves(limitToMoves).foldRight[Option[(Score, Action)]](None) {
+      case ((score, move), z) =>
+        z match {
+          case None => Some((score, move))
+          case Some((zScore, zMove)) =>
+            if (isBetterScore(score, zScore)) Some((score, move)) else z
+        }
+    }
   }
-  def possibleFutures(): List[(Game,Action)] = {
-    val allFutures: List[(Option[Game],Action)] = safeGame().allLegalActions()
+  def possibleFutures(): List[(Game, Action)] = {
+    val allFutures: List[(Option[Game], Action)] = safeGame()
+      .allLegalActions()
       .map((a) => (safeGame().act(a, false, true), a))
-    val possibleFutures: List[(Game,Action)] = allFutures
-      .withFilter{
+    val possibleFutures: List[(Game, Action)] = allFutures
+      .withFilter {
         case (Some(g), Move(tile, _)) => {
           if (g.board.tiles().length != 1) {
             true
@@ -53,23 +70,27 @@ trait MinMaxNode {
             // Remove the [6,3], [4,2], [3,4] and [6,2] since they're not good
             // starting moves and also any tiles that aren't connected
             // to any anothers since these are also bad.
-            val badStartingPieces = Set(Domino(6,3),Domino(4,2),Domino(3,4),Domino(6,2))
+            val badStartingPieces =
+              Set(Domino(6, 3), Domino(4, 2), Domino(3, 4), Domino(6, 2))
             val hand = perspective.hand.toSet + tile
-            val connectingPieces = Domino.all()
+            val connectingPieces = Domino
+              .all()
               .filter((d) => {
                 d.high == tile.high || d.high == tile.low || d.low == tile.high || d.low == tile.low
               })
               .toSet
-            (hand.intersect(connectingPieces) != Set(tile)) && (!badStartingPieces.contains(tile))
+            (hand.intersect(connectingPieces) != Set(
+              tile
+            )) && (!badStartingPieces.contains(tile))
           }
         }
         case (Some(g), _) => true
-        case (None, _) => false
+        case (None, _)    => false
       }
-      .flatMap{
-        case (Some(g), a) => List((g,a))
-        case (None, _) => List()
+      .flatMap {
+        case (Some(g), a) => List((g, a))
+        case (None, _)    => List()
       }
-      possibleFutures
+    possibleFutures
   }
 }

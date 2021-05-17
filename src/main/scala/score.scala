@@ -3,32 +3,32 @@ package game
 import cats.Semigroup
 
 case class Score(
-  values: List[Double],
+    values: List[Double]
 ) {
   def value: Double = values match {
-    case Nil => 0.0
-    case h::Nil => h
-    case xs => mean()
+    case Nil      => 0.0
+    case h :: Nil => h
+    case xs       => mean()
   }
 
-  private def mean(): Double = values.sum/values.length
+  private def mean(): Double = values.sum / values.length
 
   private def variance(): Double = {
     val avg = mean()
-    values.map((x) => math.pow((x - avg),2)).sum/values.length
+    values.map((x) => math.pow((x - avg), 2)).sum / values.length
   }
 
   def stddev: Double = values match {
-    case Nil => 0.0
-    case h::Nil => 0.0
-    case xs => math.sqrt(variance())
+    case Nil      => 0.0
+    case h :: Nil => 0.0
+    case xs       => math.sqrt(variance())
   }
 
   def max(): Double = values.max
   def min(): Double = values.min
 
   def positiveLikelihood(current: Double): Double = {
-    values.filter(_ > current).length.toFloat/values.length.toFloat
+    values.filter(_ > current).length.toFloat / values.length.toFloat
   }
 }
 

@@ -15,4 +15,3 @@ case object Down extends Direction {
 object Direction {
   def all: List[Direction] = List(Left, Right, Up, Down)
 }
-

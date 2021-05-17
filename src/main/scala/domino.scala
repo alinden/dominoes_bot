@@ -13,9 +13,9 @@ case class Domino(high: Int, low: Int) {
 }
 
 object Domino {
-  /**
-   *  Return a list of all dominoes.
-   */
+
+  /** Return a list of all dominoes.
+    */
   def all(): List[Domino] = {
     for {
       high <- (0 to 6).toList
@@ -24,9 +24,8 @@ object Domino {
     } yield Domino(high, low)
   }
 
-  /**
-   *  Return a list of all doubles.
-   */
+  /** Return a list of all doubles.
+    */
   def doubles(): List[Domino] = {
     for {
       high <- (0 to 6).toList

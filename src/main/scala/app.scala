@@ -2,7 +2,7 @@ import game._
 
 case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
   def isOver: Boolean = {
-    val halfPlusOne = math.floor(bestOf.toFloat/2.0) + 1
+    val halfPlusOne = math.floor(bestOf.toFloat / 2.0) + 1
     (pOneScore >= halfPlusOne) || (pTwoScore >= halfPlusOne)
   }
 }
@@ -19,19 +19,26 @@ object App {
     if (!debug) Thread.sleep(2000)
     var t = g
     var guess: Option[EliminationHand] = None
-    while(!g.map(_.isOver).getOrElse(true)) {
+    while (!g.map(_.isOver).getOrElse(true)) {
       if (g.get.turn == HighestDouble) {
         println("")
         println("First Turn, playing the highest double.")
         if (!debug) Thread.sleep(2000)
         g = g.get.playHighestDouble()
         g = g.orElse(Some(t.get.reshuffle()))
-        if (!g.isEmpty &&
-          g.get.log.log.headOption.map(_.action == PlayHighestDouble).getOrElse(false)) {
+        if (
+          !g.isEmpty &&
+          g.get.log.log.headOption
+            .map(_.action == PlayHighestDouble)
+            .getOrElse(false)
+        ) {
           // highest double played
           guess = guess
-            .orElse{
-              Some(EliminationHand.createFromOpponentHand("human", g.get.playerTwo.hand))
+            .orElse {
+              Some(
+                EliminationHand
+                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+              )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
         }
@@ -45,8 +52,11 @@ object App {
         }
         if (!g.get.log.log.isEmpty) {
           guess = guess
-            .orElse{
-              Some(EliminationHand.createFromOpponentHand("human", g.get.playerTwo.hand))
+            .orElse {
+              Some(
+                EliminationHand
+                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+              )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get, false, true))
         } else {
@@ -57,13 +67,25 @@ object App {
           println(guess.getOrElse("no guess"))
           println("--guess--")
         }
-     } else {
-        action = Robot.act(g.get, guess.getOrElse(EliminationHand.createFromOpponentHand("human", g.get.playerTwo.hand)), debug).get
+      } else {
+        action = Robot
+          .act(
+            g.get,
+            guess.getOrElse(
+              EliminationHand
+                .createFromOpponentHand("human", g.get.playerTwo.hand)
+            ),
+            debug
+          )
+          .get
         g = g.get.act(action, true)
         if (!g.get.log.log.isEmpty) {
           guess = guess
-            .orElse{
-              Some(EliminationHand.createFromOpponentHand("human", g.get.playerTwo.hand))
+            .orElse {
+              Some(
+                EliminationHand
+                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+              )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
           if (g.get.log.log.head.action == Draw) {
@@ -98,13 +120,13 @@ object App {
       MatchScore(
         matchScore.pOneScore + 1,
         matchScore.pTwoScore,
-        matchScore.bestOf,
+        matchScore.bestOf
       )
     } else {
       MatchScore(
         matchScore.pOneScore,
         matchScore.pTwoScore + 1,
-        matchScore.bestOf,
+        matchScore.bestOf
       )
     }
   }
@@ -116,8 +138,8 @@ object App {
     }
     val mode = args.head
     val bestOf = if (mode == "--play_human") 3 else 39
-    var matchScore = MatchScore(0,0,bestOf)
-    while(!matchScore.isOver) {
+    var matchScore = MatchScore(0, 0, bestOf)
+    while (!matchScore.isOver) {
       matchScore = playGame(mode, matchScore)
       println(matchScore)
     }

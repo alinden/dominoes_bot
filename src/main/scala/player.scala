@@ -1,9 +1,9 @@
 package game
 
 case class Player(
-  name: String,
-  hand: List[Domino],
-  score: Int,
+    name: String,
+    hand: List[Domino],
+    score: Int
 ) {
   def removeTile(domino: Domino): Option[Player] = {
     val filteredHand = hand.filterNot(_ == domino)
@@ -13,7 +13,7 @@ case class Player(
   }
 
   def addTile(domino: Domino): Player = {
-    Player(name, domino::hand, score)
+    Player(name, domino :: hand, score)
   }
 
   def incrementScore(amount: Int): Player = {
