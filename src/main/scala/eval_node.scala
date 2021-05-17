@@ -5,4 +5,3 @@ trait EvalNode {
   val depthRemaining: Int;
   val perspective: Perspective;
 }
-
