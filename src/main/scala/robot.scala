@@ -32,6 +32,7 @@ object Robot {
       depth: Int,
       numSimulations: Int,
       limitToMoves: List[Action] = List(),
+      onScoredMoves: List[(Score,Action)] => Unit = _ => (),
   ): Task[(Score, Action)] = {
     val robotName = "robot"
     val robotHand = game.playerByName(robotName).hand
@@ -44,13 +45,14 @@ object Robot {
       None,
     )
     val maxNode = MaxNode(perspective, game, depth, numSimulations, debug)
-    maxNode.asyncBestAction(limitToMoves)
+    maxNode.asyncBestAction(limitToMoves, onScoredMoves)
   }
 
   def act(
       game: Game,
       guess: EliminationHand,
       debug: Boolean,
+      decisionLog: Option[java.io.PrintWriter] = None,
   ): Option[Action] = {
     println("")
     println(game)
@@ -78,17 +80,54 @@ object Robot {
       var i = 0
       var move: Action = null
       while ((dt < expectedTime) && (i < moveParams.length)) {
-        val t1 = System.nanoTime() / 1000000.0
-        move = getBestMove(
+        val (depth, simulations) = moveParams(i)
+        val t1 = System.nanoTime()
+
+        val result = getBestMove(
           game,
           guess,
           debug,
-          moveParams(i)._1,
-          moveParams(i)._2,
-        ).runSyncUnsafe()._2
-        val t2 = System.nanoTime() / 1000000.0
-        dt = t2 - t1
+          depth,
+          simulations,
+          onScoredMoves = scoredMoves => {
+            decisionLog.foreach { log =>
+              log.println(s"Depth: $depth, Simulations: $simulations")
+
+              scoredMoves.sortBy(-_._1.value).foreach {
+                case (score, action) =>
+                  log.println(
+                    f"  $action%-25s " +
+                    f"mean=${score.value}%.3f " +
+                    f"stddev=${score.stddev}%.3f " +
+                    f"min=${score.min()}%.3f " +
+                    f"max=${score.max()}%.3f " +
+                    f"pLoss=${1.0 - score.positiveLikelihood(-1.0)}%.3f " +
+                    f"pWin=${score.positiveLikelihood(1.0)}%.3f"
+                  )
+              }
+            }
+          },
+        ).runSyncUnsafe()
+
+        move = result._2
+
+        val t2 = System.nanoTime()
+        dt = (t2 - t1) / 1000000.0
+
+        decisionLog.foreach { log =>
+          log.println(f"Selected at depth $depth: $move (${result._1.value}%.3f)")
+          log.println(f"Elapsed: $dt%.0f ms")
+          log.println()
+          log.flush()
+        }
+
         i = i + 1
+      }
+      decisionLog.foreach { log =>
+        log.println(s"FINAL DECISION: $move")
+        log.println("=" * 60)
+        log.println()
+        log.flush()
       }
       Some(move)
     }

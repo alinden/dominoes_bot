@@ -8,7 +8,11 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 }
 
 object App {
-  def playGame(mode: String, matchScore: MatchScore): MatchScore = {
+  def playGame(
+    mode: String,
+    matchScore: MatchScore,
+    decisionLog: Option[java.io.PrintWriter] = None,
+  ): MatchScore = {
     val debug = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
     var action: Action = Reshuffle
@@ -71,6 +75,12 @@ object App {
           println("--guess--")
         }
       } else {
+        decisionLog.foreach { log =>
+          log.println("=" * 60)
+          log.println("ROBOT TURN")
+          log.println(g.get)
+          log.println()
+        }
         action = Robot
           .act(
             g.get,
@@ -79,6 +89,7 @@ object App {
                 .createFromOpponentHand("human", g.get.playerTwo.hand)
             ),
             debug,
+            decisionLog,
           )
           .get
         g = g.get.act(action, true)
@@ -135,16 +146,37 @@ object App {
   }
 
   def main(args: Array[String]): Unit = {
-    if (args.length != 1) {
-      println("""Usage: sbt "run [--play_human|--play_greedy]"""")
+    val validModes = Set("--play_human", "--play_greedy")
+
+    if (
+      args.isEmpty ||
+      !validModes.contains(args.head) ||
+      (args.length != 1 &&
+        !(args.length == 3 && args(1) == "--log-decisions"))
+    ) {
+      println(
+        """Usage: sbt "run [--play_human|--play_greedy] [--log-decisions filename]""""
+      )
       return
     }
+
     val mode = args.head
-    val bestOf = if (mode == "--play_human") 3 else 39
-    var matchScore = MatchScore(0, 0, bestOf)
-    while (!matchScore.isOver) {
-      matchScore = playGame(mode, matchScore)
-      println(matchScore)
+    val logFile = if (args.length == 3) Some(args(2)) else None
+
+    val decisionLog = logFile.map { filename =>
+      new java.io.PrintWriter(new java.io.FileWriter(filename))
+    }
+
+    try {
+      val bestOf = if (mode == "--play_human") 3 else 39
+      var matchScore = MatchScore(0, 0, bestOf)
+
+      while (!matchScore.isOver) {
+        matchScore = playGame(mode, matchScore, decisionLog)
+        println(matchScore)
+      }
+    } finally {
+      decisionLog.foreach(_.close())
     }
   }
 }

@@ -1,6 +1,6 @@
 name := "alinden_dominoes_ai"
 version := "0.01"
-scalaVersion := "2.13.5"
+scalaVersion := "2.13.17"
 description := "AI to play dominoes"
 scalacOptions ++= Seq(
   "-Xlint:inaccessible",
