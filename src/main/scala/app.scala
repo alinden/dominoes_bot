@@ -78,8 +78,13 @@ object App {
         decisionLog.foreach { log =>
           log.println("=" * 60)
           log.println("ROBOT TURN")
-          log.println(g.get)
+          g.foreach(log.println(_))
+          log.println("Opponent hand estimates:")
+          guess.foreach { hand =>
+            log.println(hand.decisionLogSummary(g.get.playerOne.hand.toSet))
+          }
           log.println()
+          log.flush()
         }
         action = Robot
           .act(

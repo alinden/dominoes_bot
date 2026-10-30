@@ -81,6 +81,7 @@ object Robot {
       var move: Action = null
       while ((dt < expectedTime) && (i < moveParams.length)) {
         val (depth, simulations) = moveParams(i)
+        SearchStats.reset()
         val t1 = System.nanoTime()
 
         val result = getBestMove(
@@ -113,6 +114,16 @@ object Robot {
 
         val t2 = System.nanoTime()
         dt = (t2 - t1) / 1000000.0
+
+        val nodes = SearchStats.count()
+        val nodesPerSecond =
+          if (dt > 0) nodes * 1000.0 / dt else 0.0
+
+        decisionLog.foreach { log =>
+          log.println(f"AvgNodes evaluated: $nodes%,d")
+          log.println(f"AvgNodes/second: $nodesPerSecond%,.0f")
+          log.flush()
+        }
 
         decisionLog.foreach { log =>
           log.println(f"Selected at depth $depth: $move (${result._1.value}%.3f)")
