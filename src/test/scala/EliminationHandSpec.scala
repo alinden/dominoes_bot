@@ -238,4 +238,72 @@ class EliminationHandSpec extends AnyFlatSpec {
     val ms = (t1 - t0)/(1000*1000)
     assert(ms <= 2000)
   }
+
+  "An EliminationHand" should "adjust probabilities using tile weights" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+
+    val hand = EliminationHand.createFromOpponentHand(
+      "human",
+      Domino.all().filterNot(Set(a, b).contains),
+      1,
+    )
+
+    val updated = hand.applyTileWeights(
+      Map(a -> 4.0, b -> 1.0),
+      evidenceStrength = 0.5,
+    )
+
+    // sqrt(4) = 2, sqrt(1) = 1
+    // Normalized probabilities: 2/3 and 1/3.
+    assert(math.abs(updated.likelihood(a) - 2.0 / 3.0) < 1e-9)
+    assert(math.abs(updated.likelihood(b) - 1.0 / 3.0) < 1e-9)
+
+    assert(updated.possibilities.length == 2)
+    assert(math.abs(updated.possibilities.map(_.likelihood).sum - 1.0) < 1e-9)
+  }
+
+  "An EliminationHand" should "preserve probabilities for neutral tile weights" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+
+    val hand = EliminationHand.createFromOpponentHand(
+      "human",
+      Domino.all().filterNot(Set(a, b).contains),
+      1,
+    )
+
+    val updated = hand.applyTileWeights(
+      Map(a -> 1.0, b -> 1.0),
+    )
+
+    assert(math.abs(updated.likelihood(a) - 0.5) < 1e-9)
+    assert(math.abs(updated.likelihood(b) - 0.5) < 1e-9)
+  }
+
+  "Bayesian inference" should "assign higher weights to tiles associated with good moves" in {
+    val overallGoodRate = 0.5
+
+    val favorable = EliminationHand.estimateTileWeight(
+      goodWithTile = 9,
+      totalWithTile = 10,
+      overallGoodRate = overallGoodRate,
+    )
+
+    val unfavorable = EliminationHand.estimateTileWeight(
+      goodWithTile = 1,
+      totalWithTile = 10,
+      overallGoodRate = overallGoodRate,
+    )
+
+    val neutral = EliminationHand.estimateTileWeight(
+      goodWithTile = 5,
+      totalWithTile = 10,
+      overallGoodRate = overallGoodRate,
+    )
+
+    assert(math.abs(favorable - 1.4) < 1e-9)
+    assert(math.abs(unfavorable - 0.6) < 1e-9)
+    assert(math.abs(neutral - 1.0) < 1e-9)
+  }
 }

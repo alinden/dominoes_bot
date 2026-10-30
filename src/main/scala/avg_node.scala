@@ -152,6 +152,7 @@ case class AvgNode(
     * convert that node into a Max/MinNode.
     */
   def score(): Score = {
+    SearchStats.visit()
     if (
       afterGame.isOver ||
       afterGame.playerOne.hand.isEmpty ||

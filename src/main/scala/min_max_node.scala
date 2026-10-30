@@ -24,7 +24,7 @@ trait MinMaxNode {
     if (possibleFutures().length == 1) {
       List(possibleFutures().head._2)
     } else {
-      val margin = 4.0
+      val margin = 0.02
       val sortedMoves = getScoredMoves()
         .sortWith {
           case ((xScore, _), (yScore, _)) => {
