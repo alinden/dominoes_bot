@@ -11,9 +11,12 @@ case class MaxNode(
 ) extends MinMaxNode
     with EvalNode {
   def asyncBestAction(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
+      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
   ): Task[(Score, Action)] = {
     asyncGetScoredMoves(limitToMoves).map((scoredMoves) => {
+      onScoredMoves(scoredMoves)
+
       if (debug) {
         println("MaxNode Debug scored moves ------------------")
         println(s"Depth: ${depthRemaining}")
