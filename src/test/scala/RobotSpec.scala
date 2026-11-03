@@ -30,7 +30,6 @@ class RobotSpec extends AnyFlatSpec {
   }
 
   "A Robot" should "know the score at the move before a locked game" in {
-    println("know the score at the move before a locked game")
     val gameState = parseGame(
       center = "[6,6]:12",
       left = "[6,5]:6 [5,5]:5 [5,1]:5 [4,1]:4 [4,3]:4 [3,1]:3 [6,1]:1",
@@ -56,8 +55,6 @@ class RobotSpec extends AnyFlatSpec {
     val (score, action) = maxNode.bestAction()
 
     assert(action == Move(Domino(6, 3), Up))
-    println(score.value)
-    println(math.tanh(0.5))
     assert(math.abs(score.value - math.tanh(0.5)) < 0.000001)
   }
 
