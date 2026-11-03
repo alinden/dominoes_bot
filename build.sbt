@@ -10,6 +10,7 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
 )
+Test / scalacOptions += "-Wconf:msg=Auto-application to:silent"
 libraryDependencies ++= Seq(
   "io.monix" %% "monix" % "3.3.0",
   "org.typelevel" %% "cats-core" % "2.5.0",

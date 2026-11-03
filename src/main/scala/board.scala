@@ -79,7 +79,7 @@ case class Board(
   /** Add a domino as the spinner.
     */
   def addSpinner(domino: Domino, direction: Direction): Option[Board] = {
-    if (!spinner.isEmpty) None
+    if (!spinner.isEmpty) return None
     val newSpinner = Some(PlayedDomino(domino, domino.high + domino.low))
     if (direction == Left) {
       left.headOption

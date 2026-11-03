@@ -18,7 +18,7 @@ class EliminationHandSpec extends AnyFlatSpec {
       ),
     )
     assert(x.playerName == "human")
-    assert(x.length == 7)
+    assert(x.length() == 7)
     assert(!x.contains(Domino(6, 6)))
     assert(x.likelihood(Domino(6, 6)) == 0.0)
     assert(((x.likelihood(Domino(0, 0)) * 1000).toInt) == 333)
@@ -30,10 +30,10 @@ class EliminationHandSpec extends AnyFlatSpec {
     val possibleTiles = Set(Domino(5, 1), Domino(4, 1))
     val x = EliminationHand.createFromOpponentHand(
       "human",
-      Domino.all.filterNot((d) => possibleTiles.contains(d)),
+      Domino.all().filterNot((d) => possibleTiles.contains(d)),
       1,
     )
-    assert(x.length == 1)
+    assert(x.length() == 1)
     assert(x.contains(Domino(5, 1)))
     assert(x.contains(Domino(4, 1)))
     assert(x.likelihood(Domino(5, 1)) == 0.5)
@@ -47,12 +47,12 @@ class EliminationHandSpec extends AnyFlatSpec {
     val x = EliminationHand
       .createFromOpponentHand(
         "human",
-        Domino.all.filterNot((d) => possibleTiles.contains(d)),
+        Domino.all().filterNot((d) => possibleTiles.contains(d)),
         1,
       )
       .updateForOpponentMove(Domino(5, 1))
-      .normalize
-    assert(x.length == 1)
+      .normalize()
+    assert(x.length() == 1)
     assert(!x.contains(Domino(5, 1)))
     assert(x.contains(Domino(4, 1)))
     assert(x.likelihood(Domino(5, 1)) == 0.0)
@@ -68,11 +68,11 @@ class EliminationHandSpec extends AnyFlatSpec {
     val x = EliminationHand
       .createFromOpponentHand(
         "human",
-        Domino.all.filterNot((d) => possibleTiles.contains(d)),
+        Domino.all().filterNot((d) => possibleTiles.contains(d)),
         1,
       )
       .updateForDraw(DrawLogEntry("human", 0, List()))
-      .normalize
+      .normalize()
     assert(x.likelihood(Domino(5, 1)) == 1.0)
     assert(x.likelihood(Domino(4, 1)) == 1.0)
     assert(x.getSample().sortBy(_.high).reverse == List(Domino(5, 1), Domino(4, 1)))
@@ -90,12 +90,12 @@ class EliminationHandSpec extends AnyFlatSpec {
     val x = EliminationHand
       .createFromOpponentHand(
         "human",
-        Domino.all.filterNot((d) => remainingTiles.contains(d)),
+        Domino.all().filterNot((d) => remainingTiles.contains(d)),
         2,
       )
       .updateForSelfMove(Move(Domino(4, 1), Left), Game.setup("human", "robot"), true)
-      .normalize
-    assert(x.length == 1)
+      .normalize()
+    assert(x.length() == 1)
     assert(x.possibilities.length == 2)
     assert((x.likelihood(Domino(5, 1)) * 100).toInt == 50)
     assert((x.likelihood(Domino(6, 1)) * 100).toInt == 50)
@@ -116,8 +116,8 @@ class EliminationHandSpec extends AnyFlatSpec {
         ),
       )
       .updateForHighestDouble(HighestDoubleEntry("robot", Domino(1, 1)))
-      .normalize
-    assert(x.length == 7)
+      .normalize()
+    assert(x.length() == 7)
     assert(x.possibilities.length == 31824)
     assert(!x.contains(Domino(3, 3)))
     assert(!x.contains(Domino(2, 2)))
@@ -142,8 +142,8 @@ class EliminationHandSpec extends AnyFlatSpec {
         ),
       )
       .updateForHighestDouble(HighestDoubleEntry("human", Domino(1, 1)))
-      .normalize
-    assert(x.length == 6)
+      .normalize()
+    assert(x.length() == 6)
     assert(x.possibilities.length == 18564)
     assert(!x.contains(Domino(3, 3)))
     assert(!x.contains(Domino(2, 2)))
@@ -181,8 +181,8 @@ class EliminationHandSpec extends AnyFlatSpec {
         ),
       )
       .updateForDraw(DrawLogEntry("human", 0, twos))
-      .normalize
-    assert(x.length == 8)
+      .normalize()
+    assert(x.length() == 8)
     assert(x.possibilities.length == 27027)
     assert(x.likelihood(Domino(2, 0)) < x.likelihood(Domino(1, 0)))
     assert((x.likelihood(Domino(2, 0)) * 100).toInt == 7)
@@ -194,7 +194,7 @@ class EliminationHandSpec extends AnyFlatSpec {
     val possibleTiles = Set(Domino(5, 1), Domino(4, 1))
     val x = EliminationHand.createFromOpponentHand(
       "human",
-      Domino.all.filterNot((d) => possibleTiles.contains(d)),
+      Domino.all().filterNot((d) => possibleTiles.contains(d)),
       1,
     )
     val n = 10000
@@ -204,7 +204,7 @@ class EliminationHandSpec extends AnyFlatSpec {
         Map(x.getSample() -> 1)
       })
     val sampleCounts: Map[List[Domino], Int] = samples.reduce(_ |+| _)
-    assert(x.length == 1)
+    assert(x.length() == 1)
     assert(x.likelihood(Domino(5, 1)) == 0.5)
     assert(x.likelihood(Domino(4, 1)) == 0.5)
     assert(sampleCounts.get(List(Domino(5, 1))).get <= (n * 0.5 + n * e).toInt)

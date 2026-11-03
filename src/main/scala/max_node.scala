@@ -36,7 +36,7 @@ case class MaxNode(
               if (isBetterScore(score, zScore)) Some((score, move)) else z
           }
         }
-        .getOrElse(Score(0.0), Pass)
+        .getOrElse((Score(0.0), Pass))
     })
   }
   def asyncGetScoredMoves(
@@ -52,7 +52,7 @@ case class MaxNode(
         .map {
           case (future, move) => {
             Task(
-              AvgNode(
+              (AvgNode(
                 perspective,
                 game,
                 future,
@@ -60,7 +60,7 @@ case class MaxNode(
                 depthRemaining - 1,
                 Config.nextBreadth(numSimulations),
               ).score(),
-              move,
+              move),
             )
           }
         },

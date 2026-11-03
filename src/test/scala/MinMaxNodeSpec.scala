@@ -78,7 +78,7 @@ class MinMaxNodeSpec extends AnyFlatSpec {
                 Domino(1, 1),
               ).contains(d),
           ),
-        GameLog.empty,
+        GameLog.empty(),
       )
 
       val perspective = Perspective(

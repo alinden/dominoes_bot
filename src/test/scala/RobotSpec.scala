@@ -102,7 +102,7 @@ class RobotSpec extends AnyFlatSpec {
       Player("robot", dominoes(robot), robotScore),
       turn,
       dominoes(boneyard),
-      GameLog.empty,
+      GameLog.empty(),
       false,
       false,
     )

@@ -321,17 +321,13 @@ case class Game(
     )
   }
 
-  def draw(forceTile: Option[Domino] = None): Option[Game] = {
+  def draw(): Option[Game] = {
     if (legalMoves().nonEmpty || boneyard.isEmpty) {
       return None
     }
 
-    val tile = forceTile.getOrElse(boneyard.head)
-
-    val remainingBoneyard = forceTile match {
-      case Some(d) => boneyard.filterNot(_ == d)
-      case None    => boneyard.tail
-    }
+    val tile = boneyard.head
+    val remainingBoneyard = boneyard.tail
 
     val (pOne, pTwo) =
       orderPlayers(activePlayer().addTile(tile), inactivePlayer())
