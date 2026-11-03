@@ -15,7 +15,7 @@ case class Game(
     boneyard: List[Domino],
     log: GameLog,
     lastTurnPass: Boolean = false,
-    isOver: Boolean = false
+    isOver: Boolean = false,
 ) {
   override def toString(): String = {
     val showRobotTiles = false
@@ -36,7 +36,7 @@ case class Game(
         s"boneyard: ${boneyard.map((_) => "[x,x]").mkString(" ")}",
         s"tiles: ${boneyard.length + playerOne.hand.length + playerTwo.hand.length + board.length()}",
         board.toString(),
-        ""
+        "",
       ),
     ).mkString("\n")
   }
@@ -52,10 +52,10 @@ case class Game(
               afterGame.log(
                 HighestDoubleEntry(
                   afterGame.inactivePlayer().name,
-                  d
-                )
+                  d,
+                ),
               ),
-              message
+              message,
             )
           })
         }
@@ -75,17 +75,17 @@ case class Game(
             Player(
               playerOne.name,
               newGame.playerOne.hand,
-              playerOne.score
+              playerOne.score,
             ),
             Player(
               playerTwo.name,
               newGame.playerTwo.hand,
-              playerTwo.score
+              playerTwo.score,
             ),
             HighestDouble,
             newGame.boneyard,
-            GameLog.empty()
-          )
+            GameLog.empty(),
+          ),
         )
       }
   }
@@ -106,16 +106,16 @@ case class Game(
       Player(
         playerOne.name,
         newGame.playerOne.hand,
-        playerOne.score
+        playerOne.score,
       ),
       Player(
         playerTwo.name,
         newGame.playerTwo.hand,
-        playerTwo.score
+        playerTwo.score,
       ),
       turn,
       newGame.boneyard,
-      GameLog.empty()
+      GameLog.empty(),
     )
   }
 
@@ -131,18 +131,18 @@ case class Game(
           case Right => board.right.isEmpty
           case Up    => board.up.isEmpty
           case Down  => board.down.isEmpty
-        }
+        },
       )
     def filterRedundant(
         xs: List[Action],
-        extraRedundantDirs: List[Direction] = List()
+        extraRedundantDirs: List[Direction] = List(),
     ): List[Action] = {
       val dirsToRemove = emptyDirections.drop(1) ++ extraRedundantDirs
       xs.filterNot((action) =>
         action match {
           case Move(_, direction) => dirsToRemove.contains(direction)
           case _                  => false
-        }
+        },
       )
     }
     board.state() match {
@@ -151,7 +151,7 @@ case class Game(
           action match {
             case Move(_, direction) => (direction == Left)
             case _                  => false
-          }
+          },
         )
       }
       case SpinnerOnly => filterRedundant(actions)
@@ -164,7 +164,7 @@ case class Game(
               case Right => board.right
               case Up    => board.up
               case Down  => board.down
-            }
+            },
           )
           .head
         if (nonEmptyChain.head.value == nonEmptyChain.last.backwards().value) {
@@ -173,7 +173,7 @@ case class Game(
             action match {
               case Move(_, direction) => emptyDirections.contains(direction)
               case _                  => false
-            }
+            },
           )
         } else {
           filterRedundant(actions)
@@ -188,7 +188,7 @@ case class Game(
               case Right => board.right.isEmpty
               case Up    => board.up.isEmpty
               case Down  => board.down.isEmpty
-            }
+            },
           )
           .map((dir) =>
             dir match {
@@ -196,7 +196,7 @@ case class Game(
               case Right => (Right, board.right.head)
               case Up    => (Up, board.up.head)
               case Down  => (Down, board.down.head)
-            }
+            },
           )
           .filterNot((x) => {
             val tile = x._2.tile
@@ -246,17 +246,17 @@ case class Game(
           pTwo,
           t,
           boneyard,
-          log
+          log,
         ),
-        message
-      )
+        message,
+      ),
     )
   }
 
   def act(
       action: Action,
       debug: Boolean = true,
-      dontShuffle: Boolean = false
+      dontShuffle: Boolean = false,
   ): Option[Game] = action match {
     case Pass => {
       if (debug) {
@@ -316,8 +316,8 @@ case class Game(
         incrementTurn(),
         List(),
         log.log(PassLogEntry(activePlayer().name)),
-        true
-      )
+        true,
+      ),
     )
   }
 
@@ -347,10 +347,10 @@ case class Game(
           DrawLogEntry(
             activePlayer().name,
             activePlayer().hand.length,
-            legalTilesToPlay()
-          )
-        )
-      )
+            legalTilesToPlay(),
+          ),
+        ),
+      ),
     )
   }
 
@@ -363,7 +363,7 @@ case class Game(
       boneyard,
       log.log(entry),
       lastTurnPass,
-      isOver
+      isOver,
     )
   }
 
@@ -376,7 +376,7 @@ case class Game(
     val newPTwoHand = shuffledTiles.drop(boneyard.length)
     val (pOne, pTwo) = orderPlayers(
       Player(activePlayer().name, hand, activePlayer().score),
-      Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score)
+      Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score),
     )
     val updated = Game(
       board,
@@ -386,7 +386,7 @@ case class Game(
       newBoneyard,
       log,
       lastTurnPass,
-      isOver
+      isOver,
     )
     updated
   }
@@ -458,7 +458,7 @@ case class Game(
 
   def move(
       domino: Domino,
-      direction: Direction
+      direction: Direction,
   ): Option[Game] = {
     for {
       b <- updateBoard(domino, direction)
@@ -473,9 +473,9 @@ case class Game(
         log.log(
           MoveLogEntry(
             activePlayer().name,
-            Move(domino, direction)
-          )
-        )
+            Move(domino, direction),
+          ),
+        ),
       )
     }
   }
@@ -528,7 +528,7 @@ case class Game(
     println(
       activePlayer().hand.zipWithIndex
         .map { case (domino, i) => s"${i}: ${domino}" }
-        .mkString("\n")
+        .mkString("\n"),
     )
     println("To move your 3rd tile, type 'm 3'")
     println("To draw, type 'd'")
@@ -561,7 +561,7 @@ case class Game(
 
   def orderPlayers(
       active: Player,
-      inactive: Player
+      inactive: Player,
   ): (Player, Player) = turn match {
     case PlayerOneTurn => (active, inactive)
     case PlayerTwoTurn => (inactive, active)
@@ -570,14 +570,14 @@ case class Game(
 
   private def updatePlayers(
       domino: Domino,
-      score: Int
+      score: Int,
   ): Option[(Player, Player)] = {
     activePlayer()
       .removeTile(domino)
       .map((ap) => {
         orderPlayers(
           ap.incrementScore(score),
-          inactivePlayer()
+          inactivePlayer(),
         )
       })
   }
@@ -590,14 +590,14 @@ case class Game(
         playerTwo,
         incrementTurn(),
         boneyard,
-        log
+        log,
       )
     })
   }
 
   private def updateBoard(
       domino: Domino,
-      direction: Direction
+      direction: Direction,
   ): Option[Board] = (board.state(), direction) match {
     case (Empty, _)       => Some(board.addFirstTile(domino))
     case (SpinnerOnly, _) => board.addLeft(domino)
@@ -634,7 +634,7 @@ object Game {
       Player(playerTwoName, shuffledTiles.slice(7, 14), 0),
       HighestDouble,
       shuffledTiles.slice(14, 28),
-      GameLog.empty()
+      GameLog.empty(),
     )
   }
 
@@ -643,7 +643,7 @@ object Game {
   def endGame(
       game: Game,
       debug: Boolean = true,
-      dontShuffle: Boolean = false
+      dontShuffle: Boolean = false,
   ): Option[Game] = {
     // println("endgame")
     // println("game")
@@ -656,7 +656,7 @@ object Game {
       game.boneyard,
       game.log,
       game.lastTurnPass,
-      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game.playerOne.score != game.playerTwo.score)
+      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game.playerOne.score != game.playerTwo.score),
     )
 
     val rawLoserTileCount = g
@@ -691,13 +691,13 @@ object Game {
         Player(
           g.activePlayer().name,
           List(),
-          g.activePlayer().score + lockedGameWinnerAdd
+          g.activePlayer().score + lockedGameWinnerAdd,
         ),
         Player(
           g.inactivePlayer().name,
           List(),
-          g.inactivePlayer().score + lockedGameLoserAdd
-        )
+          g.inactivePlayer().score + lockedGameLoserAdd,
+        ),
       )
       Some(
         Game(
@@ -708,8 +708,8 @@ object Game {
           List(),
           g.log,
           true,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score)
-        )
+          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
+        ),
       )
     } else if (loserTileCount > 0) {
       // opponent has some tiles to score
@@ -717,12 +717,12 @@ object Game {
       // println("couting loser tiles")
       if (debug)
         println(
-          s"game: ${g.inactivePlayer().name} had ${g.inactivePlayer().hand.mkString(" - ")}"
+          s"game: ${g.inactivePlayer().name} had ${g.inactivePlayer().hand.mkString(" - ")}",
         )
       val ap = Player(
         g.activePlayer().name,
         g.activePlayer().hand,
-        g.activePlayer().score + loserTileCount
+        g.activePlayer().score + loserTileCount,
       )
       val (pOne, pTwo) = g.orderPlayers(ap, g.inactivePlayer())
       Some(
@@ -734,8 +734,8 @@ object Game {
           g.boneyard,
           g.log,
           g.lastTurnPass,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score)
-        )
+          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
+        ),
       )
     } else {
       // opponent has no tiles to score

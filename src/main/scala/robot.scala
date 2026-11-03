@@ -32,7 +32,7 @@ object Robot {
       depth: Int,
       numSimulations: Int,
       limitToMoves: List[Action] = List(),
-      onScoredMoves: List[(Score, Action)] => Unit = _ => ()
+      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
   ): Task[(Score, Action)] = {
     val robotName = "robot"
     val robotHand = game.playerByName(robotName).hand
@@ -42,7 +42,7 @@ object Robot {
       robotHand,
       None,
       guess,
-      None
+      None,
     )
     val maxNode = MaxNode(perspective, game, depth, numSimulations, debug)
     maxNode.asyncBestAction(limitToMoves, onScoredMoves)
@@ -52,7 +52,7 @@ object Robot {
       game: Game,
       guess: EliminationHand,
       debug: Boolean,
-      decisionLog: Option[java.io.PrintWriter] = None
+      decisionLog: Option[java.io.PrintWriter] = None,
   ): Option[Action] = {
     println("")
     println(game)
@@ -98,7 +98,7 @@ object Robot {
                 log.println(f"$action%-25s mean=${score.value}%.3f ")
               }
             }
-          }
+          },
         ).runSyncUnsafe()
 
         move = result._2

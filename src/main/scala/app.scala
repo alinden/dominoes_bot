@@ -11,7 +11,7 @@ object App {
   def playGame(
       mode: String,
       matchScore: MatchScore,
-      decisionLog: Option[java.io.PrintWriter] = None
+      decisionLog: Option[java.io.PrintWriter] = None,
   ): MatchScore = {
     val debug = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
@@ -41,7 +41,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
@@ -59,7 +59,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get, false, true))
@@ -88,10 +88,10 @@ object App {
             g.get,
             guess.getOrElse(
               EliminationHand
-                .createFromOpponentHand("human", g.get.playerTwo.hand)
+                .createFromOpponentHand("human", g.get.playerTwo.hand),
             ),
             debug,
-            decisionLog
+            decisionLog,
           )
           .get
         g = g.get.act(action, true)
@@ -100,7 +100,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
@@ -136,13 +136,13 @@ object App {
       MatchScore(
         matchScore.pOneScore + 1,
         matchScore.pTwoScore,
-        matchScore.bestOf
+        matchScore.bestOf,
       )
     } else {
       MatchScore(
         matchScore.pOneScore,
         matchScore.pTwoScore + 1,
-        matchScore.bestOf
+        matchScore.bestOf,
       )
     }
   }
@@ -157,7 +157,7 @@ object App {
         !(args.length == 3 && args(1) == "--log-decisions"))
     ) {
       println(
-        """Usage: sbt "run [--play_human|--play_greedy] [--log-decisions filename]""""
+        """Usage: sbt "run [--play_human|--play_greedy] [--log-decisions filename]"""",
       )
       return
     }

@@ -8,7 +8,7 @@ final case class Score(value: Double)
 
 final case class ScoreAccumulator(
     sum: Double,
-    count: Int
+    count: Int,
 ) {
   def normalized: Score =
     Score(sum / count)
@@ -26,11 +26,11 @@ object ScoreAccumulator {
 
       def combine(
           x: ScoreAccumulator,
-          y: ScoreAccumulator
+          y: ScoreAccumulator,
       ): ScoreAccumulator =
         ScoreAccumulator(
           x.sum + y.sum,
-          x.count + y.count
+          x.count + y.count,
         )
     }
 

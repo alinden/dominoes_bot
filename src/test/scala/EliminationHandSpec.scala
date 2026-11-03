@@ -14,8 +14,8 @@ class EliminationHandSpec extends AnyFlatSpec {
         Domino(6, 3),
         Domino(5, 5),
         Domino(5, 4),
-        Domino(4, 4)
-      )
+        Domino(4, 4),
+      ),
     )
     assert(x.playerName == "human")
     assert(x.length == 7)
@@ -31,7 +31,7 @@ class EliminationHandSpec extends AnyFlatSpec {
     val x = EliminationHand.createFromOpponentHand(
       "human",
       Domino.all.filterNot((d) => possibleTiles.contains(d)),
-      1
+      1,
     )
     assert(x.length == 1)
     assert(x.contains(Domino(5, 1)))
@@ -48,7 +48,7 @@ class EliminationHandSpec extends AnyFlatSpec {
       .createFromOpponentHand(
         "human",
         Domino.all.filterNot((d) => possibleTiles.contains(d)),
-        1
+        1,
       )
       .updateForOpponentMove(Domino(5, 1))
       .normalize
@@ -69,7 +69,7 @@ class EliminationHandSpec extends AnyFlatSpec {
       .createFromOpponentHand(
         "human",
         Domino.all.filterNot((d) => possibleTiles.contains(d)),
-        1
+        1,
       )
       .updateForDraw(DrawLogEntry("human", 0, List()))
       .normalize
@@ -85,13 +85,13 @@ class EliminationHandSpec extends AnyFlatSpec {
     val remainingTiles = List(
       Domino(6, 1),
       Domino(5, 1),
-      Domino(4, 1)
+      Domino(4, 1),
     )
     val x = EliminationHand
       .createFromOpponentHand(
         "human",
         Domino.all.filterNot((d) => remainingTiles.contains(d)),
-        2
+        2,
       )
       .updateForSelfMove(Move(Domino(4, 1), Left), Game.setup("human", "robot"), true)
       .normalize
@@ -112,8 +112,8 @@ class EliminationHandSpec extends AnyFlatSpec {
           Domino(6, 3),
           Domino(5, 5),
           Domino(5, 4),
-          Domino(4, 4)
-        )
+          Domino(4, 4),
+        ),
       )
       .updateForHighestDouble(HighestDoubleEntry("robot", Domino(1, 1)))
       .normalize
@@ -138,8 +138,8 @@ class EliminationHandSpec extends AnyFlatSpec {
           Domino(6, 3),
           Domino(5, 5),
           Domino(5, 4),
-          Domino(4, 4)
-        )
+          Domino(4, 4),
+        ),
       )
       .updateForHighestDouble(HighestDoubleEntry("human", Domino(1, 1)))
       .normalize
@@ -165,7 +165,7 @@ class EliminationHandSpec extends AnyFlatSpec {
       Domino(3, 2),
       Domino(4, 2),
       Domino(5, 2),
-      Domino(6, 2)
+      Domino(6, 2),
     )
     val x = EliminationHand
       .createFromOpponentHand(
@@ -177,8 +177,8 @@ class EliminationHandSpec extends AnyFlatSpec {
           Domino(6, 3),
           Domino(5, 5),
           Domino(5, 4),
-          Domino(4, 4)
-        )
+          Domino(4, 4),
+        ),
       )
       .updateForDraw(DrawLogEntry("human", 0, twos))
       .normalize
@@ -195,7 +195,7 @@ class EliminationHandSpec extends AnyFlatSpec {
     val x = EliminationHand.createFromOpponentHand(
       "human",
       Domino.all.filterNot((d) => possibleTiles.contains(d)),
-      1
+      1,
     )
     val n = 10000
     val e = 0.01 // n*e == 100
@@ -224,8 +224,8 @@ class EliminationHandSpec extends AnyFlatSpec {
           Domino(6, 3),
           Domino(5, 5),
           Domino(5, 4),
-          Domino(4, 4)
-        )
+          Domino(4, 4),
+        ),
       )
       .truncate
       .normalize
@@ -248,8 +248,8 @@ class EliminationHandSpec extends AnyFlatSpec {
         Domino(6, 3),
         Domino(5, 5),
         Domino(5, 4),
-        Domino(4, 4)
-      )
+        Domino(4, 4),
+      ),
     )
     val t0 = System.nanoTime()
     val updatedHands = for {
@@ -267,12 +267,12 @@ class EliminationHandSpec extends AnyFlatSpec {
     val hand = EliminationHand.createFromOpponentHand(
       "human",
       Domino.all().filterNot(Set(a, b).contains),
-      1
+      1,
     )
 
     val updated = hand.applyTileWeights(
       Map(a -> 4.0, b -> 1.0),
-      evidenceStrength = 0.5
+      evidenceStrength = 0.5,
     )
 
     // sqrt(4) = 2, sqrt(1) = 1
@@ -291,11 +291,11 @@ class EliminationHandSpec extends AnyFlatSpec {
     val hand = EliminationHand.createFromOpponentHand(
       "human",
       Domino.all().filterNot(Set(a, b).contains),
-      1
+      1,
     )
 
     val updated = hand.applyTileWeights(
-      Map(a -> 1.0, b -> 1.0)
+      Map(a -> 1.0, b -> 1.0),
     )
 
     assert(math.abs(updated.likelihood(a) - 0.5) < 1e-9)
@@ -308,19 +308,19 @@ class EliminationHandSpec extends AnyFlatSpec {
     val favorable = EliminationHand.estimateTileWeight(
       goodWithTile = 9,
       totalWithTile = 10,
-      overallGoodRate = overallGoodRate
+      overallGoodRate = overallGoodRate,
     )
 
     val unfavorable = EliminationHand.estimateTileWeight(
       goodWithTile = 1,
       totalWithTile = 10,
-      overallGoodRate = overallGoodRate
+      overallGoodRate = overallGoodRate,
     )
 
     val neutral = EliminationHand.estimateTileWeight(
       goodWithTile = 5,
       totalWithTile = 10,
-      overallGoodRate = overallGoodRate
+      overallGoodRate = overallGoodRate,
     )
 
     assert(math.abs(favorable - 1.4) < 1e-9)

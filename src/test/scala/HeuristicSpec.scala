@@ -12,7 +12,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
       humanScore: Double,
       gameOver: Boolean = false,
       dominoesWinner: Option[String] = None,
-      mode: HeuristicMode = BoundedRunway
+      mode: HeuristicMode = BoundedRunway,
   ): Double =
     Heuristic
       .evaluate(
@@ -20,7 +20,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
         humanScore,
         gameOver,
         dominoesWinner,
-        mode
+        mode,
       )
       .value
 
@@ -86,7 +86,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
       155,
       140,
       gameOver = true,
-      dominoesWinner = Some("human")
+      dominoesWinner = Some("human"),
     ) shouldBe 1.0
   }
 
@@ -98,7 +98,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
       (149.0, 100.0),
       (155.0, 140.0),
       (200.0, 100.0),
-      (0.0, 200.0)
+      (0.0, 200.0),
     )
 
     scores.foreach { case (robot, human) =>
@@ -113,7 +113,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
     val value = evaluate(
       120,
       80,
-      mode = LinearRunway
+      mode = LinearRunway,
     )
 
     value shouldBe (40.0 / 30.0 +- 0.000001)
@@ -123,7 +123,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
     evaluate(
       140,
       100,
-      mode = LinearRunway
+      mode = LinearRunway,
     ) should be > 1.0
   }
 
@@ -133,7 +133,7 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
       (80.0, 40.0),
       (100.0, 60.0),
       (120.0, 80.0),
-      (140.0, 100.0)
+      (140.0, 100.0),
     )
 
     val linear = positions.map { case (r, h) =>

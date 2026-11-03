@@ -9,7 +9,7 @@ trait GameLogEntry {
 case class DrawLogEntry(
     playerName: String,
     playerHandSize: Int,
-    legalTilesToPlay: List[Domino]
+    legalTilesToPlay: List[Domino],
 ) extends GameLogEntry {
   val action: Action = Draw
   override def toString(): String =
@@ -26,7 +26,7 @@ case class MoveLogEntry(playerName: String, move: Move) extends GameLogEntry {
 
 case class HighestDoubleEntry(
     playerName: String,
-    highestDouble: Domino
+    highestDouble: Domino,
 ) extends GameLogEntry {
   val action: Action = PlayHighestDouble
   override def toString(): String =

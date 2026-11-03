@@ -6,7 +6,7 @@ case class AvgNode(
     afterGame: Game,
     action: Action,
     depthRemaining: Int,
-    numSimulations: Int
+    numSimulations: Int,
 ) extends EvalNode {
 
   def heuristic(game: Game = afterGame): Score = {
@@ -27,7 +27,7 @@ case class AvgNode(
       humanScore = human.score.toDouble,
       gameOver = game.isOver,
       dominoesWinner = dominoesWinner,
-      mode = HeuristicMode.BoundedRunway
+      mode = HeuristicMode.BoundedRunway,
     )
   }
 
@@ -35,7 +35,7 @@ case class AvgNode(
   private def drawUntilPlayable(
       game: Game,
       perspective: Perspective,
-      draws: Int = 0
+      draws: Int = 0,
   ): (Game, Perspective, Int) = {
     if (game.legalMoves().nonEmpty || game.boneyard.isEmpty) {
       (game, perspective, draws)
@@ -96,14 +96,14 @@ case class AvgNode(
         updatedPerspective.swap(),
         safeGame,
         depthRemaining,
-        numSimulations
+        numSimulations,
       ).score()
     } else {
       MinNode(
         updatedPerspective.swap(),
         safeGame,
         depthRemaining,
-        numSimulations
+        numSimulations,
       ).score()
     }
   }
@@ -141,16 +141,16 @@ case class AvgNode(
                 if (beforeGame.playerOne.name == updatedPerspective.name)
                   activeHand
                 else
-                  inactiveHand
+                  inactiveHand,
             ),
             playerTwo = beforeGame.playerTwo.copy(
               hand =
                 if (beforeGame.playerTwo.name == updatedPerspective.name)
                   activeHand
                 else
-                  inactiveHand
+                  inactiveHand,
             ),
-            boneyard = scala.util.Random.shuffle(availableTiles)
+            boneyard = scala.util.Random.shuffle(availableTiles),
           )
 
           drawUntilPlayable(sampledGame, updatedPerspective)
@@ -161,14 +161,14 @@ case class AvgNode(
           readyPerspective,
           readyGame,
           depthRemaining,
-          numSimulations
+          numSimulations,
         ).bestAction()._1
       } else {
         MinNode(
           readyPerspective,
           readyGame,
           depthRemaining,
-          numSimulations
+          numSimulations,
         ).bestAction()._1
       }
     })
@@ -185,7 +185,7 @@ case class AvgNode(
         if (beforeGame.playerTwo.name == perspective.opponentName)
           beforeGame.playerTwo.copy(hand = hand)
         else
-          beforeGame.playerTwo
+          beforeGame.playerTwo,
     )
 
     val result = sampledGame.act(action, false, true).get
@@ -195,6 +195,6 @@ case class AvgNode(
 
   def recursiveScore(): Score =
     ScoreAccumulator.average(
-      opponentHands().map(evaluateHand)
+      opponentHands().map(evaluateHand),
     )
 }

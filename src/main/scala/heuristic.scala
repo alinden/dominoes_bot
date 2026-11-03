@@ -21,14 +21,14 @@ object Heuristic {
       humanScore: Double,
       gameOver: Boolean,
       dominoesWinner: Option[String] = None,
-      mode: HeuristicMode = BoundedRunway
+      mode: HeuristicMode = BoundedRunway,
   ): Score = {
 
     if (gameOver) {
       Score(
         if (robotScore > humanScore) 1.0
         else if (robotScore < humanScore) -1.0
-        else 0.0
+        else 0.0,
       )
     } else {
       val bonus = dominoesWinner match {
@@ -42,7 +42,7 @@ object Heuristic {
       val runway =
         math.max(
           minimumRunway,
-          targetScore - math.max(robotScore, humanScore)
+          targetScore - math.max(robotScore, humanScore),
         )
 
       val advantage = lead / runway

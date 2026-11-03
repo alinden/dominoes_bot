@@ -11,7 +11,7 @@ class BoardSpec extends AnyFlatSpec {
       List(),
       List(),
       List(),
-      List()
+      List(),
     )
     assert(x.spinner == None)
     assert(x.left == List())

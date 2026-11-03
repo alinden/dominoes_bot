@@ -7,12 +7,12 @@ case class MaxNode(
     game: Game,
     depthRemaining: Int,
     numSimulations: Int,
-    debug: Boolean = false
+    debug: Boolean = false,
 ) extends MinMaxNode
     with EvalNode {
   def asyncBestAction(
       limitToMoves: List[Action] = List(),
-      onScoredMoves: List[(Score, Action)] => Unit = _ => ()
+      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
   ): Task[(Score, Action)] = {
     asyncGetScoredMoves(limitToMoves).map((scoredMoves) => {
       onScoredMoves(scoredMoves)
@@ -40,7 +40,7 @@ case class MaxNode(
     })
   }
   def asyncGetScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): Task[List[(Score, Action)]] = {
     Task.parSequence(
       possibleFutures()
@@ -58,24 +58,24 @@ case class MaxNode(
                 future,
                 move,
                 depthRemaining - 1,
-                Config.nextBreadth(numSimulations)
+                Config.nextBreadth(numSimulations),
               ).score(),
-              move
+              move,
             )
           }
-        }
+        },
     )
   }
 
   def isBetterScore(
       candidate: Score,
       previousBest: Score,
-      margin: Double = 0.0
+      margin: Double = 0.0,
   ): Boolean = {
     candidate.value + margin > previousBest.value
   }
   def getScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): List[(Score, Action)] = {
     possibleFutures()
       .withFilter {
@@ -92,9 +92,9 @@ case class MaxNode(
               future,
               move,
               depthRemaining - 1,
-              Config.nextBreadth(numSimulations)
+              Config.nextBreadth(numSimulations),
             ).score(),
-            move
+            move,
           )
         }
       }
@@ -110,8 +110,8 @@ case class MaxNode(
           perspective.update(game, g),
           g,
           depthRemaining - 1,
-          Config.nextBreadth(numSimulations)
-        ).toMinNode()
+          Config.nextBreadth(numSimulations),
+        ).toMinNode(),
       )
     } else {
       after.map((g) =>
@@ -119,8 +119,8 @@ case class MaxNode(
           perspective.update(game, g).swap(),
           g,
           depthRemaining - 1,
-          Config.nextBreadth(numSimulations)
-        )
+          Config.nextBreadth(numSimulations),
+        ),
       )
     }
   }

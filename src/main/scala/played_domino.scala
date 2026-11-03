@@ -2,7 +2,7 @@ package game
 
 case class PlayedDomino(
     tile: Domino,
-    value: Int
+    value: Int,
 ) {
 
   def score: Int = {
