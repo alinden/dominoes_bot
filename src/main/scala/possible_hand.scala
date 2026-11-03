@@ -1,53 +1,44 @@
 package game
 
 case class PossibleHand(
-    hand: Set[Domino],
-    likelihood: Double,
-    cumulativeLikelihood: Double,
     mask: Int,
+    likelihood: Double,
+    cumulativeLikelihood: Double
 ) {
-  def multiplyLikelihood(x: Double): PossibleHand = {
+
+  def hand: Set[Domino] =
+    Domino.all().iterator
+      .filter(d => HandMask.contains(mask, d))
+      .toSet
+
+  def multiplyLikelihood(x: Double): PossibleHand =
     copy(likelihood = x * likelihood)
-  }
 
-  def addTile(tile: Domino): PossibleHand = {
-    copy(
-      hand = hand + tile,
-      mask = HandMask.add(mask, tile),
-    )
-  }
+  def addTile(tile: Domino): PossibleHand =
+    copy(mask = HandMask.add(mask, tile))
 
-  def removeTile(tile: Domino): PossibleHand = {
-    copy(
-      hand = hand - tile,
-      mask = HandMask.remove(mask, tile),
-    )
-  }
+  def removeTile(tile: Domino): PossibleHand =
+    copy(mask = HandMask.remove(mask, tile))
 
-  def setCumulativeLikelihood(x: Double): PossibleHand = {
+  def setCumulativeLikelihood(x: Double): PossibleHand =
     copy(cumulativeLikelihood = x)
-  }
 
-  def contains(tile: Domino): Boolean = {
+  def contains(tile: Domino): Boolean =
     HandMask.contains(mask, tile)
-  }
 
-  override def toString(): String = {
+  override def toString(): String =
     s"${likelihood * 100}%: ${hand.mkString(",")}"
-  }
 }
 
 object PossibleHand {
   def apply(
       hand: Set[Domino],
       likelihood: Double,
-      cumulativeLikelihood: Double,
-  ): PossibleHand = {
+      cumulativeLikelihood: Double
+  ): PossibleHand =
     new PossibleHand(
-      hand,
-      likelihood,
-      cumulativeLikelihood,
       HandMask.fromHand(hand),
+      likelihood,
+      cumulativeLikelihood
     )
-  }
 }

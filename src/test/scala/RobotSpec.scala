@@ -4,229 +4,140 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class RobotSpec extends AnyFlatSpec {
   "A Robot" should "know the score at the move before dominoes" in {
-    val robotHand = List(Domino(5,3))
-    val game = Game(
-      Board(
-        Some(PlayedDomino(Domino(6,6),12)),
-        List(
-          PlayedDomino(Domino(5,4),5),
-          PlayedDomino(Domino(4,3),4),
-          PlayedDomino(Domino(3,1),3),
-          PlayedDomino(Domino(6,1),1),
-        ),
-        List(
-          PlayedDomino(Domino(4,2),2),
-          PlayedDomino(Domino(4,4),4),
-          PlayedDomino(Domino(6,4),4),
-        ),
-        List(
-          PlayedDomino(Domino(5,5),5),
-          PlayedDomino(Domino(5,2),5),
-          PlayedDomino(Domino(2,0),2),
-          PlayedDomino(Domino(6,0),0),
-        ),
-        List(),
-      ),
-      Player(
-        "human",
-        List(Domino(3,3), Domino(1,1)),
-        45,
-      ),
-      Player(
-        "robot",
-        robotHand,
-        60,
-      ),
-      PlayerTwoTurn,
+    val gameState = parseGame(
+      center = "[6,6]:12",
+      left = "[5,4]:5 [4,3]:4 [3,1]:3 [6,1]:1",
+      right = "[4,2]:2 [4,4]:4 [6,4]:4",
+      up = "[5,5]:5 [5,2]:5 [2,0]:2 [6,0]:0",
+      robot = "[5,3]",
+      human = "[3,3] [1,1]",
+      boneyard = "[6,5] [6,3] [6,2] [5,1] [5,0] [4,1] [4,0] " +
+                 "[3,2] [3,0] [2,2] [2,1] [1,0] [0,0]",
+    )
+    val perspective = robotPerspective(
+      gameState,
       List(
-        Domino(6,5),
-        Domino(6,3),
-        Domino(6,2),
-        Domino(5,1),
-        Domino(5,0),
-        Domino(4,1),
-        Domino(4,0),
-        Domino(3,2),
-        Domino(3,0),
-        Domino(2,2),
-        Domino(2,1),
-        Domino(1,0),
-        Domino(0,0),
+        "[3,3] [1,1]" -> 0.50,
+        "[3,3] [0,0]" -> 0.25,
+        "[0,0] [1,1]" -> 0.25,
       ),
-      GameLog.empty,
-      false,
-      false,
-    )
-    val guess = EliminationHand(
-      "human",
-      Vector(
-        PossibleHand(
-          Set(Domino(3,3),Domino(1,1)),
-          0.5,
-          0.5,
-        ), // 10 points * 50% = 5 points
-        PossibleHand(
-          Set(Domino(3,3),Domino(0,0)),
-          0.25,
-          0.75,
-        ), // 5 points * 25% = 1.25 points
-        PossibleHand(
-          Set(Domino(0,0),Domino(1,1)),
-          0.25,
-          1.0,
-        ), // 0 points * 25% = 0 points
-      ), // => EV of adding this hand's tiles should be 6.25 points.
-      Set(
-        Domino(5,3),
-        Domino(6,6),
-        Domino(5,4),
-        Domino(4,3),
-        Domino(3,1),
-        Domino(6,1),
-        Domino(4,2),
-        Domino(4,4),
-        Domino(6,4),
-        Domino(5,5),
-        Domino(5,2),
-        Domino(2,0),
-        Domino(6,0),
-      ),
-    )
-    val perspective = Perspective(
-      "robot",
-      "human",
-      robotHand,
-      None,
-      guess,
-      None,
     )
     val depth = 13
-    val numSimulations = 10
-    val maxNode = MaxNode(perspective, game, depth, numSimulations, true)
+    val numSimulations = 100
+    val maxNode = MaxNode(perspective, gameState, depth, numSimulations, true)
     val (score, action) = maxNode.bestAction()
     assert(action == Move(Domino(5,3),Left))
-    // Robot is winning by 15 and will score 5 points with its last move.
-    // Then it needs to add 6.25 for the opponent's tiles EV and
-    // then 5 points for starting first on the next round.
-    val expectedScore = .65
-    assert(score.value < expectedScore + .1)
-    assert(score.value > expectedScore - .1)
-    // There should be different scores for different opponent hands,
-    // meaning the stddev will be nonzero.
   }
 
   "A Robot" should "know the score at the move before a locked game" in {
-    val robotHand = List(Domino(5,3),Domino(6,3))
-    val game = Game(
-      Board(
-        Some(PlayedDomino(Domino(6,6),12)),
-        List(
-          PlayedDomino(Domino(6,5),6),
-          PlayedDomino(Domino(5,4),5),
-          PlayedDomino(Domino(4,3),4),
-          PlayedDomino(Domino(3,1),3),
-          PlayedDomino(Domino(6,1),1),
-        ),
-        List(
-          PlayedDomino(Domino(6,0),6),
-          PlayedDomino(Domino(1,0),0),
-          PlayedDomino(Domino(2,1),1),
-          PlayedDomino(Domino(5,2),2),
-          PlayedDomino(Domino(5,0),0),
-          PlayedDomino(Domino(2,0),0),
-          PlayedDomino(Domino(4,2),2),
-          PlayedDomino(Domino(4,4),4),
-          PlayedDomino(Domino(6,4),4),
-        ),
-        List(
-          PlayedDomino(Domino(3,2),3),
-          PlayedDomino(Domino(6,2),2),
-        ),
-        List(),
-      ),
-      Player(
-        "human",
-        List(
-          Domino(3,3),
-          Domino(1,1),
-          ),
-        45,
-      ),
-      Player(
-        "robot",
-        robotHand,
-        60,
-      ),
-      PlayerTwoTurn,
+    println("know the score at the move before a locked game")
+    val gameState = parseGame(
+      center = "[6,6]:12",
+      left = "[6,5]:6 [5,5]:5 [5,1]:5 [4,1]:4 [4,3]:4 [3,1]:3 [6,1]:1",
+      right = "[6,0]:6 [1,0]:0 [2,1]:1 [5,2]:2 [5,0]:0 " +
+              "[2,0]:0 [4,2]:2 [4,4]:4 [6,4]:4",
+      up = "[3,2]:3 [6,2]:2",
+      robot = "[5,3] [6,3]",
+      human = "[3,3] [1,1]",
+      boneyard = "[5,4] [4,0] [3,0] [2,2] [0,0]",
+    )
+    val perspective = robotPerspective(
+      gameState,
       List(
-        Domino(5,5),
-        Domino(5,1),
-        Domino(4,1),
-        Domino(4,0),
-        Domino(3,0),
-        Domino(2,2),
-        Domino(0,0), // 32 points. Plus the human hand is 40.
+        "[3,3] [1,1]" -> 0.05,
+        "[3,3] [0,0]" -> 0.05,
+        "[0,3] [1,1]" -> 0.9, // assuming the opponent should have the [3,0] means we are unlikely to get 20 points after the opponent plays the [3,3]
       ),
-      GameLog.empty,
-      false,
-      false,
     )
-    val guess = EliminationHand(
-      "human",
-      Vector(
-        PossibleHand(
-          Set(Domino(3,3),Domino(1,1)),
-          0.5,
-          0.5,
+    val depth = 13
+    val numSimulations = 100
+    val maxNode = MaxNode(perspective, gameState, depth, numSimulations, true)
+
+    val (score, action) = maxNode.bestAction()
+
+    assert(action == Move(Domino(6,3),Up))
+    println(score.value)
+    println(math.tanh(0.5))
+    assert(math.abs(score.value - math.tanh(0.5)) < 0.000001)
+  }
+
+  private def dominoes(s: String): List[Domino] =
+  """\[(\d),(\d)\]""".r
+    .findAllMatchIn(s)
+    .map(m => Domino(m.group(1).toInt, m.group(2).toInt))
+    .toList
+
+  private def played(s: String): List[PlayedDomino] =
+    """\[(\d),(\d)\]:(\d+)""".r
+      .findAllMatchIn(s)
+      .map { m =>
+        PlayedDomino(
+          Domino(m.group(1).toInt, m.group(2).toInt),
+          m.group(3).toInt,
+        )
+      }
+      .toList
+
+  private def parseGame(
+    center: String,
+    left: String = "",
+    right: String = "",
+    up: String = "",
+    down: String = "",
+    robot: String,
+    human: String,
+    boneyard: String,
+    robotScore: Int = 60,
+    humanScore: Int = 45,
+    turn: Turn = PlayerTwoTurn,
+    ): Game = {
+      val centerDomino = dominoes(center).head
+
+      Game(
+        Board(
+          Some(PlayedDomino(centerDomino, centerDomino.high * 2)),
+          played(left),
+          played(right),
+          played(up),
+          played(down),
         ),
-        PossibleHand(
-          Set(Domino(3,3),Domino(0,0)),
-          0.25,
-          0.75,
-        ),
-        PossibleHand(
-          Set(Domino(0,0),Domino(1,1)),
-          0.25,
-          1.0,
-        ),
-      ),
-      Set(
-        Domino(6,6),
-        Domino(6,5),
-        Domino(5,4),
-        Domino(4,3),
-        Domino(3,1),
-        Domino(6,1),
-        Domino(6,0),
-        Domino(1,0),
-        Domino(2,1),
-        Domino(5,2),
-        Domino(5,0),
-        Domino(2,0),
-        Domino(4,2),
-        Domino(4,4),
-        Domino(6,4),
-        Domino(3,2),
-        Domino(6,2),
+        Player("human", dominoes(human), humanScore),
+        Player("robot", dominoes(robot), robotScore),
+        turn,
+        dominoes(boneyard),
+        GameLog.empty,
+        false,
+        false,
       )
-    )
-    val perspective = Perspective(
+  }
+
+  private def robotPerspective(
+    game: Game,
+    possibleHands: List[(String, Double)],
+  ): Perspective = {
+    val hands = possibleHands
+      .scanLeft((0.0, Option.empty[PossibleHand])) {
+        case ((cumulative, _), (tiles, probability)) =>
+          val next = cumulative + probability
+          (next, Some(PossibleHand(dominoes(tiles).toSet, probability, next)))
+      }
+      .tail
+      .flatMap(_._2)
+      .toVector
+
+    val robotHand = game.playerByName("robot").hand
+
+    Perspective(
       "robot",
       "human",
       robotHand,
       None,
-      guess,
+      EliminationHand(
+        "human",
+        hands,
+        (game.board.tiles() ++ robotHand).toSet,
+      ),
       None,
     )
-    val depth = 13
-    val numSimulations = 10
-    val maxNode = MaxNode(perspective, game, depth, numSimulations, true)
-    val (score, action) = maxNode.bestAction()
-    assert(action == Move(Domino(6,3),Up))
-    // Robot is winning by 15 and will score 30 points with a locked
-    // game. That outcome doesn't depend on the opponent's tiles,
-    // so should have a stddev of 0.
-    assert(score.value == 0.75)
-    assert(score.stddev == 0.0)
   }
 }

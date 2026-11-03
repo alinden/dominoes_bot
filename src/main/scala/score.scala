@@ -1,43 +1,43 @@
 package game
 
-import cats.Semigroup
+import cats.Monoid
+import cats.syntax.foldable._
+import cats.instances.list._
 
-case class Score(
-    values: List[Double]
+final case class Score(value: Double)
+
+final case class ScoreAccumulator(
+    sum: Double,
+    count: Int
 ) {
-  def value: Double = values match {
-    case Nil      => 0.0
-    case h :: Nil => h
-    case xs       => mean()
-  }
-
-  private def mean(): Double = values.sum / values.length
-
-  private def variance(): Double = {
-    val avg = mean()
-    values.map((x) => math.pow((x - avg), 2)).sum / values.length
-  }
-
-  def stddev: Double = values match {
-    case Nil      => 0.0
-    case h :: Nil => 0.0
-    case xs       => math.sqrt(variance())
-  }
-
-  def max(): Double = values.max
-  def min(): Double = values.min
-
-  def positiveLikelihood(current: Double): Double = {
-    values.filter(_ > current).length.toFloat / values.length.toFloat
-  }
+  def normalized: Score =
+    Score(sum / count)
 }
 
-object Score {
-  def apply(value: Double): Score = Score(List(value))
+object ScoreAccumulator {
 
-  implicit val scoreSemigroup: Semigroup[Score] = new Semigroup[Score] {
-    def combine(x: Score, y: Score): Score = {
-      Score(x.values ++ y.values)
+  def fromScore(score: Score): ScoreAccumulator =
+    ScoreAccumulator(score.value, 1)
+
+  implicit val monoid: Monoid[ScoreAccumulator] =
+    new Monoid[ScoreAccumulator] {
+      def empty: ScoreAccumulator =
+        ScoreAccumulator(0.0, 0)
+
+      def combine(
+          x: ScoreAccumulator,
+          y: ScoreAccumulator
+      ): ScoreAccumulator =
+        ScoreAccumulator(
+          x.sum + y.sum,
+          x.count + y.count
+        )
     }
-  }
+
+  def average(scores: Iterable[Score]): Score =
+    scores.iterator
+      .map(fromScore)
+      .toList
+      .combineAll
+      .normalized
 }

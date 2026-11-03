@@ -20,6 +20,18 @@ trait MinMaxNode {
   def bestAction(limitToMoves: List[Action] = List()): (Score, Action) = {
     bestScoredMove(limitToMoves).getOrElse((Score(0.0), Pass))
   }
+  def bestScoredMove(
+      limitToMoves: List[Action] = List()
+  ): Option[(Score, Action)] = {
+    getScoredMoves(limitToMoves).foldRight[Option[(Score, Action)]](None) {
+      case ((score, move), z) =>
+        z match {
+          case None => Some((score, move))
+          case Some((zScore, zMove)) =>
+            if (isBetterScore(score, zScore)) Some((score, move)) else z
+        }
+    }
+  }
   def goodActions(): List[Action] = {
     if (possibleFutures().length == 1) {
       List(possibleFutures().head._2)
@@ -44,22 +56,12 @@ trait MinMaxNode {
   def safeGame(): Game = {
     game.withReplacedActiveHand(perspective.hand)
   }
-  def bestScoredMove(
-      limitToMoves: List[Action] = List()
-  ): Option[(Score, Action)] = {
-    getScoredMoves(limitToMoves).foldRight[Option[(Score, Action)]](None) {
-      case ((score, move), z) =>
-        z match {
-          case None => Some((score, move))
-          case Some((zScore, zMove)) =>
-            if (isBetterScore(score, zScore)) Some((score, move)) else z
-        }
-    }
-  }
   def possibleFutures(): List[(Game, Action)] = {
-    val allFutures: List[(Option[Game], Action)] = safeGame()
-      .allLegalActions()
-      .map((a) => (safeGame().act(a, false, true), a))
+    val gameState = safeGame()
+    val allFutures: List[(Option[Game], Action)] =
+      gameState.allLegalActions().map { action =>
+        (gameState.act(action, false, true), action)
+      }
     val possibleFutures: List[(Game, Action)] = allFutures
       .withFilter {
         case (Some(g), Move(tile, _)) => {

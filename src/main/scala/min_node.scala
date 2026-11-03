@@ -26,18 +26,13 @@ case class MinNode(
       }
       .map {
         case (future, move) => {
-          val d = if (!isRoot) {
-            math.floor(depthRemaining.toFloat / 2.0).toInt - 1
-          } else {
-            depthRemaining - 1
-          }
           (
             AvgNode(
               perspective,
               game,
               future,
               move,
-              d,
+              depthRemaining - 1,
               numSimulations,
             ).score(),
             move,
@@ -49,6 +44,7 @@ case class MinNode(
     val (_, action) = bestAction()
     val after = game.act(action, false, true)
     if (action == Draw) {
+      assert(false, "drawing in min node")
       after.flatMap((g) => {
         MinNode(
           perspective.update(game, g),
