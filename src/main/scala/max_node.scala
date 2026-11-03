@@ -102,25 +102,14 @@ case class MaxNode(
 
   def toMinNode(): Option[MinNode] = {
     val (_, action) = bestAction()
-    val after = game.act(action, false, true)
-    if (action == Draw) {
-      assert(false, "drawing in max node")
-      after.flatMap((g) =>
-        MaxNode(
-          perspective.update(game, g),
-          g,
-          depthRemaining - 1,
-          Config.nextBreadth(numSimulations),
-        ).toMinNode(),
-      )
-    } else {
-      after.map((g) =>
-        MinNode(
-          perspective.update(game, g).swap(),
-          g,
-          depthRemaining - 1,
-          Config.nextBreadth(numSimulations),
-        ),
+    assert(action != Draw, "drawing in max node")
+
+    game.act(action, false, true).map { next =>
+      MinNode(
+        perspective.update(game, next).swap(),
+        next,
+        depthRemaining - 1,
+        Config.nextBreadth(numSimulations),
       )
     }
   }

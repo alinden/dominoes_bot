@@ -1,5 +1,6 @@
 package game
 
+import scala.annotation.tailrec
 import scala.util.Random
 
 import monix.eval.Task
@@ -12,17 +13,13 @@ object Robot {
   }
 
   def greedyMove(game: Game): Option[Action] = {
-    val scoringMoves: List[(Move, Int)] = game.scoringMoves()
-    val legalScoringMoves: List[(Move, Int)] = scoringMoves
-      .filter {
-        case (move, _) => {
-          game.activePlayer().hand.contains(move.domino)
-        }
+    val scoringMoves = game.scoringMoves()
+      .collect {
+        case (move, _) if game.activePlayer().hand.contains(move.domino) => move
       }
-    if (!legalScoringMoves.isEmpty) {
-      return legalScoringMoves.headOption.map(_._1.asInstanceOf[Action])
-    }
-    getRandomLegalAction(game)
+
+    game.simplify(scoringMoves).headOption
+      .orElse(getRandomLegalAction(game))
   }
 
   def getBestMove(
@@ -54,14 +51,7 @@ object Robot {
       debug: Boolean,
       decisionLog: Option[java.io.PrintWriter] = None,
   ): Option[Action] = {
-    println("")
-    println(game)
-    if (!debug) Thread.sleep(500)
-    println(".")
-    if (!debug) Thread.sleep(500)
-    println("..")
-    if (!debug) Thread.sleep(500)
-    println("...")
+    showThinking(game, debug)
     val distinctMoves = game.simplify(game.legalMoves()).length
     if (distinctMoves <= 1) {
       if (!debug && distinctMoves == 1) {
@@ -71,71 +61,122 @@ object Robot {
       }
       return getRandomLegalAction(game)
     } else {
-      // Call getBestMove with the following params until it takes longer than
-      // expectedTime to get a result. This should lead to quicker first turns
-      // and better later turns.
-      val moveParams = Config.moveParams
-      val expectedTime = Config.moveTimeMs
-      var dt = 0.0
-      var i = 0
-      var move: Action = null
-      while ((dt < expectedTime) && (i < moveParams.length)) {
-        val (depth, simulations) = moveParams(i)
-        SearchStats.reset()
-        val t1 = System.nanoTime()
+      val move = searchUntilTimeout(
+        game,
+        guess,
+        debug,
+        decisionLog,
+        Config.moveParams.toList,
+      )
 
-        val result = getBestMove(
-          game,
-          guess,
-          debug,
-          depth,
-          simulations,
-          onScoredMoves = scoredMoves => {
-            decisionLog.foreach { log =>
-              log.println(s"Depth: $depth, Simulations: $simulations")
-
-              scoredMoves.sortBy(-_._1.value).foreach { case (score, action) =>
-                log.println(f"$action%-25s mean=${score.value}%.3f ")
-              }
-            }
-          },
-        ).runSyncUnsafe()
-
-        move = result._2
-
-        val t2 = System.nanoTime()
-        dt = (t2 - t1) / 1000000.0
-
-        val nodes = SearchStats.count()
-        val drawNodes = SearchStats.drawCount()
-        val drawSimulations = SearchStats.drawSimulationCount()
-        val nodesPerSecond =
-          if (dt > 0) nodes * 1000.0 / dt else 0.0
-
-        decisionLog.foreach { log =>
-          log.println(f"AvgNodes evaluated: $nodes%,d")
-          log.println(f"AvgNodes/second: $nodesPerSecond%,.0f")
-          log.println(f"Draw nodes: $drawNodes%,d")
-          log.println(f"Draw simulations: $drawSimulations%,d")
-          log.flush()
-        }
-
-        decisionLog.foreach { log =>
-          log.println(f"Selected at depth $depth: $move (${result._1.value}%.3f)")
-          log.println(f"Elapsed: $dt%.0f ms")
-          log.println()
-          log.flush()
-        }
-
-        i = i + 1
+      move.foreach { action =>
+        decisionLog.foreach(logFinalDecision(_, action))
       }
-      decisionLog.foreach { log =>
-        log.println(s"FINAL DECISION: $move")
-        log.println("=" * 60)
-        log.println()
-        log.flush()
-      }
-      Some(move)
+
+      move
+    }
+  }
+
+  private def showThinking(game: Game, debug: Boolean): Unit = {
+    println("")
+    println(game)
+
+    if (!debug) Thread.sleep(500)
+    println(".")
+    if (!debug) Thread.sleep(500)
+    println("..")
+    if (!debug) Thread.sleep(500)
+    println("...")
+  }
+
+  private def logScoredMoves(
+    log: java.io.PrintWriter,
+    depth: Int,
+    simulations: Int,
+    scoredMoves: List[(Score, Action)],
+  ): Unit = {
+    log.println(s"Depth: $depth, Simulations: $simulations")
+
+    scoredMoves.sortBy(-_._1.value).foreach { case (score, action) =>
+      log.println(f"$action%-25s mean=${score.value}%.3f ")
+    }
+  }
+
+  private def logSearchResult(
+    log: java.io.PrintWriter,
+    depth: Int,
+    result: (Score, Action),
+    elapsedMs: Double,
+  ): Unit = {
+    val nodes = SearchStats.count()
+    val drawNodes = SearchStats.drawCount()
+    val drawSimulations = SearchStats.drawSimulationCount()
+    val nodesPerSecond =
+      if (elapsedMs > 0) nodes * 1000.0 / elapsedMs else 0.0
+
+    log.println(f"AvgNodes evaluated: $nodes%,d")
+    log.println(f"AvgNodes/second: $nodesPerSecond%,.0f")
+    log.println(f"Draw nodes: $drawNodes%,d")
+    log.println(f"Draw simulations: $drawSimulations%,d")
+    log.flush()
+
+    log.println(f"Selected at depth $depth: ${result._2} (${result._1.value}%.3f)")
+    log.println(f"Elapsed: $elapsedMs%.0f ms")
+    log.println()
+    log.flush()
+  }
+
+  private def logFinalDecision(
+    log: java.io.PrintWriter,
+    move: Action,
+  ): Unit = {
+    log.println(s"FINAL DECISION: $move")
+    log.println("=" * 60)
+    log.println()
+    log.flush()
+  }
+
+  @tailrec
+  private def searchUntilTimeout(
+    game: Game,
+    guess: EliminationHand,
+    debug: Boolean,
+    decisionLog: Option[java.io.PrintWriter],
+    remainingParams: List[(Int, Int)],
+    previousElapsedMs: Double = 0.0,
+    previousMove: Option[Action] = None,
+  ): Option[Action] = {
+    if (previousElapsedMs >= Config.moveTimeMs || remainingParams.isEmpty) {
+      previousMove
+    } else {
+      val (depth, simulations) = remainingParams.head
+
+      SearchStats.reset()
+      val start = System.nanoTime()
+
+      val result = getBestMove(
+        game,
+        guess,
+        debug,
+        depth,
+        simulations,
+        onScoredMoves = scoredMoves =>
+          decisionLog.foreach(logScoredMoves(_, depth, simulations, scoredMoves)),
+      ).runSyncUnsafe()
+
+      val elapsedMs = (System.nanoTime() - start) / 1000000.0
+
+      decisionLog.foreach(logSearchResult(_, depth, result, elapsedMs))
+
+      searchUntilTimeout(
+        game,
+        guess,
+        debug,
+        decisionLog,
+        remainingParams.tail,
+        elapsedMs,
+        Some(result._2),
+      )
     }
   }
 }

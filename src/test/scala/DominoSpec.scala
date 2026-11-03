@@ -21,4 +21,29 @@ class DominoSpec extends AnyFlatSpec {
   "A double Domino" should "know it is a double" in {
     assert(Domino(4, 4).isDouble() == true)
   }
+
+  "A Domino" should "generate all 28 unique tiles" in {
+    val tiles = Domino.all()
+
+    assert(tiles.length == 28)
+    assert(tiles.distinct.length == 28)
+    assert(tiles.forall(d => d.high >= d.low))
+    assert(tiles.forall(d =>
+      d.high >= 0 && d.high <= 6 &&
+      d.low >= 0 && d.low <= 6
+    ))
+  }
+
+  "A Domino" should "generate all seven doubles" in {
+    val doubles = Domino.doubles()
+
+    assert(doubles.length == 7)
+    assert(doubles.toSet == (0 to 6).map(n => Domino(n, n)).toSet)
+  }
+
+  "A Domino" should "identify exactly the generated doubles" in {
+    val doubles = Domino.all().filter(_.isDouble())
+
+    assert(doubles.toSet == Domino.doubles().toSet)
+  }
 }
