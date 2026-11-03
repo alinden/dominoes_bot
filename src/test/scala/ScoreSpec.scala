@@ -8,7 +8,7 @@ class ScoreSpec extends AnyFlatSpec {
   "ScoreAccumulator" should "average equally weighted scenarios" in {
     val scores = List(
       Score(10.0),
-      Score(-10.0)
+      Score(-10.0),
     )
 
     val result = ScoreAccumulator.average(scores)
@@ -37,7 +37,7 @@ class ScoreSpec extends AnyFlatSpec {
     val noDrawScenario = Score(-10.0)
 
     val result = ScoreAccumulator.average(
-      List(drawScenario, noDrawScenario)
+      List(drawScenario, noDrawScenario),
     )
 
     assert(result.value == 0.0)

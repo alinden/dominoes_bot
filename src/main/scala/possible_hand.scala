@@ -3,11 +3,13 @@ package game
 case class PossibleHand(
     mask: Int,
     likelihood: Double,
-    cumulativeLikelihood: Double
+    cumulativeLikelihood: Double,
 ) {
 
   def hand: Set[Domino] =
-    Domino.all().iterator
+    Domino
+      .all()
+      .iterator
       .filter(d => HandMask.contains(mask, d))
       .toSet
 
@@ -34,11 +36,11 @@ object PossibleHand {
   def apply(
       hand: Set[Domino],
       likelihood: Double,
-      cumulativeLikelihood: Double
+      cumulativeLikelihood: Double,
   ): PossibleHand =
     new PossibleHand(
       HandMask.fromHand(hand),
       likelihood,
-      cumulativeLikelihood
+      cumulativeLikelihood,
     )
 }

@@ -11,7 +11,7 @@ trait MinMaxNode {
       margin: Double = 0.0,
   ): Boolean;
   def getScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): List[(Score, Action)];
 
   def score(): Score = {
@@ -21,7 +21,7 @@ trait MinMaxNode {
     bestScoredMove(limitToMoves).getOrElse((Score(0.0), Pass))
   }
   def bestScoredMove(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): Option[(Score, Action)] = {
     getScoredMoves(limitToMoves).foldRight[Option[(Score, Action)]](None) {
       case ((score, move), z) =>
@@ -82,7 +82,7 @@ trait MinMaxNode {
               })
               .toSet
             (hand.intersect(connectingPieces) != Set(
-              tile
+              tile,
             )) && (!badStartingPieces.contains(tile))
           }
         }

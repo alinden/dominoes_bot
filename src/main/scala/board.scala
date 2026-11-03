@@ -82,8 +82,7 @@ case class Board(
     if (!spinner.isEmpty) None
     val newSpinner = Some(PlayedDomino(domino, domino.high + domino.low))
     if (direction == Left) {
-      left
-        .headOption
+      left.headOption
         .flatMap((x) => {
           x.connectTo(domino)
             .map((_) => {
@@ -97,9 +96,7 @@ case class Board(
             })
         })
     } else {
-      left
-        .reverse
-        .headOption
+      left.reverse.headOption
         .map(_.backwards())
         .flatMap((x) => {
           x.connectTo(domino)
@@ -133,9 +130,7 @@ case class Board(
           })
       })
     } else {
-      this
-        .left
-        .head
+      this.left.head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -154,9 +149,7 @@ case class Board(
     */
   def addRight(domino: Domino): Option[Board] = {
     if (right.isEmpty && spinner.isEmpty) {
-      this
-        .left
-        .last
+      this.left.last
         .backwards()
         .connectTo(domino)
         .map((value) => {
@@ -182,9 +175,7 @@ case class Board(
           })
       })
     } else {
-      this
-        .right
-        .head
+      this.right.head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -215,9 +206,7 @@ case class Board(
           })
       })
     } else {
-      this
-        .up
-        .head
+      this.up.head
         .connectTo(domino)
         .map((value) => {
           Board(
@@ -248,9 +237,7 @@ case class Board(
           })
       })
     } else {
-      this
-        .down
-        .head
+      this.down.head
         .connectTo(domino)
         .map((value) => {
           Board(
