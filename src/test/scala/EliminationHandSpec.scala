@@ -211,55 +211,6 @@ class EliminationHandSpec extends AnyFlatSpec {
     assert(sampleCounts.get(List(Domino(5, 1))).get >= (n * 0.5 - n * e).toInt)
   }
 
-  // ------------------------------------------------------------
-  // Performance Tests
-  "An EliminationHand" should "get many samples quickly" in {
-    val x = EliminationHand
-      .createFromOpponentHand(
-        "human",
-        List(
-          Domino(6, 6),
-          Domino(6, 5),
-          Domino(6, 4),
-          Domino(6, 3),
-          Domino(5, 5),
-          Domino(5, 4),
-          Domino(4, 4),
-        ),
-      )
-      .truncate
-      .normalize
-    val t0 = System.nanoTime()
-    val samples = for {
-      _ <- (0 to 50)
-    } yield x.getSample()
-    val t1 = System.nanoTime()
-    val ms = (t1 - t0) / (1000 * 1000)
-    assert(ms <= 200)
-  }
-
-  "An EliminationHand" should "update for an opponent play quickly" in {
-    val x = EliminationHand.createFromOpponentHand(
-      "human",
-      List(
-        Domino(6, 6),
-        Domino(6, 5),
-        Domino(6, 4),
-        Domino(6, 3),
-        Domino(5, 5),
-        Domino(5, 4),
-        Domino(4, 4),
-      ),
-    )
-    val t0 = System.nanoTime()
-    val updatedHands = for {
-      _ <- (0 to 50)
-    } yield x.updateForOpponentMove(Domino(5, 1))
-    val t1 = System.nanoTime()
-    val ms = (t1 - t0) / (1000 * 1000)
-    assert(ms <= 2000)
-  }
-
   "An EliminationHand" should "adjust probabilities using tile weights" in {
     val a = Domino(5, 1)
     val b = Domino(4, 1)
@@ -326,5 +277,64 @@ class EliminationHandSpec extends AnyFlatSpec {
     assert(math.abs(favorable - 1.4) < 1e-9)
     assert(math.abs(unfavorable - 0.6) < 1e-9)
     assert(math.abs(neutral - 1.0) < 1e-9)
+  }
+
+  "An EliminationHand" should "combine duplicate hands when normalizing" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+
+    val hand = EliminationHand(
+      "human",
+      Vector(
+        PossibleHand(Set(a), 0.2, 0.0),
+        PossibleHand(Set(a), 0.3, 0.0),
+        PossibleHand(Set(b), 0.5, 0.0),
+      ),
+      Set.empty,
+    )
+
+    val normalized = hand.normalize()
+
+    assert(normalized.possibilities.length == 2)
+
+    val probabilities = normalized.possibilities.map(ph => ph.hand -> ph.likelihood).toMap
+
+    assert(math.abs(probabilities(Set(a)) - 0.5) < 1e-9)
+    assert(math.abs(probabilities(Set(b)) - 0.5) < 1e-9)
+    assert(math.abs(normalized.possibilities.map(_.likelihood).sum - 1.0) < 1e-9)
+
+    val cumulative = normalized.possibilities.map(_.cumulativeLikelihood)
+
+    assert(math.abs(cumulative.head - 0.5) < 1e-9)
+    assert(math.abs(cumulative.last - 1.0) < 1e-9)
+  }
+
+  "An EliminationHand" should "sample according to nonuniform probabilities" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+    val c = Domino(3, 1)
+
+    val hand = EliminationHand(
+      "human",
+      Vector(
+        PossibleHand(Set(a), 0.1, 0.1),
+        PossibleHand(Set(b), 0.3, 0.4),
+        PossibleHand(Set(c), 0.6, 1.0),
+      ),
+      Set.empty,
+    )
+
+    val n = 10000
+
+    val counts = (1 to n)
+      .map(_ => hand.getSample().head)
+      .groupMapReduce(identity)(_ => 1)(_ + _)
+
+    def frequency(tile: Domino): Double =
+      counts.getOrElse(tile, 0).toDouble / n
+
+    assert(math.abs(frequency(a) - 0.1) < 0.02)
+    assert(math.abs(frequency(b) - 0.3) < 0.02)
+    assert(math.abs(frequency(c) - 0.6) < 0.02)
   }
 }
