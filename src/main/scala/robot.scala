@@ -32,7 +32,7 @@ object Robot {
       depth: Int,
       numSimulations: Int,
       limitToMoves: List[Action] = List(),
-      onScoredMoves: List[(Score,Action)] => Unit = _ => (),
+      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
   ): Task[(Score, Action)] = {
     val robotName = "robot"
     val robotHand = game.playerByName(robotName).hand
@@ -94,9 +94,8 @@ object Robot {
             decisionLog.foreach { log =>
               log.println(s"Depth: $depth, Simulations: $simulations")
 
-              scoredMoves.sortBy(-_._1.value).foreach {
-                case (score, action) =>
-                  log.println(f"$action%-25s mean=${score.value}%.3f ")
+              scoredMoves.sortBy(-_._1.value).foreach { case (score, action) =>
+                log.println(f"$action%-25s mean=${score.value}%.3f ")
               }
             }
           },

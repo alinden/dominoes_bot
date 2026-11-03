@@ -9,9 +9,9 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 
 object App {
   def playGame(
-    mode: String,
-    matchScore: MatchScore,
-    decisionLog: Option[java.io.PrintWriter] = None,
+      mode: String,
+      matchScore: MatchScore,
+      decisionLog: Option[java.io.PrintWriter] = None,
   ): MatchScore = {
     val debug = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
@@ -32,10 +32,7 @@ object App {
         g = g.orElse(Some(t.get.reshuffle()))
         if (
           !g.isEmpty &&
-          g.get
-            .log
-            .log
-            .headOption
+          g.get.log.log.headOption
             .map(_.action == PlayHighestDouble)
             .getOrElse(false)
         ) {
@@ -44,7 +41,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
@@ -62,7 +59,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get, false, true))
@@ -91,7 +88,7 @@ object App {
             g.get,
             guess.getOrElse(
               EliminationHand
-                .createFromOpponentHand("human", g.get.playerTwo.hand)
+                .createFromOpponentHand("human", g.get.playerTwo.hand),
             ),
             debug,
             decisionLog,
@@ -103,7 +100,7 @@ object App {
             .orElse {
               Some(
                 EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand)
+                  .createFromOpponentHand("human", g.get.playerTwo.hand),
               )
             }
             .map(_.updateForEntry(g.get.log.log.head, t.get))
@@ -160,7 +157,7 @@ object App {
         !(args.length == 3 && args(1) == "--log-decisions"))
     ) {
       println(
-        """Usage: sbt "run [--play_human|--play_greedy] [--log-decisions filename]""""
+        """Usage: sbt "run [--play_human|--play_greedy] [--log-decisions filename]"""",
       )
       return
     }

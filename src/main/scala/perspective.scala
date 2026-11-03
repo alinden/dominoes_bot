@@ -26,8 +26,8 @@ case class Perspective(
           name,
           assumedHand ++ boardTiles,
           hand.length,
-        )
-      )
+        ),
+      ),
     ),
   )
 

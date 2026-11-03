@@ -40,7 +40,7 @@ case class MaxNode(
     })
   }
   def asyncGetScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): Task[List[(Score, Action)]] = {
     Task.parSequence(
       possibleFutures()
@@ -63,7 +63,7 @@ case class MaxNode(
               move,
             )
           }
-        }
+        },
     )
   }
 
@@ -75,7 +75,7 @@ case class MaxNode(
     candidate.value + margin > previousBest.value
   }
   def getScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): List[(Score, Action)] = {
     possibleFutures()
       .withFilter {
@@ -111,7 +111,7 @@ case class MaxNode(
           g,
           depthRemaining - 1,
           Config.nextBreadth(numSimulations),
-        ).toMinNode()
+        ).toMinNode(),
       )
     } else {
       after.map((g) =>
@@ -120,7 +120,7 @@ case class MaxNode(
           g,
           depthRemaining - 1,
           Config.nextBreadth(numSimulations),
-        )
+        ),
       )
     }
   }

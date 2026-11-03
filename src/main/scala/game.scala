@@ -21,17 +21,17 @@ case class Game(
     val showRobotTiles = false
     val robotHand = if (showRobotTiles) {
       s"${playerTwo.name}${if (activePlayer() == playerTwo) "*"
-      else ""}(${playerTwo.score}): ${playerTwo.hand.mkString(" ")}"
+        else ""}(${playerTwo.score}): ${playerTwo.hand.mkString(" ")}"
     } else {
       s"${playerTwo.name}${if (activePlayer() == playerTwo) "*"
-      else ""}(${playerTwo.score}): ${playerTwo.hand.map((_) => "[x,x]").mkString(" ")}"
+        else ""}(${playerTwo.score}): ${playerTwo.hand.map((_) => "[x,x]").mkString(" ")}"
     }
     (
       List(
         "",
         "----------------------------------",
         s"${playerOne.name}${if (activePlayer() == playerOne) "*"
-        else ""}(${playerOne.score}): ${playerOne.hand.mkString(" ")}",
+          else ""}(${playerOne.score}): ${playerOne.hand.mkString(" ")}",
         robotHand,
         s"boneyard: ${boneyard.map((_) => "[x,x]").mkString(" ")}",
         s"tiles: ${boneyard.length + playerOne.hand.length + playerTwo.hand.length + board.length()}",
@@ -42,8 +42,7 @@ case class Game(
   }
 
   def playHighestDouble(): Option[Game] = {
-    val highestDoubleRank: List[Domino] = (0 to 6)
-      .toList
+    val highestDoubleRank: List[Domino] = (0 to 6).toList
       .map((n) => Domino(n, n))
     highestDoubleRank
       .foldRight[Option[(Game, String)]](None) { (d, z) =>
@@ -54,7 +53,7 @@ case class Game(
                 HighestDoubleEntry(
                   afterGame.inactivePlayer().name,
                   d,
-                )
+                ),
               ),
               message,
             )
@@ -86,7 +85,7 @@ case class Game(
             HighestDouble,
             newGame.boneyard,
             GameLog.empty(),
-          )
+          ),
         )
       }
   }
@@ -125,15 +124,14 @@ case class Game(
   // one move onto an empty chain. It should also only allow one move
   // onto two chains of equal end value.
   def simplify(actions: List[Action]): List[Action] = {
-    val emptyDirections = Direction
-      .all
+    val emptyDirections = Direction.all
       .filter((dir) =>
         dir match {
           case Left  => board.left.isEmpty
           case Right => board.right.isEmpty
           case Up    => board.up.isEmpty
           case Down  => board.down.isEmpty
-        }
+        },
       )
     def filterRedundant(
         xs: List[Action],
@@ -144,7 +142,7 @@ case class Game(
         action match {
           case Move(_, direction) => dirsToRemove.contains(direction)
           case _                  => false
-        }
+        },
       )
     }
     board.state() match {
@@ -153,13 +151,12 @@ case class Game(
           action match {
             case Move(_, direction) => (direction == Left)
             case _                  => false
-          }
+          },
         )
       }
       case SpinnerOnly => filterRedundant(actions)
       case Snake => {
-        val nonEmptyChain = Direction
-          .all
+        val nonEmptyChain = Direction.all
           .filterNot((dir) => emptyDirections.contains(dir))
           .map((dir) =>
             dir match {
@@ -167,7 +164,7 @@ case class Game(
               case Right => board.right
               case Up    => board.up
               case Down  => board.down
-            }
+            },
           )
           .head
         if (nonEmptyChain.head.value == nonEmptyChain.last.backwards().value) {
@@ -176,7 +173,7 @@ case class Game(
             action match {
               case Move(_, direction) => emptyDirections.contains(direction)
               case _                  => false
-            }
+            },
           )
         } else {
           filterRedundant(actions)
@@ -184,15 +181,14 @@ case class Game(
       }
       case Tee => filterRedundant(actions)
       case Cross => {
-        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction
-          .all
+        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction.all
           .filterNot((dir) =>
             dir match {
               case Left  => board.left.isEmpty
               case Right => board.right.isEmpty
               case Up    => board.up.isEmpty
               case Down  => board.down.isEmpty
-            }
+            },
           )
           .map((dir) =>
             dir match {
@@ -200,7 +196,7 @@ case class Game(
               case Right => (Right, board.right.head)
               case Up    => (Up, board.up.head)
               case Down  => (Down, board.down.head)
-            }
+            },
           )
           .filterNot((x) => {
             val tile = x._2.tile
@@ -253,7 +249,7 @@ case class Game(
           log,
         ),
         message,
-      )
+      ),
     )
   }
 
@@ -321,7 +317,7 @@ case class Game(
         List(),
         log.log(PassLogEntry(activePlayer().name)),
         true,
-      )
+      ),
     )
   }
 
@@ -351,10 +347,10 @@ case class Game(
           DrawLogEntry(
             activePlayer().name,
             activePlayer().hand.length,
-            legalTilesToPlay()
-          )
-        )
-      )
+            legalTilesToPlay(),
+          ),
+        ),
+      ),
     )
   }
 
@@ -478,7 +474,7 @@ case class Game(
           MoveLogEntry(
             activePlayer().name,
             Move(domino, direction),
-          )
+          ),
         ),
       )
     }
@@ -530,11 +526,9 @@ case class Game(
     println("Your turn")
     println("Tiles: ")
     println(
-      activePlayer()
-        .hand
-        .zipWithIndex
+      activePlayer().hand.zipWithIndex
         .map { case (domino, i) => s"${i}: ${domino}" }
-        .mkString("\n")
+        .mkString("\n"),
     )
     println("To move your 3rd tile, type 'm 3'")
     println("To draw, type 'd'")
@@ -662,9 +656,7 @@ object Game {
       game.boneyard,
       game.log,
       game.lastTurnPass,
-      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game
-        .playerOne
-        .score != game.playerTwo.score),
+      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game.playerOne.score != game.playerTwo.score),
     )
 
     val rawLoserTileCount = g
@@ -717,7 +709,7 @@ object Game {
           g.log,
           true,
           ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
-        )
+        ),
       )
     } else if (loserTileCount > 0) {
       // opponent has some tiles to score
@@ -725,7 +717,7 @@ object Game {
       // println("couting loser tiles")
       if (debug)
         println(
-          s"game: ${g.inactivePlayer().name} had ${g.inactivePlayer().hand.mkString(" - ")}"
+          s"game: ${g.inactivePlayer().name} had ${g.inactivePlayer().hand.mkString(" - ")}",
         )
       val ap = Player(
         g.activePlayer().name,
@@ -743,7 +735,7 @@ object Game {
           g.log,
           g.lastTurnPass,
           ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
-        )
+        ),
       )
     } else {
       // opponent has no tiles to score

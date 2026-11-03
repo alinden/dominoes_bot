@@ -20,7 +20,7 @@ class GameSpec extends AnyFlatSpec {
   "A Game" should "know the legal tiles to play: spinner only" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6),12)),
+        Some(PlayedDomino(Domino(6, 6), 12)),
         List(),
         List(),
         List(),
@@ -42,24 +42,23 @@ class GameSpec extends AnyFlatSpec {
       false,
       false,
     )
-    assert(x.board.tiles == List(Domino(6,6)))
+    assert(x.board.tiles == List(Domino(6, 6)))
     val expectedLegalTilesToPlay = List(
-      Domino(6,5),
-      Domino(6,4),
-      Domino(6,3),
-      Domino(6,2),
-      Domino(6,1),
-      Domino(6,0),
+      Domino(6, 5),
+      Domino(6, 4),
+      Domino(6, 3),
+      Domino(6, 2),
+      Domino(6, 1),
+      Domino(6, 0),
     ).toSet
     assert(x.legalTilesToPlay.toSet == expectedLegalTilesToPlay)
   }
 
-
   "A Game" should "know the legal tiles to play: spinner and left" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6),12)),
-        List(PlayedDomino(Domino(6,3),3)),
+        Some(PlayedDomino(Domino(6, 6), 12)),
+        List(PlayedDomino(Domino(6, 3), 3)),
         List(),
         List(),
         List(),
@@ -80,19 +79,19 @@ class GameSpec extends AnyFlatSpec {
       false,
       false,
     )
-    assert(x.board.tiles == List(Domino(6,6), Domino(6,3)))
+    assert(x.board.tiles == List(Domino(6, 6), Domino(6, 3)))
     val expectedLegalTilesToPlay = List(
-      Domino(6,5),
-      Domino(6,4),
-      Domino(6,2),
-      Domino(6,1),
-      Domino(6,0),
-      Domino(5,3),
-      Domino(4,3),
-      Domino(3,3),
-      Domino(3,2),
-      Domino(3,1),
-      Domino(3,0),
+      Domino(6, 5),
+      Domino(6, 4),
+      Domino(6, 2),
+      Domino(6, 1),
+      Domino(6, 0),
+      Domino(5, 3),
+      Domino(4, 3),
+      Domino(3, 3),
+      Domino(3, 2),
+      Domino(3, 1),
+      Domino(3, 0),
     ).toSet
     assert(x.legalTilesToPlay.toSet == expectedLegalTilesToPlay)
   }
@@ -100,9 +99,9 @@ class GameSpec extends AnyFlatSpec {
   "A Game" should "know the legal tiles to play: spinner, left, and right" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6),12)),
-        List(PlayedDomino(Domino(6,1),1)),
-        List(PlayedDomino(Domino(6,4),4)),
+        Some(PlayedDomino(Domino(6, 6), 12)),
+        List(PlayedDomino(Domino(6, 1), 1)),
+        List(PlayedDomino(Domino(6, 4), 4)),
         List(),
         List(),
       ),
@@ -123,22 +122,22 @@ class GameSpec extends AnyFlatSpec {
       false,
     )
     val expectedLegalTilesToPlay = List(
-      Domino(6,5),
-      Domino(6,3),
-      Domino(6,2),
-      Domino(6,0),
-      Domino(5,4),
-      Domino(4,4),
-      Domino(4,3),
-      Domino(4,2),
-      Domino(4,1),
-      Domino(4,0),
-      Domino(5,1),
-      Domino(4,1),
-      Domino(3,1),
-      Domino(2,1),
-      Domino(1,1),
-      Domino(1,0),
+      Domino(6, 5),
+      Domino(6, 3),
+      Domino(6, 2),
+      Domino(6, 0),
+      Domino(5, 4),
+      Domino(4, 4),
+      Domino(4, 3),
+      Domino(4, 2),
+      Domino(4, 1),
+      Domino(4, 0),
+      Domino(5, 1),
+      Domino(4, 1),
+      Domino(3, 1),
+      Domino(2, 1),
+      Domino(1, 1),
+      Domino(1, 0),
     ).toSet
     assert(x.legalTilesToPlay.toSet == expectedLegalTilesToPlay)
   }
@@ -147,7 +146,7 @@ class GameSpec extends AnyFlatSpec {
     val x = Game(
       Board(
         None,
-        List(PlayedDomino(Domino(6,4),6), PlayedDomino(Domino(4,3),4)),
+        List(PlayedDomino(Domino(6, 4), 6), PlayedDomino(Domino(4, 3), 4)),
         List(),
         List(),
         List(),
@@ -168,19 +167,19 @@ class GameSpec extends AnyFlatSpec {
       false,
       false,
     )
-    assert(x.board.tiles == List(Domino(6,4), Domino(4,3)))
+    assert(x.board.tiles == List(Domino(6, 4), Domino(4, 3)))
     val expectedLegalTilesToPlay = List(
-      Domino(6,6),
-      Domino(6,5),
-      Domino(6,3),
-      Domino(6,2),
-      Domino(6,1),
-      Domino(6,0),
-      Domino(5,3),
-      Domino(3,3),
-      Domino(3,2),
-      Domino(3,1),
-      Domino(3,0),
+      Domino(6, 6),
+      Domino(6, 5),
+      Domino(6, 3),
+      Domino(6, 2),
+      Domino(6, 1),
+      Domino(6, 0),
+      Domino(5, 3),
+      Domino(3, 3),
+      Domino(3, 2),
+      Domino(3, 1),
+      Domino(3, 0),
     ).toSet
     assert(x.legalTilesToPlay.toSet == expectedLegalTilesToPlay)
   }
@@ -190,9 +189,9 @@ class GameSpec extends AnyFlatSpec {
       Board(
         None,
         List(
-          PlayedDomino(Domino(6,4),6),
-          PlayedDomino(Domino(4,3),4),
-          PlayedDomino(Domino(3,6),6),
+          PlayedDomino(Domino(6, 4), 6),
+          PlayedDomino(Domino(4, 3), 4),
+          PlayedDomino(Domino(3, 6), 6),
         ),
         List(),
         List(),
@@ -205,7 +204,7 @@ class GameSpec extends AnyFlatSpec {
       ),
       Player(
         "robot",
-        List(Domino(6,6)),
+        List(Domino(6, 6)),
         0,
       ),
       PlayerTwoTurn,
@@ -216,7 +215,7 @@ class GameSpec extends AnyFlatSpec {
     )
     val simplifiedMoves = x.allLegalActions()
     val expectedSimplifiedMoves = List(
-      Move(Domino(6,6), Left),
+      Move(Domino(6, 6), Left),
     )
     assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
   }
@@ -224,7 +223,7 @@ class GameSpec extends AnyFlatSpec {
   "A Game" should "simplify moves: spinner" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6), 6)),
+        Some(PlayedDomino(Domino(6, 6), 6)),
         List(),
         List(),
         List(),
@@ -237,7 +236,7 @@ class GameSpec extends AnyFlatSpec {
       ),
       Player(
         "robot",
-        List(Domino(6,3)),
+        List(Domino(6, 3)),
         0,
       ),
       PlayerTwoTurn,
@@ -248,7 +247,7 @@ class GameSpec extends AnyFlatSpec {
     )
     val simplifiedMoves = x.allLegalActions()
     val expectedSimplifiedMoves = List(
-      Move(Domino(6,3), Left),
+      Move(Domino(6, 3), Left),
     )
     assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
   }
@@ -256,9 +255,9 @@ class GameSpec extends AnyFlatSpec {
   "A Game" should "simplify moves: spinner with some chains" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6), 6)),
-        List(PlayedDomino(Domino(6,4), 4)),
-        List(PlayedDomino(Domino(6,2), 2)),
+        Some(PlayedDomino(Domino(6, 6), 6)),
+        List(PlayedDomino(Domino(6, 4), 4)),
+        List(PlayedDomino(Domino(6, 2), 2)),
         List(),
         List(),
       ),
@@ -269,7 +268,7 @@ class GameSpec extends AnyFlatSpec {
       ),
       Player(
         "robot",
-        List(Domino(6,3)),
+        List(Domino(6, 3)),
         0,
       ),
       PlayerTwoTurn,
@@ -280,7 +279,7 @@ class GameSpec extends AnyFlatSpec {
     )
     val simplifiedMoves = x.allLegalActions()
     val expectedSimplifiedMoves = List(
-      Move(Domino(6,3), Up),
+      Move(Domino(6, 3), Up),
     )
     assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
   }
@@ -288,12 +287,12 @@ class GameSpec extends AnyFlatSpec {
   "A Game" should "simplify moves: spinner with equal value chains" in {
     val x = Game(
       Board(
-        Some(PlayedDomino(Domino(6,6), 6)),
+        Some(PlayedDomino(Domino(6, 6), 6)),
         List(
-          PlayedDomino(Domino(4,2), 2),
-          PlayedDomino(Domino(6,4), 4),
+          PlayedDomino(Domino(4, 2), 2),
+          PlayedDomino(Domino(6, 4), 4),
         ),
-        List(PlayedDomino(Domino(6,2), 2)),
+        List(PlayedDomino(Domino(6, 2), 2)),
         List(),
         List(),
       ),
@@ -304,7 +303,7 @@ class GameSpec extends AnyFlatSpec {
       ),
       Player(
         "robot",
-        List(Domino(2,2)),
+        List(Domino(2, 2)),
         0,
       ),
       PlayerTwoTurn,
@@ -315,7 +314,7 @@ class GameSpec extends AnyFlatSpec {
     )
     val simplifiedMoves = x.allLegalActions()
     val expectedSimplifiedMoves = List(
-      Move(Domino(2,2), Left),
+      Move(Domino(2, 2), Left),
     )
     assert(simplifiedMoves.toSet == expectedSimplifiedMoves.toSet)
   }

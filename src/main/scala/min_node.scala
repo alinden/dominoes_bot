@@ -16,7 +16,7 @@ case class MinNode(
     candidate.value - margin < previousBest.value
   }
   def getScoredMoves(
-      limitToMoves: List[Action] = List()
+      limitToMoves: List[Action] = List(),
   ): List[(Score, Action)] = {
     possibleFutures()
       .withFilter {

@@ -76,15 +76,14 @@ case class EliminationHand(
       val total = combined.valuesIterator.map(_._2).sum
       var cumulative = 0.0
 
-      val normalized = combined.valuesIterator.map {
-        case (ph, likelihood) =>
-          val probability = likelihood / total
-          cumulative += probability
+      val normalized = combined.valuesIterator.map { case (ph, likelihood) =>
+        val probability = likelihood / total
+        cumulative += probability
 
-          ph.copy(
-            likelihood = probability,
-            cumulativeLikelihood = cumulative,
-          )
+        ph.copy(
+          likelihood = probability,
+          cumulativeLikelihood = cumulative,
+        )
       }.toVector
 
       copy(possibilities = normalized)
@@ -128,7 +127,8 @@ case class EliminationHand(
     } else {
       val legalMask = HandMask.fromHand(entry.legalTilesToPlay)
       val eligibleTiles =
-        Domino.all()
+        Domino
+          .all()
           .filterNot(impossible.contains)
           .map(d => (d, HandMask.tileBit(d)))
 
@@ -213,7 +213,6 @@ case class EliminationHand(
 
     val observations: List[(Set[Domino], Boolean)] =
       (0 until Config.bayesSamples).toList.map { _ =>
-
         val remainingHand = updated.getSample()
         val originalHand = move.domino :: remainingHand
 
@@ -262,7 +261,7 @@ case class EliminationHand(
 
     val tileCounts = scala.collection.mutable.Map.empty[
       Domino,
-      (Int, Int)
+      (Int, Int),
     ]
 
     observations.foreach { case (hand, isGood) =>
@@ -292,7 +291,6 @@ case class EliminationHand(
 
     updated.applyTileWeights(tileWeights, evidenceStrength)
   }
-
 
   def quickUpdateForEntry(
       entry: GameLogEntry,
@@ -327,8 +325,8 @@ case class EliminationHand(
 
   // Testable method to adjust hand likelihoods
   def applyTileWeights(
-    tileWeights: Map[Domino, Double],
-    evidenceStrength: Double = 0.5,
+      tileWeights: Map[Domino, Double],
+      evidenceStrength: Double = 0.5,
   ): EliminationHand = {
     val adjusted = possibilities.map { ph =>
       val logWeight = ph.hand.iterator.map { tile =>
@@ -406,9 +404,9 @@ case class EliminationHand(
 
 object EliminationHand {
   def createFromOpponentHand(
-    playerName: String,
-    opponentHand: List[Domino],
-    initialHandSize: Int = 7,
+      playerName: String,
+      opponentHand: List[Domino],
+      initialHandSize: Int = 7,
   ): EliminationHand = {
     val impossible = opponentHand.toSet
     val possibleTiles = Domino.all().filterNot(impossible.contains).toSet
@@ -420,16 +418,15 @@ object EliminationHand {
       val likelihood = 1.0 / possibleHands.length.toDouble
       var cumulativeLikelihood = 0.0
 
-      val possibilities = possibleHands.zipWithIndex.map {
-        case (hand, index) =>
-          cumulativeLikelihood += likelihood
+      val possibilities = possibleHands.zipWithIndex.map { case (hand, index) =>
+        cumulativeLikelihood += likelihood
 
-          PossibleHand(
-            hand,
-            likelihood,
-            if (index == possibleHands.length - 1) 1.0
-            else cumulativeLikelihood,
-          )
+        PossibleHand(
+          hand,
+          likelihood,
+          if (index == possibleHands.length - 1) 1.0
+          else cumulativeLikelihood,
+        )
       }
 
       EliminationHand(
@@ -460,7 +457,8 @@ object EliminationHand {
       val target = math.min(numSamples.toLong, maxHands).toInt
 
       while (sampledHands.size < target) {
-        val hand = random.shuffle(possibleTiles)
+        val hand = random
+          .shuffle(possibleTiles)
           .take(initialHandSize)
           .toSet
 
@@ -470,16 +468,15 @@ object EliminationHand {
       val likelihood = 1.0 / sampledHands.size
       var cumulative = 0.0
 
-      val possibilities = sampledHands.iterator.zipWithIndex.map {
-        case (hand, index) =>
-          cumulative += likelihood
+      val possibilities = sampledHands.iterator.zipWithIndex.map { case (hand, index) =>
+        cumulative += likelihood
 
-          PossibleHand(
-            hand,
-            likelihood,
-            if (index == sampledHands.size - 1) 1.0
-            else cumulative,
-          )
+        PossibleHand(
+          hand,
+          likelihood,
+          if (index == sampledHands.size - 1) 1.0
+          else cumulative,
+        )
       }.toVector
 
       EliminationHand(playerName, possibilities, impossible)
@@ -498,10 +495,10 @@ object EliminationHand {
   }
 
   def estimateTileWeight(
-    goodWithTile: Int,
-    totalWithTile: Int,
-    overallGoodRate: Double,
-    priorStrength: Double = 10.0,
+      goodWithTile: Int,
+      totalWithTile: Int,
+      overallGoodRate: Double,
+      priorStrength: Double = 10.0,
   ): Double = {
     // Smoothed estimate of P(good move | tile).
     val pGoodGivenTile =

@@ -20,7 +20,10 @@ class MinMaxNodeSpec extends AnyFlatSpec {
       Domino(5, 3),
       Domino(2, 2),
       Domino(6, 4),
-      Domino(4, 4), // The [4,4] blocks the opponent from holding it and responding to our move with a 20 point score.
+      Domino(
+        4,
+        4,
+      ), // The [4,4] blocks the opponent from holding it and responding to our move with a 20 point score.
       Domino(6, 2),
       Domino(2, 0),
       Domino(6, 1),
@@ -48,18 +51,8 @@ class MinMaxNodeSpec extends AnyFlatSpec {
       val game = Game(
         board,
         Player("human", hand, 0),
-        Player("robot", List(
-          Domino(5, 5),
-          Domino(5, 4),
-          Domino(4, 2),
-          Domino(3, 3),
-          Domino(3, 2),
-          Domino(1, 1),
-        ), 0),
-        PlayerOneTurn,
-        Domino.all().filterNot(d =>
-          hand.contains(d) ||
-          d == Domino(6, 6) ||
+        Player(
+          "robot",
           List(
             Domino(5, 5),
             Domino(5, 4),
@@ -67,8 +60,24 @@ class MinMaxNodeSpec extends AnyFlatSpec {
             Domino(3, 3),
             Domino(3, 2),
             Domino(1, 1),
-          ).contains(d)
+          ),
+          0,
         ),
+        PlayerOneTurn,
+        Domino
+          .all()
+          .filterNot(d =>
+            hand.contains(d) ||
+              d == Domino(6, 6) ||
+              List(
+                Domino(5, 5),
+                Domino(5, 4),
+                Domino(4, 2),
+                Domino(3, 3),
+                Domino(3, 2),
+                Domino(1, 1),
+              ).contains(d),
+          ),
         GameLog.empty,
       )
 
