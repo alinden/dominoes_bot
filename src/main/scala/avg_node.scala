@@ -1,7 +1,5 @@
 package game
 
-import cats.implicits._
-
 case class AvgNode(
     perspective: Perspective,
     beforeGame: Game,
@@ -11,216 +9,188 @@ case class AvgNode(
     numSimulations: Int,
 ) extends EvalNode {
 
-  /** Score a game that could be complete or ongoing only by looking at its current state combined
-    * with the game log.
-    */
-  def heuristic(): Score = {
-    val robotScore = afterGame.playerByName("robot").score.toFloat
-    val humanScore = afterGame.playerByName("human").score.toFloat
-    val isLockedGame =
-      afterGame.playerOne.hand.isEmpty && afterGame.playerTwo.hand.isEmpty
-    val isDominoes =
-      !isLockedGame && (afterGame.playerOne.hand.isEmpty || afterGame.playerTwo.hand.isEmpty)
-    val isRobotTurn =
-      afterGame.activePlayer() == afterGame.playerByName("robot")
-    (isDominoes, isLockedGame) match {
-      case (_, true) => {
-        // Locked game.
-        val runway = math.max(0.0, 150.0 - math.max(robotScore, humanScore))
-        if (runway == 0.0) {
-          Score(robotScore - humanScore)
-        } else {
-          Score((robotScore - humanScore) / runway)
-        }
+  def heuristic(game: Game = afterGame): Score = {
+    val robot = game.playerByName("robot")
+    val human = game.playerByName("human")
+
+    val dominoesWinner =
+      if (robot.hand.isEmpty && human.hand.nonEmpty) {
+        Some("robot")
+      } else if (human.hand.isEmpty && robot.hand.nonEmpty) {
+        Some("human")
+      } else {
+        None
       }
-      case (true, _) => {
-        // Dominoes.
-        val turnBonus = (isRobotTurn, afterGame.isOver) match {
-          case (_, true)      => if (robotScore > humanScore) 99 else -99
-          case (true, false)  => 5.0
-          case (false, false) => -5.0
-        }
-        val isRobot = perspective.name == "robot"
-        val tileBonus = (isDominoes, isRobotTurn, isRobot) match {
-          case (false, _, _) => 0.0
-          case (true, false, true) => {
-            // robot thinking about human dominoes
-            (-1) * perspective
-              .hand
-              .foldRight(0) { (domino, z) =>
-                {
-                  domino.high + domino.low + z
-                }
-              }
-              .toFloat
-          }
-          case (true, false, false) => {
-            // human thinking about human dominoes
-            (-1) * ((0 to numSimulations)
-              .map((_) => {
-                val rawCount = perspective
-                  .opponentHand
-                  .getSample()
-                  .foldRight(0) { (domino, z) =>
-                    {
-                      domino.high + domino.low + z
-                    }
-                  }
-                  .toFloat
-                Math.round(rawCount / 5) * 5
-              })
-              .sum
-              .toFloat) / numSimulations.toFloat
-          }
-          case (true, true, true) => {
-            // robot thinking about robot dominoes
-            ((0 to numSimulations)
-              .map((_) => {
-                val rawCount = perspective
-                  .opponentHand
-                  .getSample()
-                  .foldRight(0) { (domino, z) =>
-                    {
-                      domino.high + domino.low + z
-                    }
-                  }
-                  .toFloat
-                Math.round(rawCount / 5) * 5
-              })
-              .sum
-              .toFloat) / numSimulations.toFloat
-          }
-          case (true, true, false) => {
-            // human thinking about robot dominoes
-            perspective
-              .hand
-              .foldRight(0) { (domino, z) =>
-                {
-                  domino.high + domino.low + z
-                }
-              }
-              .toFloat
-          }
-        }
-        val beforeRobotScore = beforeGame.playerByName("robot").score.toFloat
-        val beforeHumanScore = beforeGame.playerByName("human").score.toFloat
-        val lastTurnScore =
-          (isRobotTurn, (afterGame.board.score() % 5 == 0)) match {
-            case (true, true)  => afterGame.board.score()
-            case (false, true) => (-1) * afterGame.board.score()
-            case (_, false)    => 0.0
-          }
-        val robotScoreWithBonuses =
-          beforeRobotScore + turnBonus + tileBonus + lastTurnScore
-        val runway = math.max(
-          0.0,
-          150.0 - math.max(robotScoreWithBonuses, beforeHumanScore),
-        )
-        if (runway == 0.0) {
-          Score(robotScoreWithBonuses - beforeHumanScore)
-        } else {
-          Score((robotScoreWithBonuses - beforeHumanScore) / runway)
-        }
-      }
-      case (false, _) => {
-        // Mid-game.
-        val runway = math.max(0.0, 150.0 - math.max(robotScore, humanScore))
-        if (runway == 0.0) {
-          Score(robotScore - humanScore)
-        } else {
-          Score((robotScore - humanScore) / runway)
-        }
-      }
+
+    Heuristic.evaluate(
+      robotScore = robot.score.toDouble,
+      humanScore = human.score.toDouble,
+      gameOver = game.isOver,
+      dominoesWinner = dominoesWinner,
+      mode = HeuristicMode.BoundedRunway
+    )
+  }
+
+  @annotation.tailrec
+  private def drawUntilPlayable(
+      game: Game,
+      perspective: Perspective,
+      draws: Int = 0,
+  ): (Game, Perspective, Int) = {
+    if (game.legalMoves().nonEmpty || game.boneyard.isEmpty) {
+      (game, perspective, draws)
+    } else {
+      val nextGame = game.act(Draw, false, true).get
+      val nextPerspective = perspective.update(game, nextGame)
+
+      drawUntilPlayable(nextGame, nextPerspective, draws + 1)
     }
   }
 
-  /** Score a game after applying the given action. Works primarily by averaging the values from
-    * multiple simluations.
-    *
-    * 1) If there is no reason to look farther into the future, either because the game is over or
-    * one player got dominoes, we use the heuristic.
-    *
-    * 2) If we reached our max depth, use the heuristic.
-    *
-    * 3) If the action is a draw, we need to consider all possible draw tiles. For each one, create
-    * a new MaxNode with that tile and return the average of the score of those MaxNodes.
-    *
-    * 4) If the action is a move or pass, play the best opponent move and then reconsider the
-    * position. In order to do this concretely, simulate the opponent's hand and for each hand,
-    * create a Min/MaxNode with that hand. Then, consider that position from the opponent's
-    * perspective in order to find its best move. Once the best opponent move is found, play it and
-    * convert that node into a Max/MinNode.
-    */
   def score(): Score = {
     SearchStats.visit()
-    if (
-      afterGame.isOver ||
-      afterGame.playerOne.hand.isEmpty ||
-      afterGame.playerTwo.hand.isEmpty ||
-      (depthRemaining <= 0)
-    ) {
+
+    if (depthRemaining <= 0 &&
+        !afterGame.isOver &&
+        afterGame.playerOne.hand.nonEmpty &&
+        afterGame.playerTwo.hand.nonEmpty) {
       heuristic()
     } else {
       recursiveScore()
     }
   }
 
-  def recursiveScore(): Score = {
-    val isRobotTurn = (afterGame.activePlayer().name == "robot")
-    val opponentHands = if (perspective.maybeOpponentHand.isEmpty) {
-      (1 to numSimulations)
-        .map((_) => perspective.opponentHand.getSample())
-    } else {
-      List(perspective.maybeOpponentHand.get)
+  private def opponentHands(): Seq[List[Domino]] =
+    perspective.maybeOpponentHand match {
+      case Some(hand) => List(hand)
+      case None =>
+        (0 until numSimulations)
+          .map(_ => perspective.opponentHand.getSample())
     }
-    opponentHands
-      .map((hand) => {
-        if (action == Draw) {
-          val updatedPerspective = perspective
-            .assumeOpponentHand(hand, beforeGame.board.tiles())
-          val numDraws = if (beforeGame.board.tiles().length <= 1) 3 else 10
-          (0 to numDraws)
-            .map((t) => {
-              // perspective update will choose a random tile
-              if (isRobotTurn) {
-                MaxNode(
-                  updatedPerspective.update(beforeGame, afterGame),
-                  afterGame,
-                  depthRemaining,
-                  numSimulations,
-                ).toMinNode().map(_.score()).getOrElse(Score(0.0))
-              } else {
-                MinNode(
-                  updatedPerspective.update(beforeGame, afterGame),
-                  afterGame,
-                  depthRemaining,
-                  numSimulations,
-                ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
-              }
-            })
-            .reduce(_ |+| _)
-        } else {
-          val safeGame = afterGame.withReplacedActiveHand(hand)
-          val updatedPerspective = perspective
-            .assumeOpponentHand(hand, beforeGame.board.tiles())
-            .update(beforeGame, afterGame)
-          if (isRobotTurn) {
-            MaxNode(
-              updatedPerspective.swap(),
-              safeGame,
-              depthRemaining,
-              numSimulations,
-            ).toMinNode().map(_.score()).getOrElse(Score(0.0))
-          } else {
-            MinNode(
-              updatedPerspective.swap(),
-              safeGame,
-              depthRemaining,
-              numSimulations,
-            ).toMaxNode().map(_.score()).getOrElse(Score(0.0))
-          }
-        }
-      })
-      .reduce(_ |+| _)
+
+  private def evaluateHand(hand: List[Domino]): Score = {
+    if (afterGame.isOver ||
+        afterGame.playerOne.hand.isEmpty ||
+        afterGame.playerTwo.hand.isEmpty) {
+      evaluateTerminal(hand)
+    } else if (action == Draw) {
+      evaluateDraw(hand)
+    } else {
+      evaluateMove(hand)
+    }
   }
+
+  private def evaluateMove(hand: List[Domino]): Score = {
+    val safeGame = afterGame.withReplacedActiveHand(hand)
+
+    val updatedPerspective = perspective
+      .assumeOpponentHand(hand, beforeGame.board.tiles())
+      .update(beforeGame, afterGame)
+
+    if (afterGame.activePlayer().name == "robot") {
+      MaxNode(
+        updatedPerspective.swap(),
+        safeGame,
+        depthRemaining,
+        numSimulations
+      ).score()
+    } else {
+      MinNode(
+        updatedPerspective.swap(),
+        safeGame,
+        depthRemaining,
+        numSimulations
+      ).score()
+    }
+  }
+
+  private def evaluateDraw(hand: List[Domino]): Score = {
+    val updatedPerspective =
+      perspective.assumeOpponentHand(hand, beforeGame.board.tiles())
+
+    val numDraws =
+      if (beforeGame.board.tiles().length <= 1) 3 else 10
+
+    SearchStats.visitDraw(numDraws)
+
+    ScoreAccumulator.average((0 until numDraws).map { _ =>
+      val (readyGame, readyPerspective, _) =
+        if (numDraws == 1) {
+          val firstPerspective =
+            updatedPerspective.update(beforeGame, afterGame)
+
+          drawUntilPlayable(afterGame, firstPerspective)
+        } else {
+          val activeHand = updatedPerspective.hand
+          val inactiveHand = hand
+          val boardTiles = beforeGame.board.tiles()
+
+          val availableTiles = Domino.all().filterNot { d =>
+            boardTiles.contains(d) ||
+            activeHand.contains(d) ||
+            inactiveHand.contains(d)
+          }
+
+          val sampledGame = beforeGame.copy(
+            playerOne = beforeGame.playerOne.copy(
+              hand =
+                if (beforeGame.playerOne.name == updatedPerspective.name)
+                  activeHand
+                else
+                  inactiveHand
+            ),
+            playerTwo = beforeGame.playerTwo.copy(
+              hand =
+                if (beforeGame.playerTwo.name == updatedPerspective.name)
+                  activeHand
+                else
+                  inactiveHand
+            ),
+            boneyard = scala.util.Random.shuffle(availableTiles)
+          )
+
+          drawUntilPlayable(sampledGame, updatedPerspective)
+        }
+
+      if (afterGame.activePlayer().name == "robot") {
+        MaxNode(
+          readyPerspective,
+          readyGame,
+          depthRemaining,
+          numSimulations
+        ).bestAction()._1
+      } else {
+        MinNode(
+          readyPerspective,
+          readyGame,
+          depthRemaining,
+          numSimulations
+        ).bestAction()._1
+      }
+    })
+  }
+
+  private def evaluateTerminal(hand: List[Domino]): Score = {
+    val sampledGame = beforeGame.copy(
+      playerOne =
+        if (beforeGame.playerOne.name == perspective.opponentName)
+          beforeGame.playerOne.copy(hand = hand)
+        else
+          beforeGame.playerOne,
+      playerTwo =
+        if (beforeGame.playerTwo.name == perspective.opponentName)
+          beforeGame.playerTwo.copy(hand = hand)
+        else
+          beforeGame.playerTwo
+    )
+
+    val result = sampledGame.act(action, false, true).get
+
+    heuristic(result)
+  }
+
+  def recursiveScore(): Score =
+    ScoreAccumulator.average(
+      opponentHands().map(evaluateHand)
+    )
 }

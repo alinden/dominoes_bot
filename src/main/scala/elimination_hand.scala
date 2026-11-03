@@ -211,10 +211,8 @@ case class EliminationHand(
     // Sample hypothetical hands and evaluate the observed move.
     // ------------------------------------------------------------
 
-    val numSamples = 100
-
     val observations: List[(Set[Domino], Boolean)] =
-      (0 until numSamples).toList.map { _ =>
+      (0 until Config.bayesSamples).toList.map { _ =>
 
         val remainingHand = updated.getSample()
         val originalHand = move.domino :: remainingHand
@@ -228,13 +226,13 @@ case class EliminationHand(
             EliminationHand.sampleFromOpponentHand(
               "robot",
               originalHand ++ before.board.tiles(),
-              numSamples = 1000,
+              numSamples = Config.bayesInitialHandSamples,
             ),
             Some(this),
           ),
           before,
-          2, // Search Depth
-          32, // Number of Simulations
+          Config.bayesDepth,
+          Config.bayesSimulations,
           true, // isRoot
         ).goodActions()
 
@@ -252,17 +250,15 @@ case class EliminationHand(
 
     // If every sampled hand produces the same result,
     // there is no useful distinction to learn.
-    if (goodCount == 0 || goodCount == numSamples) {
+    if (goodCount == 0 || goodCount == Config.bayesSamples) {
       return updated
     }
 
-    val overallGoodRate = goodCount.toDouble / numSamples
+    val overallGoodRate = goodCount.toDouble / Config.bayesSamples
 
-    // Larger values produce more conservative estimates.
-    val priorStrength = 10.0
+    val priorStrength = Config.bayesPriorStrength
 
-    // Reduce the strength of the combined tile evidence.
-    val evidenceStrength = 0.5
+    val evidenceStrength = Config.bayesEvidenceStrength
 
     val tileCounts = scala.collection.mutable.Map.empty[
       Domino,
