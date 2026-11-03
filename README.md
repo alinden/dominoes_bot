@@ -43,6 +43,26 @@ The implementation is divided into three main components: the game engine, the s
 - `MinNode` selects the lowest-valued move from the robot's perspective, representing the opponent's decisions.
 - `AvgNode` evaluates uncertain outcomes by sampling possible opponent hands and simulating draws.
 
+```mermaid
+flowchart TD
+    M1["MaxNode<br/>Robot chooses a move"]
+    A1["AvgNode<br/>Move A"]
+    A2["AvgNode<br/>Move B"]
+    N1["MinNode<br/>Sampled hand 1"]
+    N2["MinNode<br/>Sampled hand 2"]
+    A3["AvgNode<br/>Opponent response"]
+    M2["MaxNode<br/>Next robot turn"]
+    M3["MaxNode<br/>Next robot turn"]
+
+    M1 --> A1
+    M1 --> A2
+    A1 --> N1
+    A1 --> N2
+    N1 --> A3
+    A3 --> M2
+    A3 --> M3
+```
+
 The search alternates between player decisions and probabilistic evaluations. At terminal positions, it evaluates the resulting scores; at the search depth limit, it uses a heuristic.
 
 To balance playing strength and response time, the robot performs successive searches with increasing depth and simulation budgets. It stops after a search exceeds a configurable time target or the available search configurations are exhausted.
