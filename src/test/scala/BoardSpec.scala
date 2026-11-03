@@ -38,6 +38,31 @@ class BoardSpec extends AnyFlatSpec {
     assert(cross.length() == 3)
   }
 
+  "addRight" should "extend the left chain when there is no spinner" in {
+    val board = Board.empty()
+      .addFirstTile(Domino(6, 3))
+
+    val result = board.addRight(Domino(3, 2))
+
+    assert(result.isDefined)
+
+    val updated = result.get
+
+    assert(updated.spinner.isEmpty)
+    assert(updated.right.isEmpty)
+    assert(updated.left.length == 2)
+    assert(updated.tiles().toSet == Set(Domino(6, 3), Domino(3, 2)))
+    assert(updated.state() == Snake)
+    assert(updated.score() == 8)
+  }
+
+  "addRight" should "reject incompatible tiles when there is no spinner" in {
+    val board = Board.empty()
+      .addFirstTile(Domino(6, 3))
+
+    assert(board.addRight(Domino(5, 2)).isEmpty)
+  }
+
   "A Board" should "calculate scores with a spinner" in {
     val spinner = Board.empty().addFirstTile(Domino(5, 5))
     assert(spinner.score() == 10)
@@ -105,12 +130,38 @@ class BoardSpec extends AnyFlatSpec {
 
     val withSpinner = snake.addSpinner(Domino(6, 6), Left).get
 
+    assert(withSpinner.left == snake.left.map(_.backwards()).reverse)
     assert(withSpinner.state() == Tee)
     assert(withSpinner.spinner.get.tile == Domino(6, 6))
     assert(withSpinner.left.length == 2)
     assert(withSpinner.score() == 15) // spinner 12 + exposed 3
 
     assert(snake.state() == Snake)
+  }
+
+  "A Board" should "add a spinner to the right end of a snake" in {
+    val first = Board.empty().addFirstTile(Domino(6, 4))
+    val snake = first.addRight(Domino(4, 3)).get
+
+    val withSpinner = snake.addSpinner(Domino(3, 3), Right).get
+
+    assert(withSpinner.state() == Tee)
+    assert(withSpinner.spinner.get.tile == Domino(3, 3))
+    assert(withSpinner.left == snake.left)
+    assert(withSpinner.right.isEmpty)
+    assert(withSpinner.up.isEmpty)
+    assert(withSpinner.down.isEmpty)
+    assert(withSpinner.score() == 12) // spinner 6 + exposed 6
+
+    assert(snake.state() == Snake)
+  }
+
+  "A Board" should "reject a spinner that cannot connect to the snake" in {
+    val first = Board.empty().addFirstTile(Domino(6, 4))
+    val snake = first.addRight(Domino(4, 3)).get
+
+    assert(snake.addSpinner(Domino(5, 5), Left).isEmpty)
+    assert(snake.addSpinner(Domino(5, 5), Right).isEmpty)
   }
 
   "A Board" should "reject a second spinner" in {

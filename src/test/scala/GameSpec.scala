@@ -526,4 +526,56 @@ class GameSpec extends AnyFlatSpec {
     assert(updated.playerTwo.score == 100)
     assert(updated.isOver)
   }
+
+  "Game.act" should "allow another pass after the opponent plays" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 4)),
+      playerOne = Player("Human", List(Domino(2, 1)), 0),
+      playerTwo = Player("Robot", List(Domino(6, 3), Domino(5, 5)), 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    // Human cannot play.
+    val afterFirstPass = game.act(Pass, debug = false).get
+
+    assert(afterFirstPass.turn == PlayerTwoTurn)
+    assert(afterFirstPass.lastTurnPass)
+    assert(!afterFirstPass.isOver)
+
+    // Robot plays, breaking the sequence of passes.
+    val afterRobotMove =
+      afterFirstPass.act(Move(Domino(6, 3), Left), debug = false).get
+
+    assert(afterRobotMove.turn == PlayerOneTurn)
+    assert(!afterRobotMove.lastTurnPass)
+    assert(!afterRobotMove.isOver)
+
+    // Human still cannot play and passes again.
+    val afterSecondPass = afterRobotMove.act(Pass, debug = false).get
+
+    assert(afterSecondPass.turn == PlayerTwoTurn)
+    assert(afterSecondPass.lastTurnPass)
+    assert(!afterSecondPass.isOver)
+  }
+
+  "Game.act" should "end the round after two consecutive passes" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 4)),
+      playerOne = Player("Human", List(Domino(2, 1)), 0),
+      playerTwo = Player("Robot", List(Domino(5, 5)), 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val afterFirstPass = game.act(Pass, debug = false).get
+
+    val afterSecondPass =
+      afterFirstPass.act(Pass, debug = false, dontShuffle = true).get
+
+    // A locked round returns to the highest-double phase.
+    assert(afterSecondPass.turn == HighestDouble)
+  }
 }

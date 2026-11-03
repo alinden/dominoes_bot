@@ -10,61 +10,42 @@ case class MaxNode(
     debug: Boolean = false,
 ) extends MinMaxNode
     with EvalNode {
-  def asyncBestAction(
-      limitToMoves: List[Action] = List(),
-      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
-  ): Task[(Score, Action)] = {
-    asyncGetScoredMoves(limitToMoves).map((scoredMoves) => {
-      onScoredMoves(scoredMoves)
 
-      if (debug) {
-        println("MaxNode Debug scored moves ------------------")
-        println(s"Depth: ${depthRemaining}")
-        println(s"Num Simulations: ${numSimulations}")
-        scoredMoves
-          .sortBy(_._1.value)
-          .reverse
-          .foreach { case (score, move) =>
-            println(s"$move: ${score.value}")
-          }
-      }
-      scoredMoves
-        .foldRight[Option[(Score, Action)]](None) { case ((score, move), z) =>
-          z match {
-            case None => Some((score, move))
-            case Some((zScore, zMove)) =>
-              if (isBetterScore(score, zScore)) Some((score, move)) else z
-          }
-        }
-        .getOrElse((Score(0.0), Pass))
-    })
-  }
+  def asyncBestAction(
+    limitToMoves: List[Action] = List(),
+    onScoredMoves: List[(Score, Action)] => Unit = _ => (),
+  ): Task[(Score, Action)] =
+    asyncGetScoredMoves(limitToMoves).map { scoredMoves =>
+      onScoredMoves(scoredMoves)
+      if (debug) printScoredMoves(scoredMoves)
+
+      selectBestMove(scoredMoves).getOrElse((Score(0.0), Pass))
+    }
+
+  // Defers each move's evaluation so parSequence can run them concurrently.
   def asyncGetScoredMoves(
-      limitToMoves: List[Action] = List(),
+    limitToMoves: List[Action] = List(),
   ): Task[List[(Score, Action)]] = {
-    Task.parSequence(
-      possibleFutures()
-        .withFilter {
-          case (_, move) => {
-            limitToMoves.isEmpty || limitToMoves.contains(move)
-          }
+    val tasks = possibleFutures()
+      .filter { case (_, move) =>
+        limitToMoves.isEmpty || limitToMoves.contains(move)
+      }
+      .map { case (future, move) =>
+        Task {
+          val score = AvgNode(
+            perspective,
+            game,
+            future,
+            move,
+            depthRemaining - 1,
+            childSimulations,
+          ).score()
+
+          (score, move)
         }
-        .map {
-          case (future, move) => {
-            Task(
-              (AvgNode(
-                perspective,
-                game,
-                future,
-                move,
-                depthRemaining - 1,
-                Config.nextBreadth(numSimulations),
-              ).score(),
-              move),
-            )
-          }
-        },
-    )
+      }
+
+    Task.parSequence(tasks)
   }
 
   def isBetterScore(
@@ -74,43 +55,22 @@ case class MaxNode(
   ): Boolean = {
     candidate.value + margin > previousBest.value
   }
-  def getScoredMoves(
-      limitToMoves: List[Action] = List(),
-  ): List[(Score, Action)] = {
-    possibleFutures()
-      .withFilter {
-        case (_, move) => {
-          limitToMoves.isEmpty || limitToMoves.contains(move)
-        }
-      }
-      .map {
-        case (future, move) => {
-          (
-            AvgNode(
-              perspective,
-              game,
-              future,
-              move,
-              depthRemaining - 1,
-              Config.nextBreadth(numSimulations),
-            ).score(),
-            move,
-          )
-        }
-      }
-  }
 
-  def toMinNode(): Option[MinNode] = {
-    val (_, action) = bestAction()
-    assert(action != Draw, "drawing in max node")
+  // reduce breadth only in max nodes to gradually reduce tree width as depth increases
+  override protected def childSimulations: Int = Config.nextBreadth(numSimulations)
 
-    game.act(action, false, true).map { next =>
-      MinNode(
-        perspective.update(game, next).swap(),
-        next,
-        depthRemaining - 1,
-        Config.nextBreadth(numSimulations),
-      )
-    }
+  private def printScoredMoves(
+    scoredMoves: List[(Score, Action)],
+  ): Unit = {
+    println("MaxNode Debug scored moves ------------------")
+    println(s"Depth: $depthRemaining")
+    println(s"Num Simulations: $numSimulations")
+
+    scoredMoves
+      .sortBy(_._1.value)
+      .reverse
+      .foreach { case (score, move) =>
+        println(s"$move: ${score.value}")
+      }
   }
 }

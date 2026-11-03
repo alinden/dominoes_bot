@@ -5,8 +5,6 @@ import scala.util.Random
 import scala.io.StdIn
 import java.util.Scanner
 
-import cats.implicits._
-
 case class Game(
     board: Board,
     playerOne: Player,
@@ -42,52 +40,72 @@ case class Game(
   }
 
   def playHighestDouble(): Option[Game] = {
-    val highestDoubleRank: List[Domino] = (0 to 6).toList
-      .map((n) => Domino(n, n))
-    highestDoubleRank
-      .foldRight[Option[(Game, String)]](None) { (d, z) =>
-        {
-          z.orElse(playHighestDouble(d).map { case (afterGame, message) =>
-            (
-              afterGame.log(
-                HighestDoubleEntry(
-                  afterGame.inactivePlayer().name,
-                  d,
-                ),
-              ),
-              message,
-            )
-          })
+    val doubles = (6 to 0 by -1).map(n => Domino(n, n))
+
+    val opening = doubles.iterator
+      .flatMap { domino =>
+        playHighestDouble(domino).map { case (game, message) =>
+          (
+            game.log(HighestDoubleEntry(game.inactivePlayer().name, domino)),
+            message
+          )
         }
       }
-      .map {
-        case (game, message) => {
-          println(message)
-          game
-        }
-      }
-      .orElse {
+      .take(1)
+      .toList
+      .headOption
+
+    opening match {
+      case Some((game, message)) =>
+        println(message)
+        Some(game)
+
+      case None =>
         val newGame = Game.setup(playerOne.name, playerTwo.name)
         println("game: nobody had a double. reshuffling.")
+
         Some(
-          Game(
-            newGame.board,
-            Player(
-              playerOne.name,
-              newGame.playerOne.hand,
-              playerOne.score,
-            ),
-            Player(
-              playerTwo.name,
-              newGame.playerTwo.hand,
-              playerTwo.score,
-            ),
-            HighestDouble,
-            newGame.boneyard,
-            GameLog.empty(),
-          ),
+          newGame.copy(
+            playerOne = newGame.playerOne.copy(score = playerOne.score),
+            playerTwo = newGame.playerTwo.copy(score = playerTwo.score)
+          )
         )
+    }
+  }
+
+  def playHighestDouble(domino: Domino): Option[(Game, String)] = {
+    val dominoScore = domino.high + domino.low
+
+    val openingPlayer =
+      if (playerOne.hand.contains(domino)) Some(playerOne)
+      else if (playerTwo.hand.contains(domino)) Some(playerTwo)
+      else None
+
+    openingPlayer.flatMap { player =>
+      player.removeTile(domino).map { updatedPlayer =>
+        val scoredPlayer = updatedPlayer.incrementScore(dominoScore)
+
+        val nextGame =
+          if (player == playerOne)
+            copy(
+              board = board.addFirstTile(domino),
+              playerOne = scoredPlayer,
+              turn = PlayerTwoTurn,
+              lastTurnPass = false,
+              isOver = false
+            )
+          else
+            copy(
+              board = board.addFirstTile(domino),
+              playerTwo = scoredPlayer,
+              turn = PlayerOneTurn,
+              lastTurnPass = false,
+              isOver = false
+            )
+
+        (nextGame, s"${player.name}: Play the $domino to start the game")
       }
+    }
   }
 
   def playerByName(name: String): Player = {
@@ -119,20 +137,20 @@ case class Game(
     )
   }
 
+  private def chain(direction: Direction): List[PlayedDomino] =
+    direction match {
+      case Left  => board.left
+      case Right => board.right
+      case Up    => board.up
+      case Down  => board.down
+    }
+
   // TODO: generalize this to work for adding to a chain when
   // another chain has the same terminal value. Now it only keeps
   // one move onto an empty chain. It should also only allow one move
   // onto two chains of equal end value.
   def simplify(actions: List[Action]): List[Action] = {
-    val emptyDirections = Direction.all
-      .filter((dir) =>
-        dir match {
-          case Left  => board.left.isEmpty
-          case Right => board.right.isEmpty
-          case Up    => board.up.isEmpty
-          case Down  => board.down.isEmpty
-        },
-      )
+    val emptyDirections = Direction.all.filter(dir => chain(dir).isEmpty)
     def filterRedundant(
         xs: List[Action],
         extraRedundantDirs: List[Direction] = List(),
@@ -157,16 +175,9 @@ case class Game(
       case SpinnerOnly => filterRedundant(actions)
       case Snake => {
         val nonEmptyChain = Direction.all
-          .filterNot((dir) => emptyDirections.contains(dir))
-          .map((dir) =>
-            dir match {
-              case Left  => board.left
-              case Right => board.right
-              case Up    => board.up
-              case Down  => board.down
-            },
-          )
-          .head
+          .map(chain)
+          .find(_.nonEmpty)
+          .get
         if (nonEmptyChain.head.value == nonEmptyChain.last.backwards().value) {
           // Snake with equal valued head and tail.
           return actions.filterNot((action) =>
@@ -181,210 +192,149 @@ case class Game(
       }
       case Tee => filterRedundant(actions)
       case Cross => {
-        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] = Direction.all
-          .filterNot((dir) =>
-            dir match {
-              case Left  => board.left.isEmpty
-              case Right => board.right.isEmpty
-              case Up    => board.up.isEmpty
-              case Down  => board.down.isEmpty
-            },
-          )
-          .map((dir) =>
-            dir match {
-              case Left  => (Left, board.left.head)
-              case Right => (Right, board.right.head)
-              case Up    => (Up, board.up.head)
-              case Down  => (Down, board.down.head)
-            },
-          )
-          .filterNot((x) => {
-            val tile = x._2.tile
-            tile.isDouble() && (tile != Domino(0, 0))
-          })
+        val nonEmptyChainHeads: List[(Direction, PlayedDomino)] =
+          Direction.all
+            .flatMap { direction =>
+              chain(direction).headOption.map(direction -> _)
+            }
+            .filterNot { case (_, played) =>
+              played.tile.isDouble() && played.tile != Domino(0, 0)
+            }
         if (nonEmptyChainHeads.isEmpty) {
           filterRedundant(actions)
         } else {
-          val redundantDirections: List[Direction] = nonEmptyChainHeads
-            .map { case (dir, PlayedDomino(_, v)) => Map(v -> List(dir)) }
-            .reduce(_ |+| _) // will ++ dirs
-            .toList
-            .flatMap { case (_, dirs) => dirs.drop(1) }
+          val redundantDirections: List[Direction] =
+            nonEmptyChainHeads
+              .groupBy { case (_, played) => played.value }
+              .values
+              .toList
+              .flatMap(_.drop(1).map(_._1))
           filterRedundant(actions, redundantDirections)
         }
       }
     }
   }
 
-  def playHighestDouble(domino: Domino): Option[(Game, String)] = {
-    var t: Turn = HighestDouble
-    var message: String = ""
-    var (pOne, pTwo) = (playerOne, playerTwo)
-    val dominoScore = domino.high + domino.low
-    if (playerOne.hand.contains(domino)) {
-      t = PlayerTwoTurn
-      val maybePOne =
-        pOne.removeTile(domino).map((p) => p.incrementScore(dominoScore))
-      if (maybePOne.isEmpty) return None // Should be impossible
-      pOne = maybePOne.get
-      message = s"${pOne.name}: Play the ${domino} to start the game"
-    } else if (playerTwo.hand.contains(domino)) {
-      t = PlayerOneTurn
-      val maybePTwo =
-        pTwo.removeTile(domino).map((p) => p.incrementScore(dominoScore))
-      if (maybePTwo.isEmpty) return None // Should be impossible
-      pTwo = maybePTwo.get
-      message = s"${pTwo.name}: Play the ${domino} to start the game"
-    } else {
-      return None
+  private def showPass(debug: Boolean): Unit =
+    if (debug) println(s"${activePlayer().name}: Pass")
+
+  private def showLockedGame(debug: Boolean): Unit =
+    if (debug) {
+      println("")
+      println("locked game")
+      println("the next round will start with the highest double")
+      println("")
     }
-    Some(
-      (
-        Game(
-          board.addFirstTile(domino),
-          pOne,
-          pTwo,
-          t,
-          boneyard,
-          log,
-        ),
-        message,
-      ),
-    )
-  }
+
+  private def showDominoes(game: Game, debug: Boolean): Unit =
+    if (debug) {
+      println("")
+      println("game: dominoes!")
+      println(game)
+      println("")
+    }
 
   def act(
-      action: Action,
-      debug: Boolean = true,
-      dontShuffle: Boolean = false,
+    action: Action,
+    debug: Boolean = true,
+    dontShuffle: Boolean = false,
   ): Option[Game] = action match {
-    case Pass => {
-      if (debug) {
-        println(s"${activePlayer().name}: Pass")
-      }
-      pass().map((g) => {
+    case Pass =>
+      showPass(debug)
+
+      pass().flatMap { next =>
         if (lastTurnPass) {
-          if (debug) {
-            println("")
-            println("locked game")
-            println("the next round will start with the highest double")
-            println("")
-          }
-          return Game.endGame(g, debug, dontShuffle)
+          showLockedGame(debug)
+          Game.endGame(next, debug, dontShuffle)
+        } else {
+          Some(next)
         }
-        g
-      })
-    }
-    case Draw => {
-      draw().map((g) => {
-        if (debug) {
-          println(s"${activePlayer().name}: Draw")
-        }
-        g
-      })
-    }
-    case Move(domino, direction) => {
-      if (debug) {
-        println(s"${activePlayer().name}: Move the $domino $direction")
       }
-      move(domino, direction).map((g) => {
-        if (g.inactivePlayer().hand.isEmpty) {
-          if (debug) {
-            println("")
-            println("game: dominoes!")
-            println(g)
-            println("")
-          }
-          return Game.endGame(g, debug, dontShuffle)
+
+    case Draw =>
+      draw().map { next =>
+        if (debug) println(s"${activePlayer().name}: Draw")
+        next
+      }
+
+    case Move(domino, direction) =>
+      if (debug) println(s"${activePlayer().name}: Move the $domino $direction")
+
+      move(domino, direction).flatMap { next =>
+        if (next.inactivePlayer().hand.isEmpty) {
+          showDominoes(next, debug)
+          Game.endGame(next, debug, dontShuffle)
+        } else {
+          Some(next)
         }
-        g
-      })
-    }
-    case _ => {
-      throw new Error(s"action: ${action} not supported by robot")
-    }
+      }
+
+    case _ =>
+      throw new Error(s"action: $action not supported by robot")
   }
 
-  def pass(): Option[Game] = {
-    if (!legalMoves().isEmpty) return None
-    if (!boneyard.isEmpty) return None
-    Some(
-      Game(
-        board,
-        playerOne,
-        playerTwo,
-        incrementTurn(),
-        List(),
-        log.log(PassLogEntry(activePlayer().name)),
-        true,
-      ),
-    )
-  }
+  def pass(): Option[Game] =
+    if (legalMoves().nonEmpty || boneyard.nonEmpty) {
+      None
+    } else {
+      Some(
+        copy(
+          turn = incrementTurn(),
+          boneyard = Nil,
+          log = log.log(PassLogEntry(activePlayer().name)),
+          lastTurnPass = true,
+          isOver = false
+        )
+      )
+    }
 
-  def draw(): Option[Game] = {
+  def draw(): Option[Game] =
     if (legalMoves().nonEmpty || boneyard.isEmpty) {
-      return None
+      None
+    } else {
+      val tile = boneyard.head
+
+      val (pOne, pTwo) =
+        orderPlayers(activePlayer().addTile(tile), inactivePlayer())
+
+      Some(
+        copy(
+          playerOne = pOne,
+          playerTwo = pTwo,
+          boneyard = boneyard.tail,
+          log = log.log(
+            DrawLogEntry(
+              activePlayer().name,
+              activePlayer().hand.length,
+              legalTilesToPlay()
+            )
+          ),
+          lastTurnPass = false,
+          isOver = false
+        )
+      )
     }
 
-    val tile = boneyard.head
-    val remainingBoneyard = boneyard.tail
-
-    val (pOne, pTwo) =
-      orderPlayers(activePlayer().addTile(tile), inactivePlayer())
-
-    Some(
-      Game(
-        board,
-        pOne,
-        pTwo,
-        turn,
-        remainingBoneyard,
-        log.log(
-          DrawLogEntry(
-            activePlayer().name,
-            activePlayer().hand.length,
-            legalTilesToPlay(),
-          ),
-        ),
-      ),
-    )
-  }
-
-  def log(entry: GameLogEntry): Game = {
-    Game(
-      board,
-      playerOne,
-      playerTwo,
-      turn,
-      boneyard,
-      log.log(entry),
-      lastTurnPass,
-      isOver,
-    )
-  }
+  def log(entry: GameLogEntry): Game = copy(log = log.log(entry))
 
   def withReplacedActiveHand(hand: List[Domino]): Game = {
     val unavailable = board.tiles().toSet ++ hand
-    val remainingTiles =
-      Domino.all().filterNot(unavailable.contains)
+    val remainingTiles = Domino.all().filterNot(unavailable.contains)
     val shuffledTiles = Random.shuffle(remainingTiles)
+
     val newBoneyard = shuffledTiles.take(boneyard.length)
-    val newPTwoHand = shuffledTiles.drop(boneyard.length)
+    val newOpponentHand = shuffledTiles.drop(boneyard.length)
+
     val (pOne, pTwo) = orderPlayers(
-      Player(activePlayer().name, hand, activePlayer().score),
-      Player(inactivePlayer().name, newPTwoHand, inactivePlayer().score),
+      activePlayer().copy(hand = hand),
+      inactivePlayer().copy(hand = newOpponentHand)
     )
-    val updated = Game(
-      board,
-      pOne,
-      pTwo,
-      turn,
-      newBoneyard,
-      log,
-      lastTurnPass,
-      isOver,
+
+    copy(
+      playerOne = pOne,
+      playerTwo = pTwo,
+      boneyard = newBoneyard
     )
-    updated
   }
 
   def doFirstLegalAction(): Option[Game] = {
@@ -403,44 +353,31 @@ case class Game(
     }
   }
 
-  def legalTilesToPlay(): List[Domino] = {
-    Game
-      .allDirections()
-      .flatMap((direction) => {
-        Domino
-          .all()
-          .map((domino) => {
-            (domino, updateBoard(domino, direction))
-          })
-      })
-      .filterNot(_._2.isEmpty)
-      .map(_._1)
-      .filterNot(board.contains(_))
-      .distinct
-  }
-
-  def scoringMoves(): List[(Move, Int)] = {
-    Game
-      .allDirections()
-      .flatMap((direction) => {
-        Domino
-          .all()
-          .map((domino) => {
-            val board = updateBoard(domino, direction)
-            (Move(domino, direction), board.map(_.score()))
-          })
-      })
-      .filterNot(_._2.isEmpty)
-      .map { case (move, someScore) => (move, someScore.get) }
-      .filterNot {
-        case (move, score) => {
-          board.contains(move.domino) || (score % 5 != 0)
+  def legalTilesToPlay(): List[Domino] =
+    Game.allDirections()
+      .flatMap { direction =>
+        Domino.all().flatMap { domino =>
+          updateBoard(domino, direction).map(_ => domino)
         }
+      }
+      .filterNot(board.contains)
+      .distinct
+
+  def scoringMoves(): List[(Move, Int)] =
+    Game.allDirections()
+      .flatMap { direction =>
+        Domino.all().flatMap { domino =>
+          updateBoard(domino, direction).map { updatedBoard =>
+            (Move(domino, direction), updatedBoard.score())
+          }
+        }
+      }
+      .filterNot { case (move, score) =>
+        board.contains(move.domino) || score % 5 != 0
       }
       .distinct
       .sortBy(_._2)
       .reverse
-  }
 
   def legalMoves(): List[Move] = {
     val hand = activePlayer().hand
@@ -453,28 +390,26 @@ case class Game(
   }
 
   def move(
-      domino: Domino,
-      direction: Direction,
-  ): Option[Game] = {
+    domino: Domino,
+    direction: Direction,
+  ): Option[Game] =
     for {
-      b <- updateBoard(domino, direction)
-      (pOne, pTwo) <- updatePlayers(domino, b.score())
-    } yield {
-      Game(
-        b,
-        pOne,
-        pTwo,
-        incrementTurn(),
-        boneyard,
-        log.log(
-          MoveLogEntry(
-            activePlayer().name,
-            Move(domino, direction),
-          ),
-        ),
-      )
-    }
-  }
+      updatedBoard <- updateBoard(domino, direction)
+      (pOne, pTwo) <- updatePlayers(domino, updatedBoard.score())
+    } yield copy(
+      board = updatedBoard,
+      playerOne = pOne,
+      playerTwo = pTwo,
+      turn = incrementTurn(),
+      log = log.log(
+        MoveLogEntry(
+          activePlayer().name,
+          Move(domino, direction)
+        )
+      ),
+      lastTurnPass = false,
+      isOver = false
+    )
 
   def getUserInput(): Option[Game] = {
     val maxAttempts = 10
@@ -565,18 +500,14 @@ case class Game(
   }
 
   private def updatePlayers(
-      domino: Domino,
-      score: Int,
-  ): Option[(Player, Player)] = {
+    domino: Domino,
+    score: Int,
+  ): Option[(Player, Player)] =
     activePlayer()
       .removeTile(domino)
-      .map((ap) => {
-        orderPlayers(
-          ap.incrementScore(score),
-          inactivePlayer(),
-        )
-      })
-  }
+      .map { player =>
+        orderPlayers(player.incrementScore(score), inactivePlayer())
+      }
 
   def forceMove(move: Move): Option[Game] = {
     updateBoard(move.domino, move.direction).map((b) => {
