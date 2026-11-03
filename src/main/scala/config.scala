@@ -4,8 +4,8 @@ object Config {
 
   // Bayesian inference
   val bayesDepth = 3
-  val bayesSamples = 30
-  val bayesSimulations = 20
+  val bayesSamples = 50
+  val bayesSimulations = 30
   val bayesInitialHandSamples = 200
   // Larger values produce more conservative estimates.
   val bayesPriorStrength = 10.0

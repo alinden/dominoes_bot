@@ -27,6 +27,36 @@ It uses these estimates to update the probability distribution through Bayesian 
 The implementation uses bounded search depths, sampling, and additional heuristics to manage computational complexity. The resulting algorithm is an
 approximation rather than an exhaustive solution to the game.
 
+## Architecture
+
+The implementation is divided into three main components: the game engine, the search algorithm, and the opponent-hand model.
+
+### Game engine
+
+`Game` and `Board` represent the current game state, including the players' hands, scores, tiles on the board, and remaining boneyard. The game engine handles legal moves, scoring, drawing, passing, and round termination independently of the AI.
+
+### Game-tree search
+
+`Robot` coordinates move selection using a Monte Carlo approximation of expectiminimax. The search tree contains three types of nodes:
+
+- `MaxNode` selects the highest-valued move for the robot.
+- `MinNode` selects the lowest-valued move from the robot's perspective, representing the opponent's decisions.
+- `AvgNode` evaluates uncertain outcomes by sampling possible opponent hands and simulating draws.
+
+The search alternates between player decisions and probabilistic evaluations. At terminal positions, it evaluates the resulting scores; at the search depth limit, it uses a heuristic.
+
+To balance playing strength and response time, the robot performs successive searches with increasing depth and simulation budgets. It stops after a search exceeds a configurable time target or the available search configurations are exhausted.
+
+### Opponent-hand inference
+
+`Perspective` represents a player's knowledge of the game, including a probability distribution over possible opponent hands.
+
+The distribution is updated as the opponent plays, draws, or passes. Bayesian inference uses both the constraints imposed by observed actions and estimates of how likely the opponent would have been to choose those actions with different hands.
+
+Possible hands are represented using a 28-bit integer mask, with one bit for each domino in a double-six set. This allows efficient membership checks and hand updates while reducing memory allocation during inference.
+
+The search algorithm samples from this distribution, allowing the robot to evaluate moves against plausible opponent hands rather than assuming that the hidden tiles are uniformly distributed.
+
 ## How to play
 When it's your turn, you'll see a `*` next to **human** in the score. You're **human** and it's **robot**.  It'll
 look something like this:
