@@ -4,6 +4,29 @@ Beats you at dominoes.
 ## How to run the program
 To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt "run --play_human"`.
 
+To see how its thinking, use the decision log: `sbt "run --play_human --log_decisions decisions.txt"`.
+
+To run unit tests: `sbt test`.
+
+## How the AI works
+
+The primary challenge in dominoes is making decisions with incomplete information. Each player knows their own tiles and the public game state,
+but not the opponent's hand. Drawing tiles introduces an additional source of randomness.
+
+The AI maintains a probability distribution over possible opponent hands, updating it as new information becomes available. Representing complete
+hands rather than independent tile probabilities captures dependencies between tiles and allows observations to eliminate impossible configurations and
+to reduce the likelihood of hands that would've likely been played differently.
+
+Move selection uses a Monte Carlo approximation of expectiminimax. For each available move, the AI samples possible opponent hands from the probability
+distribution and evaluates the resulting game states through a recursive game-tree search. The sampling approach handles uncertainty about the opponent's
+ hand and randomness from future tile draws within the same search framework.
+
+To estimate how likely an observed move would be for a particular hand, the AI simulates the opponent's decision-making process from their perspective.
+It uses these estimates to update the probability distribution through Bayesian inference.
+
+The implementation uses bounded search depths, sampling, and additional heuristics to manage computational complexity. The resulting algorithm is an
+approximation rather than an exhaustive solution to the game.
+
 ## How to play
 When it's your turn, you'll see a `*` next to **human** in the score. You're **human** and it's **robot**.  It'll
 look something like this:
@@ -62,19 +85,3 @@ rounded to the nearest 5.
 
 At the end of a round that ends in a **locked game**, the player with a lower tile count gets the sum of their opponent's tiles minus the sum
 of the their tiles, rounded to the nearest 5.
-
-## How the AI works
-
-The primary challenge in dominoes is making decisions with incomplete information. Each player knows their own tiles and the public game state,
-but not the opponent's hand. Drawing tiles introduces an additional source of randomness.
-
-The AI maintains a probability distribution over possible opponent hands, updating it as new information becomes available. Representing complete
-hands rather than independent tile probabilities captures dependencies between tiles and allows observations to eliminate impossible configurations and
-to reduce the likelihood of hands that would've likely been played differently.
-
-Move selection uses a Monte Carlo approximation of expectiminimax. For each available move, the AI samples possible opponent hands from the probability
-distribution and evaluates the resulting game states through a recursive game-tree search. The sampling approach handles uncertainty about the opponent's
- hand and randomness from future tile draws within the same search framework.
-
-The implementation uses bounded search depths, sampling, and additional heuristics to manage computational complexity. The resulting algorithm is an
-approximation rather than an exhaustive solution to the game.

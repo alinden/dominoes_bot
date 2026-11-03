@@ -21,28 +21,12 @@ case class MaxNode(
         println("MaxNode Debug scored moves ------------------")
         println(s"Depth: ${depthRemaining}")
         println(s"Num Simulations: ${numSimulations}")
-        def firstFourLetters(d: Double): String = {
-          var x = d.toString().take(5)
-          while (x.length < 5) {
-            x = x + " "
-          }
-          x
-        }
         scoredMoves
           .sortBy(_._1.value)
           .reverse
-          .map { case (score, move) =>
-            s"${move} (mean, stddev, max, min, pLosi, pWinn, pMore): ${List(
-              score.value,
-              score.stddev,
-              score.max,
-              score.min,
-              (1.0 - score.positiveLikelihood(-1.0)),
-              score.positiveLikelihood(1.0),
-              score.positiveLikelihood(0.0),
-            ).map(firstFourLetters(_))}"
+          .foreach { case (score, move) =>
+            println(s"$move: ${score.value}")
           }
-          .foreach(println(_))
       }
       scoredMoves
         .foldRight[Option[(Score, Action)]](None) { case ((score, move), z) =>
@@ -74,7 +58,7 @@ case class MaxNode(
                 future,
                 move,
                 depthRemaining - 1,
-                numSimulations,
+                Config.nextBreadth(numSimulations),
               ).score(),
               move,
             )
@@ -108,7 +92,7 @@ case class MaxNode(
               future,
               move,
               depthRemaining - 1,
-              numSimulations,
+              Config.nextBreadth(numSimulations),
             ).score(),
             move,
           )
@@ -120,12 +104,13 @@ case class MaxNode(
     val (_, action) = bestAction()
     val after = game.act(action, false, true)
     if (action == Draw) {
+      assert(false, "drawing in max node")
       after.flatMap((g) =>
         MaxNode(
           perspective.update(game, g),
           g,
           depthRemaining - 1,
-          numSimulations,
+          Config.nextBreadth(numSimulations),
         ).toMinNode()
       )
     } else {
@@ -134,7 +119,7 @@ case class MaxNode(
           perspective.update(game, g).swap(),
           g,
           depthRemaining - 1,
-          numSimulations,
+          Config.nextBreadth(numSimulations),
         )
       )
     }

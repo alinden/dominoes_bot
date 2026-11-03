@@ -74,8 +74,8 @@ object Robot {
       // Call getBestMove with the following params until it takes longer than
       // expectedTime to get a result. This should lead to quicker first turns
       // and better later turns.
-      val moveParams = List((5, 30), (7, 30), (9, 30), (11, 30))
-      val expectedTime = 3000.0
+      val moveParams = Config.moveParams
+      val expectedTime = Config.moveTimeMs
       var dt = 0.0
       var i = 0
       var move: Action = null
@@ -96,15 +96,7 @@ object Robot {
 
               scoredMoves.sortBy(-_._1.value).foreach {
                 case (score, action) =>
-                  log.println(
-                    f"  $action%-25s " +
-                    f"mean=${score.value}%.3f " +
-                    f"stddev=${score.stddev}%.3f " +
-                    f"min=${score.min()}%.3f " +
-                    f"max=${score.max()}%.3f " +
-                    f"pLoss=${1.0 - score.positiveLikelihood(-1.0)}%.3f " +
-                    f"pWin=${score.positiveLikelihood(1.0)}%.3f"
-                  )
+                  log.println(f"$action%-25s mean=${score.value}%.3f ")
               }
             }
           },
@@ -116,12 +108,16 @@ object Robot {
         dt = (t2 - t1) / 1000000.0
 
         val nodes = SearchStats.count()
+        val drawNodes = SearchStats.drawCount()
+        val drawSimulations = SearchStats.drawSimulationCount()
         val nodesPerSecond =
           if (dt > 0) nodes * 1000.0 / dt else 0.0
 
         decisionLog.foreach { log =>
           log.println(f"AvgNodes evaluated: $nodes%,d")
           log.println(f"AvgNodes/second: $nodesPerSecond%,.0f")
+          log.println(f"Draw nodes: $drawNodes%,d")
+          log.println(f"Draw simulations: $drawSimulations%,d")
           log.flush()
         }
 

@@ -325,31 +325,35 @@ case class Game(
     )
   }
 
-  def draw(
-      luckyNumber: Option[Int] = None,
-      forceTile: Option[Domino] = None,
-  ): Option[Game] = {
-    if (!legalMoves().isEmpty || boneyard.isEmpty) {
+  def draw(forceTile: Option[Domino] = None): Option[Game] = {
+    if (legalMoves().nonEmpty || boneyard.isEmpty) {
       return None
     }
-    val index = luckyNumber.getOrElse(0)
-    val tileAtIndex = forceTile.getOrElse(boneyard(index))
+
+    val tile = forceTile.getOrElse(boneyard.head)
+
+    val remainingBoneyard = forceTile match {
+      case Some(d) => boneyard.filterNot(_ == d)
+      case None    => boneyard.tail
+    }
+
     val (pOne, pTwo) =
-      orderPlayers(activePlayer().addTile(tileAtIndex), inactivePlayer())
+      orderPlayers(activePlayer().addTile(tile), inactivePlayer())
+
     Some(
       Game(
         board,
         pOne,
         pTwo,
         turn,
-        boneyard.filterNot(_ == tileAtIndex),
+        remainingBoneyard,
         log.log(
           DrawLogEntry(
             activePlayer().name,
             activePlayer().hand.length,
-            legalTilesToPlay(),
+            legalTilesToPlay()
           )
-        ),
+        )
       )
     )
   }
@@ -368,9 +372,9 @@ case class Game(
   }
 
   def withReplacedActiveHand(hand: List[Domino]): Game = {
-    val remainingTiles = Domino
-      .all()
-      .filterNot((d) => board.contains(d) || hand.contains(d))
+    val unavailable = board.tiles().toSet ++ hand
+    val remainingTiles =
+      Domino.all().filterNot(unavailable.contains)
     val shuffledTiles = Random.shuffle(remainingTiles)
     val newBoneyard = shuffledTiles.take(boneyard.length)
     val newPTwoHand = shuffledTiles.drop(boneyard.length)
@@ -396,13 +400,15 @@ case class Game(
   }
 
   def allLegalActions(): List[Action] = {
-    val nonMoveActions = List(
-      (Pass, pass()),
-      (Draw, draw()),
-    )
-      .filterNot(_._2.isEmpty)
-      .map(_._1)
-    simplify(legalMoves() ++ nonMoveActions)
+    val moves = legalMoves()
+
+    if (moves.nonEmpty) {
+      simplify(moves)
+    } else if (boneyard.nonEmpty) {
+      List(Draw)
+    } else {
+      List(Pass)
+    }
   }
 
   def legalTilesToPlay(): List[Domino] = {
@@ -445,17 +451,13 @@ case class Game(
   }
 
   def legalMoves(): List[Move] = {
-    Game
-      .allDirections()
-      .flatMap((direction) => {
-        activePlayer()
-          .hand
-          .map((domino) => {
-            (Move(domino, direction), move(domino, direction))
-          })
-      })
-      .filterNot(_._2.isEmpty)
-      .map(_._1)
+    val hand = activePlayer().hand
+
+    Game.allDirections().flatMap { direction =>
+      hand.flatMap { domino =>
+        updateBoard(domino, direction).map(_ => Move(domino, direction))
+      }
+    }
   }
 
   def move(
