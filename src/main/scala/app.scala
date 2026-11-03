@@ -9,9 +9,9 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
 
 object App {
   def playGame(
-    mode: String,
-    matchScore: MatchScore,
-    decisionLog: Option[java.io.PrintWriter] = None,
+      mode: String,
+      matchScore: MatchScore,
+      decisionLog: Option[java.io.PrintWriter] = None
   ): MatchScore = {
     val debug = (mode == "--play_greedy")
     var g: Option[Game] = Some(Game.setup("human", "robot"))
@@ -32,10 +32,7 @@ object App {
         g = g.orElse(Some(t.get.reshuffle()))
         if (
           !g.isEmpty &&
-          g.get
-            .log
-            .log
-            .headOption
+          g.get.log.log.headOption
             .map(_.action == PlayHighestDouble)
             .getOrElse(false)
         ) {
@@ -94,7 +91,7 @@ object App {
                 .createFromOpponentHand("human", g.get.playerTwo.hand)
             ),
             debug,
-            decisionLog,
+            decisionLog
           )
           .get
         g = g.get.act(action, true)
@@ -139,13 +136,13 @@ object App {
       MatchScore(
         matchScore.pOneScore + 1,
         matchScore.pTwoScore,
-        matchScore.bestOf,
+        matchScore.bestOf
       )
     } else {
       MatchScore(
         matchScore.pOneScore,
         matchScore.pTwoScore + 1,
-        matchScore.bestOf,
+        matchScore.bestOf
       )
     }
   }

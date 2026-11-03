@@ -6,14 +6,14 @@ case class Perspective(
     hand: List[Domino],
     maybeOpponentHand: Option[List[Domino]],
     opponentHand: EliminationHand,
-    opponentIdeaOfMyHand: Option[EliminationHand],
+    opponentIdeaOfMyHand: Option[EliminationHand]
 ) {
 
   /** Before swapping perspectives with a random hand opponent, assume they have a specific hand.
     */
   def assumeOpponentHand(
       assumedHand: List[Domino],
-      boardTiles: List[Domino],
+      boardTiles: List[Domino]
   ): Perspective = Perspective(
     name,
     opponentName,
@@ -25,10 +25,10 @@ case class Perspective(
         EliminationHand.createFromOpponentHand(
           name,
           assumedHand ++ boardTiles,
-          hand.length,
+          hand.length
         )
       )
-    ),
+    )
   )
 
   /** Swap perspectives from one player to the other.
@@ -40,7 +40,7 @@ case class Perspective(
       maybeOpponentHand.get,
       Some(hand),
       opponentIdeaOfMyHand.get,
-      Some(opponentHand),
+      Some(opponentHand)
     )
   }
 
@@ -55,7 +55,7 @@ case class Perspective(
       after.playerByName(name).hand,
       maybeOpponentHand,
       opponentHand.quickUpdateForEntry(entry, before),
-      opponentIdeaOfMyHand.map(_.quickUpdateForEntry(entry, before)),
+      opponentIdeaOfMyHand.map(_.quickUpdateForEntry(entry, before))
     )
   }
 }

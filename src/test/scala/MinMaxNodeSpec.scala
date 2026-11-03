@@ -20,10 +20,13 @@ class MinMaxNodeSpec extends AnyFlatSpec {
       Domino(5, 3),
       Domino(2, 2),
       Domino(6, 4),
-      Domino(4, 4), // The [4,4] blocks the opponent from holding it and responding to our move with a 20 point score.
+      Domino(
+        4,
+        4
+      ), // The [4,4] blocks the opponent from holding it and responding to our move with a 20 point score.
       Domino(6, 2),
       Domino(2, 0),
-      Domino(6, 1),
+      Domino(6, 1)
     )
 
     val handWithoutDouble = List( // no [4,4] here
@@ -33,7 +36,7 @@ class MinMaxNodeSpec extends AnyFlatSpec {
       Domino(4, 3),
       Domino(6, 2),
       Domino(2, 0),
-      Domino(6, 1),
+      Domino(6, 1)
     )
 
     def evaluate(hand: List[Domino], depth: Int) = {
@@ -42,34 +45,40 @@ class MinMaxNodeSpec extends AnyFlatSpec {
         List(),
         List(),
         List(),
-        List(),
+        List()
       )
 
       val game = Game(
         board,
         Player("human", hand, 0),
-        Player("robot", List(
-          Domino(5, 5),
-          Domino(5, 4),
-          Domino(4, 2),
-          Domino(3, 3),
-          Domino(3, 2),
-          Domino(1, 1),
-        ), 0),
-        PlayerOneTurn,
-        Domino.all().filterNot(d =>
-          hand.contains(d) ||
-          d == Domino(6, 6) ||
+        Player(
+          "robot",
           List(
             Domino(5, 5),
             Domino(5, 4),
             Domino(4, 2),
             Domino(3, 3),
             Domino(3, 2),
-            Domino(1, 1),
-          ).contains(d)
+            Domino(1, 1)
+          ),
+          0
         ),
-        GameLog.empty,
+        PlayerOneTurn,
+        Domino
+          .all()
+          .filterNot(d =>
+            hand.contains(d) ||
+              d == Domino(6, 6) ||
+              List(
+                Domino(5, 5),
+                Domino(5, 4),
+                Domino(4, 2),
+                Domino(3, 3),
+                Domino(3, 2),
+                Domino(1, 1)
+              ).contains(d)
+          ),
+        GameLog.empty
       )
 
       val perspective = Perspective(
@@ -79,9 +88,9 @@ class MinMaxNodeSpec extends AnyFlatSpec {
         None,
         EliminationHand.createFromOpponentHand(
           "robot",
-          hand ++ game.board.tiles(),
+          hand ++ game.board.tiles()
         ),
-        None,
+        None
       )
 
       val node = MinNode(
@@ -89,7 +98,7 @@ class MinMaxNodeSpec extends AnyFlatSpec {
         game,
         depth,
         1,
-        true,
+        true
       )
 
       val scores = node.getScoredMoves()

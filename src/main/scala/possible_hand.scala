@@ -7,7 +7,9 @@ case class PossibleHand(
 ) {
 
   def hand: Set[Domino] =
-    Domino.all().iterator
+    Domino
+      .all()
+      .iterator
       .filter(d => HandMask.contains(mask, d))
       .toSet
 

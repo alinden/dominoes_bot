@@ -14,13 +14,15 @@ class HeuristicSpec extends AnyFlatSpec with Matchers {
       dominoesWinner: Option[String] = None,
       mode: HeuristicMode = BoundedRunway
   ): Double =
-    Heuristic.evaluate(
-      robotScore,
-      humanScore,
-      gameOver,
-      dominoesWinner,
-      mode
-    ).value
+    Heuristic
+      .evaluate(
+        robotScore,
+        humanScore,
+        gameOver,
+        dominoesWinner,
+        mode
+      )
+      .value
 
   "The heuristic" should "return zero for equal scores" in {
     evaluate(75, 75) shouldBe 0.0

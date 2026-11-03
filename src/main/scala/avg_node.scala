@@ -6,7 +6,7 @@ case class AvgNode(
     afterGame: Game,
     action: Action,
     depthRemaining: Int,
-    numSimulations: Int,
+    numSimulations: Int
 ) extends EvalNode {
 
   def heuristic(game: Game = afterGame): Score = {
@@ -35,7 +35,7 @@ case class AvgNode(
   private def drawUntilPlayable(
       game: Game,
       perspective: Perspective,
-      draws: Int = 0,
+      draws: Int = 0
   ): (Game, Perspective, Int) = {
     if (game.legalMoves().nonEmpty || game.boneyard.isEmpty) {
       (game, perspective, draws)
@@ -50,10 +50,12 @@ case class AvgNode(
   def score(): Score = {
     SearchStats.visit()
 
-    if (depthRemaining <= 0 &&
-        !afterGame.isOver &&
-        afterGame.playerOne.hand.nonEmpty &&
-        afterGame.playerTwo.hand.nonEmpty) {
+    if (
+      depthRemaining <= 0 &&
+      !afterGame.isOver &&
+      afterGame.playerOne.hand.nonEmpty &&
+      afterGame.playerTwo.hand.nonEmpty
+    ) {
       heuristic()
     } else {
       recursiveScore()
@@ -69,9 +71,11 @@ case class AvgNode(
     }
 
   private def evaluateHand(hand: List[Domino]): Score = {
-    if (afterGame.isOver ||
-        afterGame.playerOne.hand.isEmpty ||
-        afterGame.playerTwo.hand.isEmpty) {
+    if (
+      afterGame.isOver ||
+      afterGame.playerOne.hand.isEmpty ||
+      afterGame.playerTwo.hand.isEmpty
+    ) {
       evaluateTerminal(hand)
     } else if (action == Draw) {
       evaluateDraw(hand)

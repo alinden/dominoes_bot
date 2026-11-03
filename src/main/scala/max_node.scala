@@ -7,12 +7,12 @@ case class MaxNode(
     game: Game,
     depthRemaining: Int,
     numSimulations: Int,
-    debug: Boolean = false,
+    debug: Boolean = false
 ) extends MinMaxNode
     with EvalNode {
   def asyncBestAction(
       limitToMoves: List[Action] = List(),
-      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
+      onScoredMoves: List[(Score, Action)] => Unit = _ => ()
   ): Task[(Score, Action)] = {
     asyncGetScoredMoves(limitToMoves).map((scoredMoves) => {
       onScoredMoves(scoredMoves)
@@ -58,9 +58,9 @@ case class MaxNode(
                 future,
                 move,
                 depthRemaining - 1,
-                Config.nextBreadth(numSimulations),
+                Config.nextBreadth(numSimulations)
               ).score(),
-              move,
+              move
             )
           }
         }
@@ -70,7 +70,7 @@ case class MaxNode(
   def isBetterScore(
       candidate: Score,
       previousBest: Score,
-      margin: Double = 0.0,
+      margin: Double = 0.0
   ): Boolean = {
     candidate.value + margin > previousBest.value
   }
@@ -92,9 +92,9 @@ case class MaxNode(
               future,
               move,
               depthRemaining - 1,
-              Config.nextBreadth(numSimulations),
+              Config.nextBreadth(numSimulations)
             ).score(),
-            move,
+            move
           )
         }
       }
@@ -110,7 +110,7 @@ case class MaxNode(
           perspective.update(game, g),
           g,
           depthRemaining - 1,
-          Config.nextBreadth(numSimulations),
+          Config.nextBreadth(numSimulations)
         ).toMinNode()
       )
     } else {
@@ -119,7 +119,7 @@ case class MaxNode(
           perspective.update(game, g).swap(),
           g,
           depthRemaining - 1,
-          Config.nextBreadth(numSimulations),
+          Config.nextBreadth(numSimulations)
         )
       )
     }
