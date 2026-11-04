@@ -5,10 +5,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 class RobotSpec extends AnyFlatSpec {
   "A Robot" should "know the score at the move before dominoes" in {
     val gameState = parseGame(
-      center = "[6,6]:12",
-      left = "[5,4]:5 [4,3]:4 [3,1]:3 [6,1]:1",
-      right = "[4,2]:2 [4,4]:4 [6,4]:4",
-      up = "[5,5]:5 [5,2]:5 [2,0]:2 [6,0]:0",
+      center = "[6,6]",
+      left = "[5,4] [4,3] [3,1] [6,1]",
+      right = "[4,2] [4,4] [6,4]",
+      up = "[5,5] [5,2] [2,0] [6,0]",
       robot = "[5,3]",
       human = "[3,3] [1,1]",
       boneyard = "[6,5] [6,3] [6,2] [5,1] [5,0] [4,1] [4,0] " +
@@ -30,13 +30,12 @@ class RobotSpec extends AnyFlatSpec {
   }
 
   "A Robot" should "know the score at the move before a locked game" in {
-    println("know the score at the move before a locked game")
     val gameState = parseGame(
-      center = "[6,6]:12",
-      left = "[6,5]:6 [5,5]:5 [5,1]:5 [4,1]:4 [4,3]:4 [3,1]:3 [6,1]:1",
-      right = "[6,0]:6 [1,0]:0 [2,1]:1 [5,2]:2 [5,0]:0 " +
-        "[2,0]:0 [4,2]:2 [4,4]:4 [6,4]:4",
-      up = "[3,2]:3 [6,2]:2",
+      center = "[6,6]",
+      left = "[6,5] [5,5] [5,1] [4,1] [4,3] [3,1] [6,1]",
+      right = "[6,0] [1,0] [2,1] [5,2] [5,0] " +
+        "[2,0] [4,2] [4,4] [6,4]",
+      up = "[3,2] [6,2]",
       robot = "[5,3] [6,3]",
       human = "[3,3] [1,1]",
       boneyard = "[5,4] [4,0] [3,0] [2,2] [0,0]",
@@ -56,9 +55,83 @@ class RobotSpec extends AnyFlatSpec {
     val (score, action) = maxNode.bestAction()
 
     assert(action == Move(Domino(6, 3), Up))
-    println(score.value)
-    println(math.tanh(0.5))
     assert(math.abs(score.value - math.tanh(0.5)) < 0.000001)
+  }
+
+  "A Robot" should "take an immediate scoring opportunity" in {
+    val game = parseGame(
+      center = "[6,6]",
+      robot = "[6,3] [6,1]",
+      human = "[5,4] [4,2]",
+      boneyard = "[5,5] [4,4]",
+    )
+
+    val perspective = robotPerspective(
+      game,
+      List("[5,4] [4,2]" -> 1.0),
+    )
+
+    val maxNode = MaxNode(perspective, game, 1, 1, true)
+    val (_, action) = maxNode.bestAction()
+
+    assert(action == Move(Domino(6, 3), Left))
+  }
+
+  "A Robot" should "adjust its move based on opponent hand probabilities" in {
+    val game = parseGame(
+      center = "[0,0]",
+      robot = "[5,0] [2,0]",
+      human = "[5,5] [2,6]",
+      boneyard = "[6,6] [5,4]",
+    )
+
+    def bestMove(probabilityOfDouble: Double): Action = {
+      val perspective = robotPerspective(
+        game,
+        List(
+          "[5,5] [2,6]" -> probabilityOfDouble,
+          "[5,4] [2,6]" -> (1.0 - probabilityOfDouble),
+        ),
+      )
+
+      val maxNode = MaxNode(perspective, game, 3, 100, true)
+      maxNode.bestAction()._2
+    }
+
+    // When the opponent probably holds [5,5], avoid exposing 5.
+    assert(bestMove(0.95) == Move(Domino(2, 0), Left))
+
+    // When the opponent probably doesn't hold [5,5], take the 5 points.
+    assert(bestMove(0.05) == Move(Domino(5, 0), Left))
+  }
+
+  "A Robot" should "choose a legal action with its random strategy" in {
+    val game = parseGame(
+      center = "[6,6]",
+      robot = "[6,3] [6,1]",
+      human = "[5,4] [4,2]",
+      boneyard = "[5,5] [4,4]",
+    )
+
+    val legalActions = game.allLegalActions()
+
+    for (_ <- 1 to 100) {
+      val action = Robot.getRandomLegalAction(game)
+      assert(action.exists(legalActions.contains))
+    }
+  }
+
+  "A Robot" should "prefer a scoring move with its greedy strategy" in {
+    val game = parseGame(
+      center = "[6,6]",
+      robot = "[6,3] [6,1]",
+      human = "[5,4] [4,2]",
+      boneyard = "[5,5] [4,4]",
+    )
+
+    val action = Robot.greedyMove(game)
+
+    assert(action.contains(Move(Domino(6, 3), Left)))
   }
 
   private def dominoes(s: String): List[Domino] =
@@ -67,16 +140,23 @@ class RobotSpec extends AnyFlatSpec {
       .map(m => Domino(m.group(1).toInt, m.group(2).toInt))
       .toList
 
-  private def played(s: String): List[PlayedDomino] =
-    """\[(\d),(\d)\]:(\d+)""".r
-      .findAllMatchIn(s)
-      .map { m =>
-        PlayedDomino(
-          Domino(m.group(1).toInt, m.group(2).toInt),
-          m.group(3).toInt,
-        )
+  private def played(s: String, center: Domino): List[PlayedDomino] = {
+    val tiles = dominoes(s)
+
+    val initial = PlayedDomino(center, center.high)
+
+    tiles.reverse
+      .foldLeft(List(initial)) { (chain, tile) =>
+        val exposed = chain.head.connectTo(tile).getOrElse {
+          throw new IllegalArgumentException(
+            s"Cannot connect $tile to ${chain.head.tile}",
+          )
+        }
+
+        PlayedDomino(tile, exposed) :: chain
       }
-      .toList
+      .dropRight(1)
+  }
 
   private def parseGame(
       center: String,
@@ -96,16 +176,16 @@ class RobotSpec extends AnyFlatSpec {
     Game(
       Board(
         Some(PlayedDomino(centerDomino, centerDomino.high * 2)),
-        played(left),
-        played(right),
-        played(up),
-        played(down),
+        played(left, centerDomino),
+        played(right, centerDomino),
+        played(up, centerDomino),
+        played(down, centerDomino),
       ),
       Player("human", dominoes(human), humanScore),
       Player("robot", dominoes(robot), robotScore),
       turn,
       dominoes(boneyard),
-      GameLog.empty,
+      GameLog.empty(),
       false,
       false,
     )
