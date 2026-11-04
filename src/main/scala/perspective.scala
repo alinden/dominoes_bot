@@ -11,51 +11,48 @@ case class Perspective(
 
   /** Before swapping perspectives with a random hand opponent, assume they have a specific hand.
     */
-  def assumeOpponentHand(
-      assumedHand: List[Domino],
-      boardTiles: List[Domino],
-  ): Perspective = Perspective(
-    name,
-    opponentName,
-    hand,
-    Some(assumedHand),
-    opponentHand,
-    opponentIdeaOfMyHand.orElse(
-      Some(
-        EliminationHand.createFromOpponentHand(
-          name,
-          assumedHand ++ boardTiles,
-          hand.length,
-        ),
-      ),
-    ),
-  )
+ def assumeOpponentHand(
+    assumedHand: List[Domino],
+    boardTiles: List[Domino],
+  ): Perspective =
+    copy(
+      maybeOpponentHand = Some(assumedHand),
+      opponentIdeaOfMyHand = opponentIdeaOfMyHand.orElse(
+        Some(
+          EliminationHand.createFromOpponentHand(
+            name,
+            assumedHand ++ boardTiles,
+            hand.length
+          )
+        )
+      )
+    )
 
   /** Swap perspectives from one player to the other.
-    */
-  def swap(): Perspective = {
-    Perspective(
-      opponentName,
-      name,
-      maybeOpponentHand.get,
-      Some(hand),
-      opponentIdeaOfMyHand.get,
-      Some(opponentHand),
+  *
+  * Requires assumeOpponentHand() to have been called first.
+  */
+  def swap(): Perspective =
+    copy(
+      name = opponentName,
+      opponentName = name,
+      hand = maybeOpponentHand.get,
+      maybeOpponentHand = Some(hand),
+      opponentHand = opponentIdeaOfMyHand.get,
+      opponentIdeaOfMyHand = Some(opponentHand)
     )
-  }
 
   /** Update with a new game state. Assumes that the previous game states were already incorporated
     * in the unknown hands.
     */
-  def update(before: Game, after: Game): Perspective = {
+ def update(before: Game, after: Game): Perspective = {
     val entry = after.log.log.head
-    Perspective(
-      name,
-      opponentName,
-      after.playerByName(name).hand,
-      maybeOpponentHand,
-      opponentHand.quickUpdateForEntry(entry, before),
-      opponentIdeaOfMyHand.map(_.quickUpdateForEntry(entry, before)),
+
+    copy(
+      hand = after.playerByName(name).hand,
+      opponentHand = opponentHand.quickUpdateForEntry(entry, before),
+      opponentIdeaOfMyHand =
+        opponentIdeaOfMyHand.map(_.quickUpdateForEntry(entry, before))
     )
   }
 }

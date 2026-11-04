@@ -578,4 +578,254 @@ class GameSpec extends AnyFlatSpec {
     // A locked round returns to the highest-double phase.
     assert(afterSecondPass.turn == HighestDouble)
   }
+
+  "Game.simplify" should "remove equivalent moves on matching cross endpoints" in {
+    val board = Board(
+      spinner = Some(PlayedDomino(Domino(6, 6), 12)),
+      left = List(PlayedDomino(Domino(6, 3), 3)),
+      right = List(PlayedDomino(Domino(6, 3), 3)),
+      up = Nil,
+      down = Nil
+    )
+
+    val game = Game(
+      board = board,
+      playerOne = Player("One", List(Domino(3, 1)), 0),
+      playerTwo = Player("Two", Nil, 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val actions = List(
+      Move(Domino(3, 1), Left),
+      Move(Domino(3, 1), Right)
+    )
+
+    val simplified = game.simplify(actions)
+
+    assert(simplified.size == 1)
+    assert(actions.contains(simplified.head))
+  }
+
+  "Game.simplify" should "preserve moves on different cross endpoints" in {
+    val board = Board(
+      spinner = Some(PlayedDomino(Domino(6, 6), 12)),
+      left = List(PlayedDomino(Domino(6, 3), 3)),
+      right = List(PlayedDomino(Domino(6, 4), 4)),
+      up = Nil,
+      down = Nil
+    )
+
+    val game = Game(
+      board = board,
+      playerOne = Player("One", List(Domino(4, 3)), 0),
+      playerTwo = Player("Two", Nil, 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val actions = List(
+      Move(Domino(4, 3), Left),
+      Move(Domino(4, 3), Right)
+    )
+
+    val simplified = game.simplify(actions)
+
+    assert(simplified.toSet == actions.toSet)
+  }
+
+  "Game.endGame" should "award points when a player goes out" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", Nil, 20),
+      playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
+      turn = PlayerTwoTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val result = Game.endGame(game, debug = false, dontShuffle = true).get
+
+    assert(result.playerOne.score == 30)
+    assert(result.playerTwo.score == 30)
+    assert(!result.isOver)
+  }
+
+  "Game.endGame" should "award the pip difference in a locked game" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", List(Domino(5, 3)), 20),
+      playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty(),
+      lastTurnPass = true
+    )
+
+    val result = Game.endGame(game, debug = false, dontShuffle = true).get
+
+    assert(result.playerOne.score == 25)
+    assert(result.playerTwo.score == 30)
+    assert(result.playerOne.hand.isEmpty)
+    assert(result.playerTwo.hand.isEmpty)
+    assert(result.turn == HighestDouble)
+    assert(!result.isOver)
+  }
+
+  "Game.endGame" should "end the match when a player reaches 150 points" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", Nil, 145),
+      playerTwo = Player("Two", List(Domino(6, 4)), 100),
+      turn = PlayerTwoTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val result = Game.endGame(game, debug = false, dontShuffle = true).get
+
+    assert(result.playerOne.score == 155)
+    assert(result.playerTwo.score == 100)
+    assert(result.isOver)
+  }
+
+  "Game.getUserInput" should "accept valid input on the first attempt" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", List(Domino(2, 1)), 0),
+      playerTwo = Player("Two", List(Domino(4, 3)), 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val input = new java.io.ByteArrayInputStream("p\n".getBytes("UTF-8"))
+
+    val result = Console.withIn(input) {
+      game.getUserInput()
+    }
+
+    assert(result.nonEmpty)
+    assert(result.get.turn == PlayerTwoTurn)
+    assert(result.get.lastTurnPass)
+  }
+
+  "Game.getUserInput" should "retry after invalid input" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", List(Domino(2, 1)), 0),
+      playerTwo = Player("Two", List(Domino(4, 3)), 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val input = new java.io.ByteArrayInputStream(
+      "invalid\np\n".getBytes("UTF-8")
+    )
+
+    val result = Console.withIn(input) {
+      game.getUserInput()
+    }
+
+    assert(result.nonEmpty)
+    assert(result.get.turn == PlayerTwoTurn)
+  }
+
+  "Game.getUserInput" should "stop after ten invalid attempts" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", List(Domino(2, 1)), 0),
+      playerTwo = Player("Two", List(Domino(4, 3)), 0),
+      turn = PlayerOneTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    val input = new java.io.ByteArrayInputStream(
+      (List.fill(10)("invalid") :+ "p").mkString("", "\n", "\n")
+        .getBytes("UTF-8")
+    )
+
+    val result = Console.withIn(input) {
+      game.getUserInput()
+    }
+
+    assert(result.isEmpty)
+  }
+
+  "Game.parseInput" should "parse draw and pass commands" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", Nil, 20),
+      playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
+      turn = PlayerTwoTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+
+    assert(game.parseInput("d").contains(Draw))
+    assert(game.parseInput("p").contains(Pass))
+  }
+
+  it should "parse a valid move" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", Nil, 20),
+      playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
+      turn = PlayerTwoTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+    val expected = Move(game.activePlayer().hand(0), Left)
+
+    assert(game.parseInput("m 0 l").contains(expected))
+  }
+
+  it should "reject malformed commands" in {
+    val game = Game(
+      board = Board.empty().addFirstTile(Domino(6, 6)),
+      playerOne = Player("One", Nil, 20),
+      playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
+      turn = PlayerTwoTurn,
+      boneyard = Nil,
+      log = GameLog.empty()
+    )
+    assert(game.parseInput("").isEmpty)
+    assert(game.parseInput("invalid").isEmpty)
+    assert(game.parseInput("m abc l").isEmpty)
+    assert(game.parseInput("m -1 l").isEmpty)
+    assert(game.parseInput("m 999 l").isEmpty)
+    assert(game.parseInput("m 0 x").isEmpty)
+    assert(game.parseInput("m 0").isEmpty)
+  }
+
+  "Game.reshuffle" should "preserve player scores and reset round state" in {
+    val game = Game.setup("Alice", "Bob").copy(
+      playerOne = Player("Alice", Nil, 45),
+      playerTwo = Player("Bob", Nil, 60),
+      lastTurnPass = true
+    )
+
+    val reshuffled = game.reshuffle()
+
+    assert(reshuffled.playerOne.name == "Alice")
+    assert(reshuffled.playerTwo.name == "Bob")
+    assert(reshuffled.playerOne.score == 45)
+    assert(reshuffled.playerTwo.score == 60)
+
+    assert(reshuffled.turn == game.turn)
+    assert(reshuffled.board == Board.empty())
+    assert(reshuffled.log == GameLog.empty())
+    assert(!reshuffled.lastTurnPass)
+    assert(!reshuffled.isOver)
+
+    assert(
+      reshuffled.playerOne.hand.length +
+        reshuffled.playerTwo.hand.length +
+        reshuffled.boneyard.length == 28
+    )
+  }
 }

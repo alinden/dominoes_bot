@@ -47,6 +47,21 @@ object App {
     }
   }
 
+  @annotation.tailrec
+  private def playMatch(
+      mode: String,
+      matchScore: MatchScore,
+      decisionLog: Option[java.io.PrintWriter],
+  ): Unit = {
+    if (matchScore.isOver) {
+      matchScore
+    } else {
+      val updatedScore = playGame(mode, matchScore, decisionLog)
+      println(updatedScore)
+      playMatch(mode, updatedScore, decisionLog)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     val validModes = Set("--play_human", "--play_greedy")
 
@@ -71,12 +86,9 @@ object App {
 
     try {
       val bestOf = if (mode == "--play_human") 3 else 39
-      var matchScore = MatchScore(0, 0, bestOf)
+      val initialScore = MatchScore(0, 0, bestOf)
 
-      while (!matchScore.isOver) {
-        matchScore = playGame(mode, matchScore, decisionLog)
-        println(matchScore)
-      }
+      playMatch(mode, initialScore, decisionLog)
     } finally {
       decisionLog.foreach(_.close())
     }

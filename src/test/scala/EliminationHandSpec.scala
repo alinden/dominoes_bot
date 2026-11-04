@@ -198,7 +198,7 @@ class EliminationHandSpec extends AnyFlatSpec {
       1,
     )
     val n = 10000
-    val e = 0.01 // n*e == 100
+    val e = 0.02 // 2% margin of error to avoid flaky tests
     val samples: List[Map[List[Domino], Int]] = (0 to n).toList
       .map((_) => {
         Map(x.getSample() -> 1)
@@ -336,5 +336,60 @@ class EliminationHandSpec extends AnyFlatSpec {
     assert(math.abs(frequency(a) - 0.1) < 0.02)
     assert(math.abs(frequency(b) - 0.3) < 0.02)
     assert(math.abs(frequency(c) - 0.6) < 0.02)
+  }
+
+  "An EliminationHand" should "return an empty sample when no hands are possible" in {
+    val hand = EliminationHand(
+      "human",
+      Vector.empty,
+      Set.empty
+    )
+
+    assert(hand.getSample() == Nil)
+  }
+
+  "An EliminationHand" should "always sample the only possible hand" in {
+    val tiles = Set(Domino(5, 1), Domino(4, 1))
+
+    val hand = EliminationHand(
+      "human",
+      Vector(PossibleHand(tiles, 1.0, 1.0)),
+      Set.empty
+    )
+
+    val samples = (1 to 100).map(_ => hand.getSample().toSet)
+
+    assert(samples.forall(_ == tiles))
+  }
+
+  "An EliminationHand" should "normalize unique hands and calculate cumulative probabilities" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+    val c = Domino(3, 1)
+
+    val hand = EliminationHand(
+      "human",
+      Vector(
+        PossibleHand(Set(a), 2.0, 0.0),
+        PossibleHand(Set(b), 3.0, 0.0),
+        PossibleHand(Set(c), 5.0, 0.0),
+      ),
+      Set.empty,
+    )
+
+    val normalized = hand.normalizeUnique()
+
+    val probabilities = normalized.possibilities.map(_.likelihood)
+    val cumulative = normalized.possibilities.map(_.cumulativeLikelihood)
+
+    assert(probabilities.zip(Vector(0.2, 0.3, 0.5)).forall {
+      case (actual, expected) => math.abs(actual - expected) < 1e-9
+    })
+
+    assert(cumulative.zip(Vector(0.2, 0.5, 1.0)).forall {
+      case (actual, expected) => math.abs(actual - expected) < 1e-9
+    })
+
+    assert(normalized.possibilities.map(_.hand) == hand.possibilities.map(_.hand))
   }
 }

@@ -32,84 +32,83 @@ case class EliminationHand(
       )
     }
   }
+
   def getSample(): List[Domino] = {
     if (possibilities.isEmpty) {
-      List()
+      Nil
     } else {
-      val xs = this.possibilities
       val rv = Random.nextDouble()
-      var low = 0
-      var high = xs.length - 1
-      var index = -1
-      while ((index == -1) && (low <= high)) {
+
+      @annotation.tailrec
+      def search(low: Int, high: Int): Int = {
+        if (low > high) {
+          throw new IllegalStateException("No hand found for sampled probability")
+        }
+
         val middle = low + (high - low) / 2
-        val x = xs(middle)
-        val lowerBound = x.cumulativeLikelihood - x.likelihood
-        val upperBound = x.cumulativeLikelihood
-        if (lowerBound <= rv && rv <= upperBound) {
-          index = middle
-        } else if (xs(middle).cumulativeLikelihood < rv) {
-          // Search elements with higher cumulative likelihoods
-          low = middle + 1
+        val ph = possibilities(middle)
+
+        if (
+          rv >= ph.cumulativeLikelihood - ph.likelihood &&
+          rv <= ph.cumulativeLikelihood
+        ) {
+          middle
+        } else if (rv > ph.cumulativeLikelihood) {
+          search(middle + 1, high)
         } else {
-          // Search elements with lower cumulative likelihoods
-          high = middle - 1
+          search(low, middle - 1)
         }
       }
-      if (index == -1) {
-        throw new Error("index == -1 in binary search")
+
+      val index = search(0, possibilities.length - 1)
+      possibilities(index).hand.toList
+    }
+  }
+
+  private def normalizeProbabilities(
+    hands: Vector[(PossibleHand, Double)]
+  ): EliminationHand = {
+    if (hands.isEmpty) {
+      this
+    } else {
+      val total = hands.iterator.map(_._2).sum
+
+      val probabilities = hands.map { case (ph, likelihood) =>
+        (ph, likelihood / total)
       }
-      xs(index).hand.toList
+
+      val cumulative = probabilities
+        .map(_._2)
+        .scanLeft(0.0)(_ + _)
+        .tail
+
+      val normalized = probabilities
+        .zip(cumulative)
+        .map { case ((ph, probability), cumulativeLikelihood) =>
+          ph.copy(
+            likelihood = probability,
+            cumulativeLikelihood = cumulativeLikelihood,
+          )
+        }
+
+      copy(possibilities = normalized)
     }
   }
 
   def normalize(): EliminationHand = {
-    if (possibilities.isEmpty) {
-      this
-    } else {
-      val combined = possibilities
-        .groupMapReduce(_.mask)(ph => (ph, ph.likelihood)) {
-          case ((ph, likelihood1), (_, likelihood2)) =>
-            (ph, likelihood1 + likelihood2)
-        }
-
-      val total = combined.valuesIterator.map(_._2).sum
-      var cumulative = 0.0
-
-      val normalized = combined.valuesIterator.map { case (ph, likelihood) =>
-        val probability = likelihood / total
-        cumulative += probability
-
-        ph.copy(
-          likelihood = probability,
-          cumulativeLikelihood = cumulative,
-        )
-      }.toVector
-
-      copy(possibilities = normalized)
-    }
-  }
-
-  def normalizeUnique(): EliminationHand = {
-    if (possibilities.isEmpty) {
-      this
-    } else {
-      val total = possibilities.iterator.map(_.likelihood).sum
-      var cumulative = 0.0
-
-      val normalized = possibilities.map { ph =>
-        val probability = ph.likelihood / total
-        cumulative += probability
-
-        ph.copy(
-          likelihood = probability,
-          cumulativeLikelihood = cumulative,
-        )
+    val combined = possibilities
+      .groupMapReduce(_.mask)(ph => (ph, ph.likelihood)) {
+        case ((ph, likelihood1), (_, likelihood2)) =>
+          (ph, likelihood1 + likelihood2)
       }
 
-      copy(possibilities = normalized)
-    }
+    normalizeProbabilities(combined.valuesIterator.toVector)
   }
+
+  def normalizeUnique(): EliminationHand =
+    normalizeProbabilities(
+      possibilities.map(ph => (ph, ph.likelihood))
+    )
 
   def updateForOpponentMove(tile: Domino): EliminationHand = {
     EliminationHand(
@@ -404,9 +403,9 @@ case class EliminationHand(
 
 object EliminationHand {
   def createFromOpponentHand(
-      playerName: String,
-      opponentHand: List[Domino],
-      initialHandSize: Int = 7,
+    playerName: String,
+    opponentHand: List[Domino],
+    initialHandSize: Int = 7,
   ): EliminationHand = {
     val impossible = opponentHand.toSet
     val possibleTiles = Domino.all().filterNot(impossible.contains).toSet
@@ -415,25 +414,21 @@ object EliminationHand {
     if (possibleHands.isEmpty) {
       EliminationHand(playerName, Vector.empty, impossible)
     } else {
+      // All hands consistent with the known
+      // excluded tiles are equally likely as this method is called to create
+      // the initial probability distribution - i.e. we currently have no
+      // information on which hands are likelier than others.
       val likelihood = 1.0 / possibleHands.length.toDouble
-      var cumulativeLikelihood = 0.0
 
       val possibilities = possibleHands.zipWithIndex.map { case (hand, index) =>
-        cumulativeLikelihood += likelihood
-
-        PossibleHand(
-          hand,
-          likelihood,
+        val cumulativeLikelihood =
           if (index == possibleHands.length - 1) 1.0
-          else cumulativeLikelihood,
-        )
+          else (index + 1) * likelihood
+
+        PossibleHand(hand, likelihood, cumulativeLikelihood)
       }
 
-      EliminationHand(
-        playerName,
-        possibilities,
-        impossible,
-      )
+      EliminationHand(playerName, possibilities, impossible)
     }
   }
 
@@ -465,18 +460,16 @@ object EliminationHand {
         sampledHands += hand
       }
 
+      // Similar to createFromOpponentHand, this method creates the initial distribution
+      // from the initial assumption that all possible hands are equally likely.
       val likelihood = 1.0 / sampledHands.size
-      var cumulative = 0.0
 
       val possibilities = sampledHands.iterator.zipWithIndex.map { case (hand, index) =>
-        cumulative += likelihood
-
-        PossibleHand(
-          hand,
-          likelihood,
+        val cumulativeLikelihood =
           if (index == sampledHands.size - 1) 1.0
-          else cumulative,
-        )
+          else (index + 1) * likelihood
+
+        PossibleHand(hand, likelihood, cumulativeLikelihood)
       }.toVector
 
       EliminationHand(playerName, possibilities, impossible)

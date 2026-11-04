@@ -1,9 +1,7 @@
 package game
 
-import scala.util.Try
 import scala.util.Random
 import scala.io.StdIn
-import java.util.Scanner
 
 case class Game(
     board: Board,
@@ -118,22 +116,17 @@ case class Game(
 
   def reshuffle(): Game = {
     println("game: shuffling")
+
     val newGame = Game.setup("", "")
-    Game(
-      newGame.board,
-      Player(
-        playerOne.name,
-        newGame.playerOne.hand,
-        playerOne.score,
-      ),
-      Player(
-        playerTwo.name,
-        newGame.playerTwo.hand,
-        playerTwo.score,
-      ),
-      turn,
-      newGame.boneyard,
-      GameLog.empty(),
+
+    copy(
+      board = newGame.board,
+      playerOne = playerOne.copy(hand = newGame.playerOne.hand),
+      playerTwo = playerTwo.copy(hand = newGame.playerTwo.hand),
+      boneyard = newGame.boneyard,
+      log = GameLog.empty(),
+      lastTurnPass = false,
+      isOver = false
     )
   }
 
@@ -145,10 +138,6 @@ case class Game(
       case Down  => board.down
     }
 
-  // TODO: generalize this to work for adding to a chain when
-  // another chain has the same terminal value. Now it only keeps
-  // one move onto an empty chain. It should also only allow one move
-  // onto two chains of equal end value.
   def simplify(actions: List[Action]): List[Action] = {
     val emptyDirections = Direction.all.filter(dir => chain(dir).isEmpty)
     def filterRedundant(
@@ -412,45 +401,57 @@ case class Game(
     )
 
   def getUserInput(): Option[Game] = {
-    val maxAttempts = 10
-    var i = 0
-    var game: Option[Game] = None
-    while ((i < maxAttempts) && game.isEmpty) {
-      game = getUserInputOnce()
-      if (game.isEmpty) {
-        println("error: illegal move")
+    @annotation.tailrec
+    def attempt(remaining: Int): Option[Game] = {
+      if (remaining == 0) {
+        None
+      } else {
+        getUserInputOnce() match {
+          case Some(game) =>
+            Some(game)
+
+          case None =>
+            println("error: illegal move")
+            attempt(remaining - 1)
+        }
       }
-      i = i + 1
     }
-    game
+
+    attempt(10)
   }
 
   def parseInput(input: String): Option[Action] = {
-    if (input.isEmpty) return None
-    if (input.take(1) == "d") return Some(Draw)
-    if (input.take(1) == "p") return Some(Pass)
-    if (input.take(1) == "h") {
-      printUserHelpText()
-      return None
+    val tokens = input.trim.split("\\s+").toList
+
+    tokens match {
+      case "d" :: _ =>
+        Some(Draw)
+
+      case "p" :: _ =>
+        Some(Pass)
+
+      case "h" :: _ =>
+        printUserHelpText()
+        None
+
+      case "m" :: index :: direction :: _ =>
+        val parsedDirection = direction.toLowerCase.headOption.flatMap {
+          case 'l' => Some(Left)
+          case 'r' => Some(Right)
+          case 'u' => Some(Up)
+          case 'd' => Some(Down)
+          case _   => None
+        }
+
+        for {
+          i <- index.toIntOption
+          if i >= 0 && i < activePlayer().hand.length
+          dir <- parsedDirection
+        } yield Move(activePlayer().hand(i), dir)
+
+      case _ =>
+        None
     }
-    if (input.take(1) != "m") return None
-    if (activePlayer().hand.isEmpty) return None
-    val scanner = new Scanner(input)
-    val _ = scanner.next
-    val index = scanner.nextInt
-    val rawDirection = scanner.next
-    if (rawDirection.isEmpty) return None
-    val direction = rawDirection.take(1).toLowerCase() match {
-      case "l" => Left
-      case "r" => Right
-      case "u" => Up
-      case "d" => Down
-      case _   => return None
-    }
-    if (index < 0) return None
-    if (index >= activePlayer().hand.length) return None
-    val domino = activePlayer().hand(index)
-    Some(Move(domino, direction))
   }
 
   def printUserHelpText(): Unit = {
@@ -461,16 +462,15 @@ case class Game(
         .map { case (domino, i) => s"${i}: ${domino}" }
         .mkString("\n"),
     )
-    println("To move your 3rd tile, type 'm 3'")
+    println("To move your 3rd tile left, type 'm 2 l'")
     println("To draw, type 'd'")
     println("To pass, type 'p'")
   }
 
-  def getUserInputOnce(): Option[Game] = {
-    val input: String = StdIn.readLine()
-    val action: Option[Action] = Try(parseInput(input)).toOption.flatten
-    action.flatMap((a) => act(a))
-  }
+  def getUserInputOnce(): Option[Game] =
+    Option(StdIn.readLine())
+      .flatMap(parseInput)
+      .flatMap(act(_))
 
   def incrementTurn(): Turn = turn match {
     case PlayerOneTurn => PlayerTwoTurn
@@ -572,116 +572,97 @@ object Game {
       debug: Boolean = true,
       dontShuffle: Boolean = false,
   ): Option[Game] = {
-    // println("endgame")
-    // println("game")
-    // println(game)
-    val g = Game(
-      game.board,
-      game.playerOne,
-      game.playerTwo,
-      if (game.lastTurnPass) HighestDouble else game.incrementTurn(),
-      game.boneyard,
-      game.log,
-      game.lastTurnPass,
-      ((game.playerOne.score >= 150) || (game.playerTwo.score >= 150)) && (game.playerOne.score != game.playerTwo.score),
+
+    val g = game.copy(
+      turn = if (game.lastTurnPass) HighestDouble else game.incrementTurn(),
+      isOver = matchIsOver(game.playerOne, game.playerTwo)
     )
 
-    val rawLoserTileCount = g
-      .inactivePlayer()
-      .hand
-      .foldRight(0) { (domino, z) =>
-        {
-          domino.high + domino.low + z
-        }
-      }
-      .toFloat
-    // println(s"rawLoserTileCount: $rawLoserTileCount")
-    val rawWinnerTileCount = g
-      .activePlayer()
-      .hand
-      .foldRight(0) { (domino, z) =>
-        {
-          domino.high + domino.low + z
-        }
-      }
-      .toFloat
-    // println(s"rawWinnerTileCount: $rawWinnerTileCount")
-    val loserTileCount = Math.round(rawLoserTileCount / 5) * 5
+    val activePlayer = g.activePlayer()
+    val inactivePlayer = g.inactivePlayer()
 
-    val withAddedPoints = if (g.lastTurnPass) {
-      // locked game
-      val winnerMinusLoserCount =
-        math.round((rawLoserTileCount - rawWinnerTileCount) / 5) * 5
-      val lockedGameWinnerAdd = math.max(winnerMinusLoserCount, 0)
-      val lockedGameLoserAdd = math.max(-winnerMinusLoserCount, 0)
-      val (pOne, pTwo) = g.orderPlayers(
-        Player(
-          g.activePlayer().name,
-          List(),
-          g.activePlayer().score + lockedGameWinnerAdd,
-        ),
-        Player(
-          g.inactivePlayer().name,
-          List(),
-          g.inactivePlayer().score + lockedGameLoserAdd,
-        ),
-      )
-      Some(
-        Game(
-          g.board,
-          pOne,
-          pTwo,
-          g.turn,
-          List(),
-          g.log,
-          true,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
-        ),
-      )
-    } else if (loserTileCount > 0) {
-      // opponent has some tiles to score
-      // println("opponent has some tiles to score")
-      // println("couting loser tiles")
-      if (debug)
-        println(
-          s"game: ${g.inactivePlayer().name} had ${g.inactivePlayer().hand.mkString(" - ")}",
+    val activePips = pipTotal(activePlayer.hand)
+    val inactivePips = pipTotal(inactivePlayer.hand)
+
+    val scoredGame =
+      if (g.lastTurnPass) {
+        // Locked game: award the rounded difference in remaining pips.
+        val difference = roundToFive(inactivePips - activePips)
+
+        val updatedActive = activePlayer.copy(
+          hand = Nil,
+          score = activePlayer.score + math.max(difference, 0)
         )
-      val ap = Player(
-        g.activePlayer().name,
-        g.activePlayer().hand,
-        g.activePlayer().score + loserTileCount,
-      )
-      val (pOne, pTwo) = g.orderPlayers(ap, g.inactivePlayer())
-      Some(
-        Game(
-          g.board,
-          pOne,
-          pTwo,
-          g.turn,
-          g.boneyard,
-          g.log,
-          g.lastTurnPass,
-          ((pOne.score >= 150) || (pTwo.score >= 150)) && (pOne.score != pTwo.score),
-        ),
-      )
-    } else {
-      // opponent has no tiles to score
-      Some(g)
-    }
-    if (withAddedPoints.map(_.isOver).getOrElse(false)) {
-      val pOneWon = withAddedPoints
-        .map((g) => g.playerOne.score > g.playerTwo.score)
-        .getOrElse(false)
-      val winnerName = withAddedPoints
-        .map((g) => if (pOneWon) g.playerOne.name else g.playerTwo.name)
-        .getOrElse("Nobody")
-      if (debug) {
-        println("Game Over!")
-        println(s"The winner is: ${winnerName}")
+
+        val updatedInactive = inactivePlayer.copy(
+          hand = Nil,
+          score = inactivePlayer.score + math.max(-difference, 0)
+        )
+
+        val (pOne, pTwo) = g.orderPlayers(updatedActive, updatedInactive)
+
+        g.copy(
+          playerOne = pOne,
+          playerTwo = pTwo,
+          boneyard = Nil,
+          lastTurnPass = true,
+          isOver = matchIsOver(pOne, pTwo)
+        )
+
+      } else {
+        // Dominoes: award the opponent's remaining pips.
+        val points = roundToFive(inactivePips)
+
+        if (points > 0) {
+          showRemainingTiles(inactivePlayer, debug)
+
+          val updatedActive = activePlayer.copy(
+            score = activePlayer.score + points
+          )
+
+          val (pOne, pTwo) = g.orderPlayers(updatedActive, inactivePlayer)
+
+          g.copy(
+            playerOne = pOne,
+            playerTwo = pTwo,
+            isOver = matchIsOver(pOne, pTwo)
+          )
+        } else {
+          g
+        }
       }
-      withAddedPoints
-    } else {
-      withAddedPoints.map((g) => if (dontShuffle) g else g.reshuffle())
-    }
+
+      if (scoredGame.isOver) {
+        showMatchWinner(scoredGame, debug)
+        Some(scoredGame)
+      } else {
+        Some(if (dontShuffle) scoredGame else scoredGame.reshuffle())
+      }
   }
+
+  private def pipTotal(hand: List[Domino]): Int =
+    hand.map(d => d.high + d.low).sum
+
+  private def roundToFive(value: Int): Int =
+    math.round(value.toFloat / 5) * 5
+
+  private def matchIsOver(playerOne: Player, playerTwo: Player): Boolean =
+    (playerOne.score >= 150 || playerTwo.score >= 150) &&
+      playerOne.score != playerTwo.score
+
+  private def showRemainingTiles(player: Player, debug: Boolean): Unit =
+    if (debug)
+      println(s"game: ${player.name} had ${player.hand.mkString(" - ")}")
+
+  private def showMatchWinner(game: Game, debug: Boolean): Unit =
+    if (debug) {
+      val winner =
+        if (game.playerOne.score > game.playerTwo.score)
+          game.playerOne
+        else
+          game.playerTwo
+
+      println("Game Over!")
+      println(s"The winner is: ${winner.name}")
+    }
 }
