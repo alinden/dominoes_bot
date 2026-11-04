@@ -13,22 +13,15 @@ case class Domino(high: Int, low: Int) {
 }
 
 object Domino {
+  private val allDominoes: List[Domino] =
+    (for {
+      high <- 0 to 6
+      low <- 0 to high
+    } yield Domino(high, low)).toList
 
-  /** Return a list of all dominoes.
-    */
-  def all(): List[Domino] = {
-    for {
-      high <- (0 to 6).toList
-      low <- (0 to 6).toList
-      if (high >= low)
-    } yield Domino(high, low)
-  }
+  private val doubleDominoes = allDominoes.filter(_.isDouble())
 
-  /** Return a list of all doubles.
-    */
-  def doubles(): List[Domino] = {
-    for {
-      high <- (0 to 6).toList
-    } yield Domino(high, high)
-  }
+  def all(): List[Domino] = allDominoes
+
+  def doubles(): List[Domino] = doubleDominoes
 }

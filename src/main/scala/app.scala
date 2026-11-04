@@ -1,5 +1,7 @@
 import game._
 
+import scala.annotation.tailrec
+
 case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
   def isOver: Boolean = {
     val halfPlusOne = math.floor(bestOf.toFloat / 2.0) + 1
@@ -7,132 +9,30 @@ case class MatchScore(pOneScore: Int, pTwoScore: Int, bestOf: Int) {
   }
 }
 
+private case class GameSession(
+    game: Game,
+    guess: Option[EliminationHand],
+)
+
 object App {
   def playGame(
       mode: String,
       matchScore: MatchScore,
       decisionLog: Option[java.io.PrintWriter] = None,
   ): MatchScore = {
-    val debug = (mode == "--play_greedy")
-    var g: Option[Game] = Some(Game.setup("human", "robot"))
-    var action: Action = Reshuffle
-    println("New Game!")
-    println(s"Playing a best of ${matchScore.bestOf}")
-    println("")
-    println(g.get)
-    if (!debug) Thread.sleep(2000)
-    var t = g
-    var guess: Option[EliminationHand] = None
-    while (!g.map(_.isOver).getOrElse(true)) {
-      if (g.get.turn == HighestDouble) {
-        println("")
-        println("First Turn, playing the highest double.")
-        if (!debug) Thread.sleep(2000)
-        g = g.get.playHighestDouble()
-        g = g.orElse(Some(t.get.reshuffle()))
-        if (
-          !g.isEmpty &&
-          g.get.log.log.headOption
-            .map(_.action == PlayHighestDouble)
-            .getOrElse(false)
-        ) {
-          // highest double played
-          guess = guess
-            .orElse {
-              Some(
-                EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand),
-              )
-            }
-            .map(_.updateForEntry(g.get.log.log.head, t.get))
-        }
-      } else if (g.get.turn == PlayerOneTurn) {
-        println("")
-        println(g.get)
-        g = if (mode == "--play_human") {
-          g.get.getUserInput()
-        } else {
-          g.get.act(Robot.greedyMove(g.get).get, true)
-        }
-        if (!g.get.log.log.isEmpty) {
-          guess = guess
-            .orElse {
-              Some(
-                EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand),
-              )
-            }
-            .map(_.updateForEntry(g.get.log.log.head, t.get, false, true))
-        } else {
-          guess = None
-        }
-        if (debug) {
-          println("--guess--")
-          println(guess.getOrElse("no guess"))
-          println("--guess--")
-        }
-      } else {
-        decisionLog.foreach { log =>
-          log.println("=" * 60)
-          log.println("ROBOT TURN")
-          g.foreach(log.println(_))
-          log.println("Opponent hand estimates:")
-          guess.foreach { hand =>
-            log.println(hand.decisionLogSummary(g.get.playerOne.hand.toSet))
-          }
-          log.println()
-          log.flush()
-        }
-        action = Robot
-          .act(
-            g.get,
-            guess.getOrElse(
-              EliminationHand
-                .createFromOpponentHand("human", g.get.playerTwo.hand),
-            ),
-            debug,
-            decisionLog,
-          )
-          .get
-        g = g.get.act(action, true)
-        if (!g.get.log.log.isEmpty) {
-          guess = guess
-            .orElse {
-              Some(
-                EliminationHand
-                  .createFromOpponentHand("human", g.get.playerTwo.hand),
-              )
-            }
-            .map(_.updateForEntry(g.get.log.log.head, t.get))
-          if (g.get.log.log.head.action == Draw) {
-            guess = guess.map(_.eliminateTile(g.get.playerTwo.hand.head))
-          }
-        } else {
-          guess = None
-        }
-        if (debug) {
-          println("--guess--")
-          println(guess.getOrElse("no guess"))
-          println("--guess--")
-        }
-      }
-      t.flatMap((tt) => {
-        g.map((gg) => {
-          if (tt.playerOne.score < gg.playerOne.score) {
-            val points = gg.playerOne.score - tt.playerOne.score
-            println(s"${tt.playerOne.name}: score ${points} points")
-          } else if (tt.playerTwo.score < gg.playerTwo.score) {
-            val points = gg.playerTwo.score - tt.playerTwo.score
-            println(s"${tt.playerTwo.name}: score ${points} points")
-          }
-        })
-      })
-      t = g
-      println("")
-    }
+    val debug = mode == "--play_greedy"
+    val initialGame = Game.setup("human", "robot")
+
+    showGameStart(initialGame, matchScore.bestOf, debug)
+
+    val initialSession = GameSession(initialGame, None)
+    val finalSession = playUntilFinished(initialSession, mode, debug, decisionLog)
+    val game = finalSession.game
+
     println("game over, result:")
-    println(g.getOrElse("None"))
-    if (g.get.playerOne.score > g.get.playerTwo.score) {
+    println(game)
+
+    if (game.playerOne.score > game.playerTwo.score) {
       MatchScore(
         matchScore.pOneScore + 1,
         matchScore.pTwoScore,
@@ -144,6 +44,21 @@ object App {
         matchScore.pTwoScore + 1,
         matchScore.bestOf,
       )
+    }
+  }
+
+  @annotation.tailrec
+  private def playMatch(
+      mode: String,
+      matchScore: MatchScore,
+      decisionLog: Option[java.io.PrintWriter],
+  ): Unit = {
+    if (matchScore.isOver) {
+      matchScore
+    } else {
+      val updatedScore = playGame(mode, matchScore, decisionLog)
+      println(updatedScore)
+      playMatch(mode, updatedScore, decisionLog)
     }
   }
 
@@ -171,14 +86,195 @@ object App {
 
     try {
       val bestOf = if (mode == "--play_human") 3 else 39
-      var matchScore = MatchScore(0, 0, bestOf)
+      val initialScore = MatchScore(0, 0, bestOf)
 
-      while (!matchScore.isOver) {
-        matchScore = playGame(mode, matchScore, decisionLog)
-        println(matchScore)
-      }
+      playMatch(mode, initialScore, decisionLog)
     } finally {
       decisionLog.foreach(_.close())
+    }
+  }
+
+  private def showGameStart(game: Game, bestOf: Int, debug: Boolean): Unit = {
+    println("New Game!")
+    println(s"Playing a best of $bestOf")
+    println("")
+    println(game)
+    if (!debug) Thread.sleep(2000)
+  }
+
+  private def showGuess(guess: Option[EliminationHand], debug: Boolean): Unit = {
+    if (debug) {
+      println("--guess--")
+      println(guess.getOrElse("no guess"))
+      println("--guess--")
+    }
+  }
+
+  private def logRobotTurn(
+      log: java.io.PrintWriter,
+      game: Game,
+      guess: Option[EliminationHand],
+  ): Unit = {
+    log.println("=" * 60)
+    log.println("ROBOT TURN")
+    log.println(game)
+    log.println("Opponent hand estimates:")
+
+    guess.foreach { hand =>
+      log.println(hand.decisionLogSummary(game.playerOne.hand.toSet))
+    }
+
+    log.println()
+    log.flush()
+  }
+
+  private def showPointsScored(previous: Game, current: Game): Unit = {
+    if (previous.playerOne.score < current.playerOne.score) {
+      val points = current.playerOne.score - previous.playerOne.score
+      println(s"${previous.playerOne.name}: score ${points} points")
+    } else if (previous.playerTwo.score < current.playerTwo.score) {
+      val points = current.playerTwo.score - previous.playerTwo.score
+      println(s"${previous.playerTwo.name}: score ${points} points")
+    }
+  }
+
+  private def getOrCreateGuess(
+      guess: Option[EliminationHand],
+      game: Game,
+  ): EliminationHand =
+    guess.getOrElse {
+      EliminationHand.createFromOpponentHand("human", game.playerTwo.hand)
+    }
+
+  private def updateGuessForOpening(
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
+  ): Option[EliminationHand] = {
+    current.log.log.headOption
+      .filter(_.action == PlayHighestDouble)
+      .map { entry =>
+        getOrCreateGuess(guess, current).updateForEntry(entry, previous)
+      }
+      .orElse(guess)
+  }
+
+  private def updateGuessForOpponent(
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
+  ): Option[EliminationHand] =
+    current.log.log.headOption match {
+      case Some(entry) =>
+        Some(
+          getOrCreateGuess(guess, current)
+            .updateForEntry(entry, previous, false, true),
+        )
+      case None => None
+    }
+
+  private def updateGuessForRobot(
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
+  ): Option[EliminationHand] =
+    current.log.log.headOption match {
+      case Some(entry) =>
+        val updated =
+          getOrCreateGuess(guess, current).updateForEntry(entry, previous)
+
+        Some(
+          if (entry.action == Draw)
+            updated.eliminateTile(current.playerTwo.hand.head)
+          else
+            updated,
+        )
+
+      case None => None
+    }
+
+  private def playTurn(
+      session: GameSession,
+      mode: String,
+      debug: Boolean,
+      decisionLog: Option[java.io.PrintWriter],
+  ): Option[GameSession] = {
+    val game = session.game
+    val guess = session.guess
+
+    if (game.turn == HighestDouble) {
+      println("")
+      println("First Turn, playing the highest double.")
+      if (!debug) Thread.sleep(2000)
+
+      val nextGame = game
+        .playHighestDouble()
+        .orElse(Some(game.reshuffle()))
+
+      nextGame.map { next =>
+        GameSession(
+          next,
+          updateGuessForOpening(guess, game, next),
+        )
+      }
+
+    } else if (game.turn == PlayerOneTurn) {
+      println("")
+      println(game)
+
+      val nextGame =
+        if (mode == "--play_human") {
+          game.getUserInput()
+        } else {
+          game.act(Robot.greedyMove(game).get, true)
+        }
+
+      nextGame.map { next =>
+        GameSession(
+          next,
+          updateGuessForOpponent(guess, game, next),
+        )
+      }
+
+    } else {
+      decisionLog.foreach(logRobotTurn(_, game, guess))
+
+      val action = Robot
+        .act(
+          game,
+          getOrCreateGuess(guess, game),
+          debug,
+          decisionLog,
+        )
+        .get
+
+      game.act(action, true).map { next =>
+        GameSession(
+          next,
+          updateGuessForRobot(guess, game, next),
+        )
+      }
+    }
+  }
+
+  @tailrec
+  private def playUntilFinished(
+      session: GameSession,
+      mode: String,
+      debug: Boolean,
+      decisionLog: Option[java.io.PrintWriter],
+  ): GameSession = {
+    if (session.game.isOver) {
+      session
+    } else {
+      val previous = session.game
+      val next = playTurn(session, mode, debug, decisionLog).get
+
+      showGuess(next.guess, debug)
+      showPointsScored(previous, next.game)
+      println("")
+
+      playUntilFinished(next, mode, debug, decisionLog)
     }
   }
 }

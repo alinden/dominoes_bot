@@ -25,19 +25,15 @@ case class Board(
     ).mkString("\n")
   }
 
-  def contains(domino: Domino): Boolean = {
-    (spinner.toList ++ left ++ right ++ up ++ down)
-      .map {
-        case PlayedDomino(tile, value) => {
-          Domino(math.max(tile.high, tile.low), math.min(tile.high, tile.low))
-        }
-      }
-      .contains(domino)
-  }
+  def contains(domino: Domino): Boolean =
+    tiles().exists { tile =>
+      Domino(
+        math.max(tile.high, tile.low),
+        math.min(tile.high, tile.low),
+      ) == domino
+    }
 
-  def length(): Int = {
-    (spinner.toList ++ left ++ right ++ up ++ down).length
-  }
+  def length(): Int = spinner.size + left.size + right.size + up.size + down.size
 
   def isEmpty(): Boolean = {
     spinner.isEmpty && left.isEmpty && right.isEmpty && up.isEmpty && down.isEmpty
@@ -79,68 +75,36 @@ case class Board(
   /** Add a domino as the spinner.
     */
   def addSpinner(domino: Domino, direction: Direction): Option[Board] = {
-    if (!spinner.isEmpty) None
-    val newSpinner = Some(PlayedDomino(domino, domino.high + domino.low))
-    if (direction == Left) {
-      left.headOption
-        .flatMap((x) => {
-          x.connectTo(domino)
-            .map((_) => {
-              Board(
-                newSpinner,
-                this.left.map(_.backwards()).reverse,
-                List(),
-                List(),
-                List(),
-              )
-            })
-        })
-    } else {
-      left.reverse.headOption
-        .map(_.backwards())
-        .flatMap((x) => {
-          x.connectTo(domino)
-            .map((_) => {
-              Board(
-                newSpinner,
-                this.left,
-                List(),
-                List(),
-                List(),
-              )
-            })
-        })
+    if (spinner.nonEmpty) return None
+
+    val (connection, newLeft) = direction match {
+      case Left =>
+        (left.headOption, left.map(_.backwards()).reverse)
+
+      case _ =>
+        (left.lastOption.map(_.backwards()), left)
     }
+
+    connection
+      .flatMap(_.connectTo(domino))
+      .map { _ =>
+        copy(
+          spinner = Some(PlayedDomino(domino, domino.high + domino.low)),
+          left = newLeft,
+          right = Nil,
+          up = Nil,
+          down = Nil,
+        )
+      }
   }
 
   /** Add a domino to the left chain of the board.
     */
   def addLeft(domino: Domino): Option[Board] = {
-    if (left.isEmpty) {
-      spinner.flatMap((x) => {
-        x.connectTo(domino)
-          .map((value) => {
-            Board(
-              this.spinner,
-              List(PlayedDomino(domino, value)),
-              this.right,
-              this.up,
-              this.down,
-            )
-          })
-      })
-    } else {
-      this.left.head
-        .connectTo(domino)
-        .map((value) => {
-          Board(
-            this.spinner,
-            PlayedDomino(domino, value) :: this.left,
-            this.right,
-            this.up,
-            this.down,
-          )
-        })
+    val connection = left.headOption.orElse(spinner)
+
+    connection.flatMap(_.connectTo(domino)).map { value =>
+      copy(left = PlayedDomino(domino, value) :: left)
     }
   }
 
@@ -148,121 +112,46 @@ case class Board(
     * add to the end of the left chain.
     */
   def addRight(domino: Domino): Option[Board] = {
-    if (right.isEmpty && spinner.isEmpty) {
-      this.left.last
-        .backwards()
-        .connectTo(domino)
-        .map((value) => {
-          Board(
-            this.spinner,
-            this.left ++ List(PlayedDomino(domino, value).backwards()),
-            this.right,
-            this.up,
-            this.down,
-          )
-        })
-    } else if (right.isEmpty && !spinner.isEmpty) {
-      return spinner.flatMap((x) => {
-        x.connectTo(domino)
-          .map((value) => {
-            Board(
-              this.spinner,
-              this.left,
-              List(PlayedDomino(domino, value)),
-              this.up,
-              this.down,
-            )
-          })
-      })
+    if (spinner.isEmpty) {
+      // Before a spinner exists, extend the far end of the left chain.
+      left.last.backwards().connectTo(domino).map { value =>
+        copy(left = left :+ PlayedDomino(domino, value).backwards())
+      }
     } else {
-      this.right.head
-        .connectTo(domino)
-        .map((value) => {
-          Board(
-            this.spinner,
-            this.left,
-            PlayedDomino(domino, value) :: this.right,
-            this.up,
-            this.down,
-          )
-        })
+      // After a spinner exists, extend the right chain.
+      val connection = right.headOption.orElse(spinner)
+
+      connection.flatMap(_.connectTo(domino)).map { value =>
+        copy(right = PlayedDomino(domino, value) :: right)
+      }
     }
   }
 
   /** Add a domino to the up chain of the board.
     */
   def addUp(domino: Domino): Option[Board] = {
-    if (up.isEmpty) {
-      spinner.flatMap((x) => {
-        x.connectTo(domino)
-          .map((value) => {
-            Board(
-              this.spinner,
-              this.left,
-              this.right,
-              List(PlayedDomino(domino, value)),
-              this.down,
-            )
-          })
-      })
-    } else {
-      this.up.head
-        .connectTo(domino)
-        .map((value) => {
-          Board(
-            this.spinner,
-            this.left,
-            this.right,
-            PlayedDomino(domino, value) :: this.up,
-            this.down,
-          )
-        })
+    val connection = up.headOption.orElse(spinner)
+
+    connection.flatMap(_.connectTo(domino)).map { value =>
+      copy(up = PlayedDomino(domino, value) :: up)
     }
   }
 
   /** Add a domino to the down chain of the board.
     */
   def addDown(domino: Domino): Option[Board] = {
-    if (down.isEmpty) {
-      spinner.flatMap((x) => {
-        x.connectTo(domino)
-          .map((value) => {
-            Board(
-              this.spinner,
-              this.left,
-              this.right,
-              this.up,
-              List(PlayedDomino(domino, value)),
-            )
-          })
-      })
-    } else {
-      this.down.head
-        .connectTo(domino)
-        .map((value) => {
-          Board(
-            this.spinner,
-            this.left,
-            this.right,
-            this.up,
-            PlayedDomino(domino, value) :: this.down,
-          )
-        })
+    val connection = down.headOption.orElse(spinner)
+
+    connection.flatMap(_.connectTo(domino)).map { value =>
+      copy(down = PlayedDomino(domino, value) :: down)
     }
   }
 
-  def addFirstTile(domino: Domino): Board = {
-    if (domino.isDouble()) {
-      // First tile is a double.
-      val value = domino.high + domino.low
-      Board(Some(PlayedDomino(domino, value)), List(), List(), List(), List())
-    } else {
-      // First tile is not a double.
-      // Which value to choose is arbitrary. Pick the high one.
-      val value = domino.high
-      Board(None, List(PlayedDomino(domino, value)), List(), List(), List())
-    }
-  }
+  def addFirstTile(domino: Domino): Board =
+    if (domino.isDouble())
+      copy(spinner = Some(PlayedDomino(domino, domino.high + domino.low)))
+    else
+      copy(left = List(PlayedDomino(domino, domino.high)))
 }
 
 object Board {
