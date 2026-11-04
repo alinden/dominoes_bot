@@ -2,9 +2,13 @@
 Beats you at dominoes.
 
 ## How to run the program
-To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt "run --play_human"`.
+To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt -J-Xmx4G "run --play_human"`.
+This sets the maximum JVM heap size to 4 GB, which is recommended for AI search. The program can run
+with less memory, but performance may suffer.
 
-To see how its thinking, use the decision log: `sbt "run --play_human --log_decisions decisions.txt"`.
+To see how its thinking, use the decision log: `sbt -J-Xmx4G "run --play_human --log-decisions decisions.log"`.
+Consider reading through the sample [decisions.log](decisions.log) in the repo to see an example of how the bot thinks
+without needing to run a game yourself.
 
 To run unit tests: `sbt test`.
 
@@ -17,9 +21,9 @@ The AI maintains a probability distribution over possible opponent hands, updati
 hands rather than independent tile probabilities captures dependencies between tiles and allows observations to eliminate impossible configurations and
 to reduce the likelihood of hands that would've likely been played differently.
 
-Move selection uses a Monte Carlo approximation of expectiminimax. For each available move, the AI samples possible opponent hands from the probability
-distribution and evaluates the resulting game states through a recursive game-tree search. The sampling approach handles uncertainty about the opponent's
- hand and randomness from future tile draws within the same search framework.
+Move selection uses a Monte Carlo approximation of [Expectiminimax](https://en.wikipedia.org/wiki/Expectiminimax). For each available move,
+the AI samples possible opponent hands from the probability distribution and evaluates the resulting game states through a recursive game-tree
+search. The sampling approach handles uncertainty about the opponent's hand and randomness from future tile draws within the same search framework.
 
 To estimate how likely an observed move would be for a particular hand, the AI simulates the opponent's decision-making process from their perspective.
 It uses these estimates to update the probability distribution through Bayesian inference.
@@ -43,24 +47,24 @@ The implementation is divided into three main components: the game engine, the s
 - `MinNode` selects the lowest-valued move from the robot's perspective, representing the opponent's decisions.
 - `AvgNode` evaluates uncertain outcomes by sampling possible opponent hands and simulating draws.
 
-```mermaid
-flowchart TD
-    M1["MaxNode<br/>Robot chooses a move"]
-    A1["AvgNode<br/>Move A"]
-    A2["AvgNode<br/>Move B"]
-    N1["MinNode<br/>Sampled hand 1"]
-    N2["MinNode<br/>Sampled hand 2"]
-    A3["AvgNode<br/>Opponent response"]
-    M2["MaxNode<br/>Next robot turn"]
-    M3["MaxNode<br/>Next robot turn"]
-
-    M1 --> A1
-    M1 --> A2
-    A1 --> N1
-    A1 --> N2
-    N1 --> A3
-    A3 --> M2
-    A3 --> M3
+```text
+MaxNode (robot chooses a move)
+  |
+  +-- AvgNode (Move A)
+  |     |
+  |     +-- MinNode (sampled opponent hand 1)
+  |     |     |
+  |     |     +-- AvgNode (opponent response)
+  |     |           |
+  |     |           +-- MaxNode (next robot turn)
+  |     |           |
+  |     |           +-- MaxNode (next robot turn)
+  |     |
+  |     +-- MinNode (sampled opponent hand 2)
+  |
+  +-- AvgNode (Move B)
+        |
+        +-- ...
 ```
 
 The search alternates between player decisions and probabilistic evaluations. At terminal positions, it evaluates the resulting scores; at the search depth limit, it uses a heuristic.
