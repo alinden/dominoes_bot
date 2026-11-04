@@ -29,7 +29,7 @@ case class Board(
     tiles().exists { tile =>
       Domino(
         math.max(tile.high, tile.low),
-        math.min(tile.high, tile.low)
+        math.min(tile.high, tile.low),
       ) == domino
     }
 
@@ -74,7 +74,7 @@ case class Board(
 
   /** Add a domino as the spinner.
     */
- def addSpinner(domino: Domino, direction: Direction): Option[Board] = {
+  def addSpinner(domino: Domino, direction: Direction): Option[Board] = {
     if (spinner.nonEmpty) return None
 
     val (connection, newLeft) = direction match {
@@ -93,14 +93,14 @@ case class Board(
           left = newLeft,
           right = Nil,
           up = Nil,
-          down = Nil
+          down = Nil,
         )
       }
   }
 
   /** Add a domino to the left chain of the board.
     */
- def addLeft(domino: Domino): Option[Board] = {
+  def addLeft(domino: Domino): Option[Board] = {
     val connection = left.headOption.orElse(spinner)
 
     connection.flatMap(_.connectTo(domino)).map { value =>
@@ -111,7 +111,7 @@ case class Board(
   /** Add a domino to the right chain of the board. Or, in the case that there is no spinner yet,
     * add to the end of the left chain.
     */
- def addRight(domino: Domino): Option[Board] = {
+  def addRight(domino: Domino): Option[Board] = {
     if (spinner.isEmpty) {
       // Before a spinner exists, extend the far end of the left chain.
       left.last.backwards().connectTo(domino).map { value =>
@@ -129,7 +129,7 @@ case class Board(
 
   /** Add a domino to the up chain of the board.
     */
- def addUp(domino: Domino): Option[Board] = {
+  def addUp(domino: Domino): Option[Board] = {
     val connection = up.headOption.orElse(spinner)
 
     connection.flatMap(_.connectTo(domino)).map { value =>

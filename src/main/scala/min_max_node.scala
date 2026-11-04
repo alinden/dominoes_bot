@@ -23,24 +23,23 @@ trait MinMaxNode {
   }
 
   def bestScoredMove(
-    limitToMoves: List[Action] = List(),
+      limitToMoves: List[Action] = List(),
   ): Option[(Score, Action)] =
     selectBestMove(getScoredMoves(limitToMoves))
 
   protected def selectBestMove(
       scoredMoves: List[(Score, Action)],
   ): Option[(Score, Action)] =
-    scoredMoves.foldRight[Option[(Score, Action)]](None) {
-      case ((score, move), best) =>
-        best match {
-          case None => Some((score, move))
-          case Some((bestScore, _)) =>
-            if (isBetterScore(score, bestScore))
-              Some((score, move))
-            else
-              best
-        }
-  }
+    scoredMoves.foldRight[Option[(Score, Action)]](None) { case ((score, move), best) =>
+      best match {
+        case None => Some((score, move))
+        case Some((bestScore, _)) =>
+          if (isBetterScore(score, bestScore))
+            Some((score, move))
+          else
+            best
+      }
+    }
 
   def goodActions(): List[Action] = {
     val futures = possibleFutures()
@@ -122,5 +121,5 @@ trait MinMaxNode {
         ).score()
 
         (score, move)
-    }
+      }
 }

@@ -39,7 +39,8 @@ class BoardSpec extends AnyFlatSpec {
   }
 
   "addRight" should "extend the left chain when there is no spinner" in {
-    val board = Board.empty()
+    val board = Board
+      .empty()
       .addFirstTile(Domino(6, 3))
 
     val result = board.addRight(Domino(3, 2))
@@ -57,7 +58,8 @@ class BoardSpec extends AnyFlatSpec {
   }
 
   "addRight" should "reject incompatible tiles when there is no spinner" in {
-    val board = Board.empty()
+    val board = Board
+      .empty()
       .addFirstTile(Domino(6, 3))
 
     assert(board.addRight(Domino(5, 2)).isEmpty)

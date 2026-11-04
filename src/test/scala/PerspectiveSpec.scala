@@ -11,7 +11,7 @@ class PerspectiveSpec extends AnyFlatSpec with Matchers {
   val opponentBelief = EliminationHand(
     "Bob",
     Vector.empty,
-    Set.empty
+    Set.empty,
   )
 
   def perspective = Perspective(
@@ -20,13 +20,13 @@ class PerspectiveSpec extends AnyFlatSpec with Matchers {
     hand = myHand,
     maybeOpponentHand = None,
     opponentHand = opponentBelief,
-    opponentIdeaOfMyHand = None
+    opponentIdeaOfMyHand = None,
   )
 
   "assumeOpponentHand" should "store the assumed hand and initialize the opponent's belief" in {
     val result = perspective.assumeOpponentHand(
       theirHand,
-      Domino.all().filterNot((myHand ++ theirHand).contains)
+      Domino.all().filterNot((myHand ++ theirHand).contains),
     )
 
     result.maybeOpponentHand shouldBe Some(theirHand)
@@ -42,16 +42,16 @@ class PerspectiveSpec extends AnyFlatSpec with Matchers {
     val existingBelief = EliminationHand(
       "Alice",
       Vector.empty,
-      Set(Domino(0, 0))
+      Set(Domino(0, 0)),
     )
 
     val original = perspective.copy(
-      opponentIdeaOfMyHand = Some(existingBelief)
+      opponentIdeaOfMyHand = Some(existingBelief),
     )
 
     val result = original.assumeOpponentHand(
       theirHand,
-      Nil
+      Nil,
     )
 
     result.maybeOpponentHand shouldBe Some(theirHand)
@@ -61,7 +61,7 @@ class PerspectiveSpec extends AnyFlatSpec with Matchers {
   "swap" should "exchange player identities, hands, and beliefs" in {
     val assumed = perspective.assumeOpponentHand(
       theirHand,
-      Domino.all().filterNot((myHand ++ theirHand).contains)
+      Domino.all().filterNot((myHand ++ theirHand).contains),
     )
 
     val swapped = assumed.swap()

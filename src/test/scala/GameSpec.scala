@@ -437,9 +437,10 @@ class GameSpec extends AnyFlatSpec {
 
     // Cannot pass while a legal move exists.
     assert(
-      game.copy(playerOne = Player("a", List(Domino(6, 3)), 0))
+      game
+        .copy(playerOne = Player("a", List(Domino(6, 3)), 0))
         .pass()
-        .isEmpty
+        .isEmpty,
     )
   }
 
@@ -534,7 +535,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Robot", List(Domino(6, 3), Domino(5, 5)), 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     // Human cannot play.
@@ -567,7 +568,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Robot", List(Domino(5, 5)), 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val afterFirstPass = game.act(Pass, debug = false).get
@@ -585,7 +586,7 @@ class GameSpec extends AnyFlatSpec {
       left = List(PlayedDomino(Domino(6, 3), 3)),
       right = List(PlayedDomino(Domino(6, 3), 3)),
       up = Nil,
-      down = Nil
+      down = Nil,
     )
 
     val game = Game(
@@ -594,12 +595,12 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", Nil, 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val actions = List(
       Move(Domino(3, 1), Left),
-      Move(Domino(3, 1), Right)
+      Move(Domino(3, 1), Right),
     )
 
     val simplified = game.simplify(actions)
@@ -614,7 +615,7 @@ class GameSpec extends AnyFlatSpec {
       left = List(PlayedDomino(Domino(6, 3), 3)),
       right = List(PlayedDomino(Domino(6, 4), 4)),
       up = Nil,
-      down = Nil
+      down = Nil,
     )
 
     val game = Game(
@@ -623,12 +624,12 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", Nil, 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val actions = List(
       Move(Domino(4, 3), Left),
-      Move(Domino(4, 3), Right)
+      Move(Domino(4, 3), Right),
     )
 
     val simplified = game.simplify(actions)
@@ -643,7 +644,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
       turn = PlayerTwoTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val result = Game.endGame(game, debug = false, dontShuffle = true).get
@@ -661,7 +662,7 @@ class GameSpec extends AnyFlatSpec {
       turn = PlayerOneTurn,
       boneyard = Nil,
       log = GameLog.empty(),
-      lastTurnPass = true
+      lastTurnPass = true,
     )
 
     val result = Game.endGame(game, debug = false, dontShuffle = true).get
@@ -681,7 +682,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(6, 4)), 100),
       turn = PlayerTwoTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val result = Game.endGame(game, debug = false, dontShuffle = true).get
@@ -698,7 +699,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(4, 3)), 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val input = new java.io.ByteArrayInputStream("p\n".getBytes("UTF-8"))
@@ -719,11 +720,11 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(4, 3)), 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val input = new java.io.ByteArrayInputStream(
-      "invalid\np\n".getBytes("UTF-8")
+      "invalid\np\n".getBytes("UTF-8"),
     )
 
     val result = Console.withIn(input) {
@@ -741,12 +742,13 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(4, 3)), 0),
       turn = PlayerOneTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     val input = new java.io.ByteArrayInputStream(
-      (List.fill(10)("invalid") :+ "p").mkString("", "\n", "\n")
-        .getBytes("UTF-8")
+      (List.fill(10)("invalid") :+ "p")
+        .mkString("", "\n", "\n")
+        .getBytes("UTF-8"),
     )
 
     val result = Console.withIn(input) {
@@ -763,7 +765,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
       turn = PlayerTwoTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
 
     assert(game.parseInput("d").contains(Draw))
@@ -777,7 +779,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
       turn = PlayerTwoTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
     val expected = Move(game.activePlayer().hand(0), Left)
 
@@ -791,7 +793,7 @@ class GameSpec extends AnyFlatSpec {
       playerTwo = Player("Two", List(Domino(6, 4), Domino(1, 1)), 30),
       turn = PlayerTwoTurn,
       boneyard = Nil,
-      log = GameLog.empty()
+      log = GameLog.empty(),
     )
     assert(game.parseInput("").isEmpty)
     assert(game.parseInput("invalid").isEmpty)
@@ -803,11 +805,13 @@ class GameSpec extends AnyFlatSpec {
   }
 
   "Game.reshuffle" should "preserve player scores and reset round state" in {
-    val game = Game.setup("Alice", "Bob").copy(
-      playerOne = Player("Alice", Nil, 45),
-      playerTwo = Player("Bob", Nil, 60),
-      lastTurnPass = true
-    )
+    val game = Game
+      .setup("Alice", "Bob")
+      .copy(
+        playerOne = Player("Alice", Nil, 45),
+        playerTwo = Player("Bob", Nil, 60),
+        lastTurnPass = true,
+      )
 
     val reshuffled = game.reshuffle()
 
@@ -825,7 +829,7 @@ class GameSpec extends AnyFlatSpec {
     assert(
       reshuffled.playerOne.hand.length +
         reshuffled.playerTwo.hand.length +
-        reshuffled.boneyard.length == 28
+        reshuffled.boneyard.length == 28,
     )
   }
 }

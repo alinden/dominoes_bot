@@ -66,7 +66,7 @@ case class EliminationHand(
   }
 
   private def normalizeProbabilities(
-    hands: Vector[(PossibleHand, Double)]
+      hands: Vector[(PossibleHand, Double)],
   ): EliminationHand = {
     if (hands.isEmpty) {
       this
@@ -107,7 +107,7 @@ case class EliminationHand(
 
   def normalizeUnique(): EliminationHand =
     normalizeProbabilities(
-      possibilities.map(ph => (ph, ph.likelihood))
+      possibilities.map(ph => (ph, ph.likelihood)),
     )
 
   def updateForOpponentMove(tile: Domino): EliminationHand = {
@@ -403,9 +403,9 @@ case class EliminationHand(
 
 object EliminationHand {
   def createFromOpponentHand(
-    playerName: String,
-    opponentHand: List[Domino],
-    initialHandSize: Int = 7,
+      playerName: String,
+      opponentHand: List[Domino],
+      initialHandSize: Int = 7,
   ): EliminationHand = {
     val impossible = opponentHand.toSet
     val possibleTiles = Domino.all().filterNot(impossible.contains).toSet

@@ -12,8 +12,8 @@ case class MaxNode(
     with EvalNode {
 
   def asyncBestAction(
-    limitToMoves: List[Action] = List(),
-    onScoredMoves: List[(Score, Action)] => Unit = _ => (),
+      limitToMoves: List[Action] = List(),
+      onScoredMoves: List[(Score, Action)] => Unit = _ => (),
   ): Task[(Score, Action)] =
     asyncGetScoredMoves(limitToMoves).map { scoredMoves =>
       onScoredMoves(scoredMoves)
@@ -24,7 +24,7 @@ case class MaxNode(
 
   // Defers each move's evaluation so parSequence can run them concurrently.
   def asyncGetScoredMoves(
-    limitToMoves: List[Action] = List(),
+      limitToMoves: List[Action] = List(),
   ): Task[List[(Score, Action)]] = {
     val tasks = possibleFutures()
       .filter { case (_, move) =>
@@ -60,7 +60,7 @@ case class MaxNode(
   override protected def childSimulations: Int = Config.nextBreadth(numSimulations)
 
   private def printScoredMoves(
-    scoredMoves: List[(Score, Action)],
+      scoredMoves: List[(Score, Action)],
   ): Unit = {
     println("MaxNode Debug scored moves ------------------")
     println(s"Depth: $depthRemaining")

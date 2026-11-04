@@ -45,7 +45,7 @@ case class Game(
         playHighestDouble(domino).map { case (game, message) =>
           (
             game.log(HighestDoubleEntry(game.inactivePlayer().name, domino)),
-            message
+            message,
           )
         }
       }
@@ -65,8 +65,8 @@ case class Game(
         Some(
           newGame.copy(
             playerOne = newGame.playerOne.copy(score = playerOne.score),
-            playerTwo = newGame.playerTwo.copy(score = playerTwo.score)
-          )
+            playerTwo = newGame.playerTwo.copy(score = playerTwo.score),
+          ),
         )
     }
   }
@@ -90,7 +90,7 @@ case class Game(
               playerOne = scoredPlayer,
               turn = PlayerTwoTurn,
               lastTurnPass = false,
-              isOver = false
+              isOver = false,
             )
           else
             copy(
@@ -98,7 +98,7 @@ case class Game(
               playerTwo = scoredPlayer,
               turn = PlayerOneTurn,
               lastTurnPass = false,
-              isOver = false
+              isOver = false,
             )
 
         (nextGame, s"${player.name}: Play the $domino to start the game")
@@ -126,7 +126,7 @@ case class Game(
       boneyard = newGame.boneyard,
       log = GameLog.empty(),
       lastTurnPass = false,
-      isOver = false
+      isOver = false,
     )
   }
 
@@ -224,9 +224,9 @@ case class Game(
     }
 
   def act(
-    action: Action,
-    debug: Boolean = true,
-    dontShuffle: Boolean = false,
+      action: Action,
+      debug: Boolean = true,
+      dontShuffle: Boolean = false,
   ): Option[Game] = action match {
     case Pass =>
       showPass(debug)
@@ -272,8 +272,8 @@ case class Game(
           boneyard = Nil,
           log = log.log(PassLogEntry(activePlayer().name)),
           lastTurnPass = true,
-          isOver = false
-        )
+          isOver = false,
+        ),
       )
     }
 
@@ -295,12 +295,12 @@ case class Game(
             DrawLogEntry(
               activePlayer().name,
               activePlayer().hand.length,
-              legalTilesToPlay()
-            )
+              legalTilesToPlay(),
+            ),
           ),
           lastTurnPass = false,
-          isOver = false
-        )
+          isOver = false,
+        ),
       )
     }
 
@@ -316,13 +316,13 @@ case class Game(
 
     val (pOne, pTwo) = orderPlayers(
       activePlayer().copy(hand = hand),
-      inactivePlayer().copy(hand = newOpponentHand)
+      inactivePlayer().copy(hand = newOpponentHand),
     )
 
     copy(
       playerOne = pOne,
       playerTwo = pTwo,
-      boneyard = newBoneyard
+      boneyard = newBoneyard,
     )
   }
 
@@ -343,7 +343,8 @@ case class Game(
   }
 
   def legalTilesToPlay(): List[Domino] =
-    Game.allDirections()
+    Game
+      .allDirections()
       .flatMap { direction =>
         Domino.all().flatMap { domino =>
           updateBoard(domino, direction).map(_ => domino)
@@ -353,7 +354,8 @@ case class Game(
       .distinct
 
   def scoringMoves(): List[(Move, Int)] =
-    Game.allDirections()
+    Game
+      .allDirections()
       .flatMap { direction =>
         Domino.all().flatMap { domino =>
           updateBoard(domino, direction).map { updatedBoard =>
@@ -379,8 +381,8 @@ case class Game(
   }
 
   def move(
-    domino: Domino,
-    direction: Direction,
+      domino: Domino,
+      direction: Direction,
   ): Option[Game] =
     for {
       updatedBoard <- updateBoard(domino, direction)
@@ -393,11 +395,11 @@ case class Game(
       log = log.log(
         MoveLogEntry(
           activePlayer().name,
-          Move(domino, direction)
-        )
+          Move(domino, direction),
+        ),
       ),
       lastTurnPass = false,
-      isOver = false
+      isOver = false,
     )
 
   def getUserInput(): Option[Game] = {
@@ -500,8 +502,8 @@ case class Game(
   }
 
   private def updatePlayers(
-    domino: Domino,
-    score: Int,
+      domino: Domino,
+      score: Int,
   ): Option[(Player, Player)] =
     activePlayer()
       .removeTile(domino)
@@ -575,7 +577,7 @@ object Game {
 
     val g = game.copy(
       turn = if (game.lastTurnPass) HighestDouble else game.incrementTurn(),
-      isOver = matchIsOver(game.playerOne, game.playerTwo)
+      isOver = matchIsOver(game.playerOne, game.playerTwo),
     )
 
     val activePlayer = g.activePlayer()
@@ -591,12 +593,12 @@ object Game {
 
         val updatedActive = activePlayer.copy(
           hand = Nil,
-          score = activePlayer.score + math.max(difference, 0)
+          score = activePlayer.score + math.max(difference, 0),
         )
 
         val updatedInactive = inactivePlayer.copy(
           hand = Nil,
-          score = inactivePlayer.score + math.max(-difference, 0)
+          score = inactivePlayer.score + math.max(-difference, 0),
         )
 
         val (pOne, pTwo) = g.orderPlayers(updatedActive, updatedInactive)
@@ -606,7 +608,7 @@ object Game {
           playerTwo = pTwo,
           boneyard = Nil,
           lastTurnPass = true,
-          isOver = matchIsOver(pOne, pTwo)
+          isOver = matchIsOver(pOne, pTwo),
         )
 
       } else {
@@ -617,7 +619,7 @@ object Game {
           showRemainingTiles(inactivePlayer, debug)
 
           val updatedActive = activePlayer.copy(
-            score = activePlayer.score + points
+            score = activePlayer.score + points,
           )
 
           val (pOne, pTwo) = g.orderPlayers(updatedActive, inactivePlayer)
@@ -625,19 +627,19 @@ object Game {
           g.copy(
             playerOne = pOne,
             playerTwo = pTwo,
-            isOver = matchIsOver(pOne, pTwo)
+            isOver = matchIsOver(pOne, pTwo),
           )
         } else {
           g
         }
       }
 
-      if (scoredGame.isOver) {
-        showMatchWinner(scoredGame, debug)
-        Some(scoredGame)
-      } else {
-        Some(if (dontShuffle) scoredGame else scoredGame.reshuffle())
-      }
+    if (scoredGame.isOver) {
+      showMatchWinner(scoredGame, debug)
+      Some(scoredGame)
+    } else {
+      Some(if (dontShuffle) scoredGame else scoredGame.reshuffle())
+    }
   }
 
   private def pipTotal(hand: List[Domino]): Int =

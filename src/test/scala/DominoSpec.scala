@@ -28,10 +28,12 @@ class DominoSpec extends AnyFlatSpec {
     assert(tiles.length == 28)
     assert(tiles.distinct.length == 28)
     assert(tiles.forall(d => d.high >= d.low))
-    assert(tiles.forall(d =>
-      d.high >= 0 && d.high <= 6 &&
-      d.low >= 0 && d.low <= 6
-    ))
+    assert(
+      tiles.forall(d =>
+        d.high >= 0 && d.high <= 6 &&
+          d.low >= 0 && d.low <= 6,
+      ),
+    )
   }
 
   "A Domino" should "generate all seven doubles" in {

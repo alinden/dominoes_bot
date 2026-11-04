@@ -13,12 +13,15 @@ object Robot {
   }
 
   def greedyMove(game: Game): Option[Action] = {
-    val scoringMoves = game.scoringMoves()
+    val scoringMoves = game
+      .scoringMoves()
       .collect {
         case (move, _) if game.activePlayer().hand.contains(move.domino) => move
       }
 
-    game.simplify(scoringMoves).headOption
+    game
+      .simplify(scoringMoves)
+      .headOption
       .orElse(getRandomLegalAction(game))
   }
 
@@ -90,10 +93,10 @@ object Robot {
   }
 
   private def logScoredMoves(
-    log: java.io.PrintWriter,
-    depth: Int,
-    simulations: Int,
-    scoredMoves: List[(Score, Action)],
+      log: java.io.PrintWriter,
+      depth: Int,
+      simulations: Int,
+      scoredMoves: List[(Score, Action)],
   ): Unit = {
     log.println(s"Depth: $depth, Simulations: $simulations")
 
@@ -103,10 +106,10 @@ object Robot {
   }
 
   private def logSearchResult(
-    log: java.io.PrintWriter,
-    depth: Int,
-    result: (Score, Action),
-    elapsedMs: Double,
+      log: java.io.PrintWriter,
+      depth: Int,
+      result: (Score, Action),
+      elapsedMs: Double,
   ): Unit = {
     val nodes = SearchStats.count()
     val drawNodes = SearchStats.drawCount()
@@ -127,8 +130,8 @@ object Robot {
   }
 
   private def logFinalDecision(
-    log: java.io.PrintWriter,
-    move: Action,
+      log: java.io.PrintWriter,
+      move: Action,
   ): Unit = {
     log.println(s"FINAL DECISION: $move")
     log.println("=" * 60)
@@ -138,13 +141,13 @@ object Robot {
 
   @tailrec
   private def searchUntilTimeout(
-    game: Game,
-    guess: EliminationHand,
-    debug: Boolean,
-    decisionLog: Option[java.io.PrintWriter],
-    remainingParams: List[(Int, Int)],
-    previousElapsedMs: Double = 0.0,
-    previousMove: Option[Action] = None,
+      game: Game,
+      guess: EliminationHand,
+      debug: Boolean,
+      decisionLog: Option[java.io.PrintWriter],
+      remainingParams: List[(Int, Int)],
+      previousElapsedMs: Double = 0.0,
+      previousMove: Option[Action] = None,
   ): Option[Action] = {
     if (previousElapsedMs >= Config.moveTimeMs || remainingParams.isEmpty) {
       previousMove
@@ -160,8 +163,8 @@ object Robot {
         debug,
         depth,
         simulations,
-        onScoredMoves = scoredMoves =>
-          decisionLog.foreach(logScoredMoves(_, depth, simulations, scoredMoves)),
+        onScoredMoves =
+          scoredMoves => decisionLog.foreach(logScoredMoves(_, depth, simulations, scoredMoves)),
       ).runSyncUnsafe()
 
       val elapsedMs = (System.nanoTime() - start) / 1000000.0

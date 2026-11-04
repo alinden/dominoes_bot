@@ -342,7 +342,7 @@ class EliminationHandSpec extends AnyFlatSpec {
     val hand = EliminationHand(
       "human",
       Vector.empty,
-      Set.empty
+      Set.empty,
     )
 
     assert(hand.getSample() == Nil)
@@ -354,7 +354,7 @@ class EliminationHandSpec extends AnyFlatSpec {
     val hand = EliminationHand(
       "human",
       Vector(PossibleHand(tiles, 1.0, 1.0)),
-      Set.empty
+      Set.empty,
     )
 
     val samples = (1 to 100).map(_ => hand.getSample().toSet)
@@ -382,12 +382,12 @@ class EliminationHandSpec extends AnyFlatSpec {
     val probabilities = normalized.possibilities.map(_.likelihood)
     val cumulative = normalized.possibilities.map(_.cumulativeLikelihood)
 
-    assert(probabilities.zip(Vector(0.2, 0.3, 0.5)).forall {
-      case (actual, expected) => math.abs(actual - expected) < 1e-9
+    assert(probabilities.zip(Vector(0.2, 0.3, 0.5)).forall { case (actual, expected) =>
+      math.abs(actual - expected) < 1e-9
     })
 
-    assert(cumulative.zip(Vector(0.2, 0.5, 1.0)).forall {
-      case (actual, expected) => math.abs(actual - expected) < 1e-9
+    assert(cumulative.zip(Vector(0.2, 0.5, 1.0)).forall { case (actual, expected) =>
+      math.abs(actual - expected) < 1e-9
     })
 
     assert(normalized.possibilities.map(_.hand) == hand.possibilities.map(_.hand))

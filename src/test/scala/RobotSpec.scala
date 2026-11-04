@@ -146,16 +146,16 @@ class RobotSpec extends AnyFlatSpec {
     val initial = PlayedDomino(center, center.high)
 
     tiles.reverse
-    .foldLeft(List(initial)) { (chain, tile) =>
+      .foldLeft(List(initial)) { (chain, tile) =>
         val exposed = chain.head.connectTo(tile).getOrElse {
           throw new IllegalArgumentException(
-            s"Cannot connect $tile to ${chain.head.tile}"
+            s"Cannot connect $tile to ${chain.head.tile}",
           )
         }
 
         PlayedDomino(tile, exposed) :: chain
-    }
-    .dropRight(1)
+      }
+      .dropRight(1)
   }
 
   private def parseGame(

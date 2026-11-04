@@ -25,4 +25,3 @@ object Domino {
 
   def doubles(): List[Domino] = doubleDominoes
 }
-

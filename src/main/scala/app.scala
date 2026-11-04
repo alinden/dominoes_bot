@@ -16,9 +16,9 @@ private case class GameSession(
 
 object App {
   def playGame(
-    mode: String,
-    matchScore: MatchScore,
-    decisionLog: Option[java.io.PrintWriter] = None,
+      mode: String,
+      matchScore: MatchScore,
+      decisionLog: Option[java.io.PrintWriter] = None,
   ): MatchScore = {
     val debug = mode == "--play_greedy"
     val initialGame = Game.setup("human", "robot")
@@ -111,9 +111,9 @@ object App {
   }
 
   private def logRobotTurn(
-    log: java.io.PrintWriter,
-    game: Game,
-    guess: Option[EliminationHand],
+      log: java.io.PrintWriter,
+      game: Game,
+      guess: Option[EliminationHand],
   ): Unit = {
     log.println("=" * 60)
     log.println("ROBOT TURN")
@@ -139,17 +139,17 @@ object App {
   }
 
   private def getOrCreateGuess(
-    guess: Option[EliminationHand],
-    game: Game,
+      guess: Option[EliminationHand],
+      game: Game,
   ): EliminationHand =
     guess.getOrElse {
       EliminationHand.createFromOpponentHand("human", game.playerTwo.hand)
     }
 
   private def updateGuessForOpening(
-    guess: Option[EliminationHand],
-    previous: Game,
-    current: Game,
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
   ): Option[EliminationHand] = {
     current.log.log.headOption
       .filter(_.action == PlayHighestDouble)
@@ -160,44 +160,44 @@ object App {
   }
 
   private def updateGuessForOpponent(
-    guess: Option[EliminationHand],
-    previous: Game,
-    current: Game,
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
   ): Option[EliminationHand] =
     current.log.log.headOption match {
       case Some(entry) =>
         Some(
           getOrCreateGuess(guess, current)
-            .updateForEntry(entry, previous, false, true)
+            .updateForEntry(entry, previous, false, true),
         )
       case None => None
     }
 
   private def updateGuessForRobot(
-    guess: Option[EliminationHand],
-    previous: Game,
-    current: Game,
-): Option[EliminationHand] =
-  current.log.log.headOption match {
-    case Some(entry) =>
-      val updated =
-        getOrCreateGuess(guess, current).updateForEntry(entry, previous)
+      guess: Option[EliminationHand],
+      previous: Game,
+      current: Game,
+  ): Option[EliminationHand] =
+    current.log.log.headOption match {
+      case Some(entry) =>
+        val updated =
+          getOrCreateGuess(guess, current).updateForEntry(entry, previous)
 
-      Some(
-        if (entry.action == Draw)
-          updated.eliminateTile(current.playerTwo.hand.head)
-        else
-          updated
-      )
+        Some(
+          if (entry.action == Draw)
+            updated.eliminateTile(current.playerTwo.hand.head)
+          else
+            updated,
+        )
 
-    case None => None
-  }
+      case None => None
+    }
 
   private def playTurn(
-    session: GameSession,
-    mode: String,
-    debug: Boolean,
-    decisionLog: Option[java.io.PrintWriter],
+      session: GameSession,
+      mode: String,
+      debug: Boolean,
+      decisionLog: Option[java.io.PrintWriter],
   ): Option[GameSession] = {
     val game = session.game
     val guess = session.guess
@@ -207,7 +207,8 @@ object App {
       println("First Turn, playing the highest double.")
       if (!debug) Thread.sleep(2000)
 
-      val nextGame = game.playHighestDouble()
+      val nextGame = game
+        .playHighestDouble()
         .orElse(Some(game.reshuffle()))
 
       nextGame.map { next =>
@@ -238,12 +239,14 @@ object App {
     } else {
       decisionLog.foreach(logRobotTurn(_, game, guess))
 
-      val action = Robot.act(
-        game,
-        getOrCreateGuess(guess, game),
-        debug,
-        decisionLog,
-      ).get
+      val action = Robot
+        .act(
+          game,
+          getOrCreateGuess(guess, game),
+          debug,
+          decisionLog,
+        )
+        .get
 
       game.act(action, true).map { next =>
         GameSession(
