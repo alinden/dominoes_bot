@@ -191,6 +191,7 @@ case class EliminationHand(
   private def logObservations(
     observations: List[BayesObservation]
   ): Unit = {
+    if (!Config.logBayes) return
 
     def sortedTiles(hand: Set[Domino]): List[Domino] =
       hand.toList.sortBy(d => (d.high, d.low))
@@ -208,13 +209,13 @@ case class EliminationHand(
 
           val scores = observation.scoredMoves
             .sortWith { case ((a, _), (b, _)) =>
-              a.value < b.value // MinNode: lower is better
+              a.mean.value < b.mean.value // MinNode: lower is better
             }
-            .map { case (score, move) =>
+            .map { case (scoreEstimate, move) =>
               val preferred =
                 if (observation.preferredMoves.contains(move)) "*" else ""
 
-              f"$move: ${score.value}%.3f$preferred"
+              f"$move: ${scoreEstimate.mean.value}%.3f ± ${scoreEstimate.standardError}%.4f$preferred"
             }
             .mkString(", ")
 
@@ -254,9 +255,11 @@ case class EliminationHand(
     val badCount = informative.count(_.evaluation == BadMove)
     val forcedCount = observations.size - informative.size
 
-    println(
-      s"[Bayes] GOOD=$goodCount BAD=$badCount FORCED=$forcedCount"
-    )
+    if (Config.logBayes) {
+      println(
+        s"[Bayes] GOOD=$goodCount BAD=$badCount FORCED=$forcedCount"
+      )
+    }
 
     // No useful evidence if every informative observation agrees,
     // or if all observations were forced.
@@ -446,6 +449,7 @@ case class EliminationHand(
       updated
     } else {
       val config = bayesConfig(updated.possibilities.size)
+      val canonicalMove = before.canonicalMove(move)
 
       EliminationHand.benchmark(
         s"${config.phaseName} | " +
@@ -456,10 +460,10 @@ case class EliminationHand(
       ) {
         config.method match {
           case DirectBayes =>
-            updateHandsDirectly(updated, move, before, config)
+            updateHandsDirectly(updated, canonicalMove, before, config)
 
           case TileBayes =>
-            updateUsingTileEvidence(updated, move, before, config)
+            updateUsingTileEvidence(updated, canonicalMove, before, config)
         }
       }
     }

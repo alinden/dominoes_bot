@@ -9,6 +9,6 @@ case class BayesObservation(
   hand: Set[Domino],
   evaluation: MoveEvaluation,
   preferredMoves: List[Move],
-  scoredMoves: List[(Score, Move)]
+  scoredMoves: List[(ScoreEstimate, Move)]
 )
 

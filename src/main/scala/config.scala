@@ -18,7 +18,7 @@ object Config {
   // Larger values produce more conservative estimates.
   val bayesPriorStrength = 10.0
   // Reduce the strength of the combined tile evidence.
-  val bayesEvidenceStrength = 0.5
+  val bayesEvidenceStrength = 1.0
   // Bayesian inference
   val bayesConfigs: List[BayesConfig] = List(
     BayesConfig("opening", TileBayes, 3, 8, 50, None),
@@ -36,7 +36,9 @@ object Config {
   val bayesBadMoveWeight = 0.2
 
   // Log Bayesian inference performance.
-  val benchmarkBayes = true
+  val benchmarkBayes = false
+  // Log Bayesian inference at a hand by hand level.
+  val logBayes = false
 
   // Robot move selection
   // List of (depth, breadth) tuples
