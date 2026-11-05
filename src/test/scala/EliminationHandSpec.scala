@@ -392,4 +392,49 @@ class EliminationHandSpec extends AnyFlatSpec {
 
     assert(normalized.possibilities.map(_.hand) == hand.possibilities.map(_.hand))
   }
+
+  "An EliminationHand" should "preserve probabilities when all hands receive the same evidence" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+
+    val hand = EliminationHand(
+      "human",
+      Vector(
+        PossibleHand(Set(a), 0.7, 0.7),
+        PossibleHand(Set(b), 0.3, 1.0),
+      ),
+      Set.empty,
+    )
+
+    for (isGood <- List(true, false)) {
+      val evaluations = hand.possibilities.map(ph => (ph, Some(isGood)))
+
+      val updated = hand.applyHandEvidence(
+        evaluations,
+        badMoveWeight = 0.2,
+      )
+
+      assert(updated.possibilities == hand.possibilities)
+    }
+  }
+
+  it should "preserve probabilities when all hands are forced" in {
+    val a = Domino(5, 1)
+    val b = Domino(4, 1)
+
+    val hand = EliminationHand(
+      "human",
+      Vector(
+        PossibleHand(Set(a), 0.7, 0.7),
+        PossibleHand(Set(b), 0.3, 1.0),
+      ),
+      Set.empty,
+    )
+
+    val evaluations = hand.possibilities.map(ph => (ph, None))
+
+    val updated = hand.applyHandEvidence(evaluations)
+
+    assert(updated.possibilities == hand.possibilities)
+  }
 }

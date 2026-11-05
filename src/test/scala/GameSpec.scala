@@ -184,6 +184,39 @@ class GameSpec extends AnyFlatSpec {
     assert(x.legalTilesToPlay().toSet == expectedLegalTilesToPlay)
   }
 
+  "A Game" should "know the canonical move: spinner" in {
+    val game = Game(
+      Board(
+        Some(PlayedDomino(Domino(6, 6), 6)),
+        List(),
+        List(),
+        List(),
+        List(),
+      ),
+      Player(
+        "human",
+        List(), // pone hand should be irrelevant
+        0,
+      ),
+      Player(
+        "robot",
+        List(Domino(6, 3)),
+        0,
+      ),
+      PlayerTwoTurn,
+      List(), // boneyard should be irrelevant
+      GameLog.empty(),
+      false,
+      false,
+    )
+
+    val left  = Move(Domino(6, 3), Left)
+    val right = Move(Domino(6, 3), Right)
+
+    assert(game.canonicalMove(left) == left)
+    assert(game.canonicalMove(right) == left)
+  }
+
   "A Game" should "simplify moves: snake" in {
     val x = Game(
       Board(
