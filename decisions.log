@@ -2,23 +2,23 @@
 ROBOT TURN
 
 ----------------------------------
-human(10): [6,1] [1,1] [4,1] [2,1] [5,0] [6,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+human(0): [6,2] [1,1] [5,4] [5,0] [3,0] [3,2]
+robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
 spinner: [3,3]
-left: [4,3]
-right:
-up:
-down:
-board score: 10
+left: 
+right: 
+up: 
+down: 
+board score: 6
 
 Opponent hand estimates:
 12376 possible hands
 Uniform hand probability: 0.008%
 
 Most likely tiles:
-  [6,3]  35.294%
+  [6,0]  35.294%
   [5,4]  35.294%
   [4,0]  35.294%
   [1,1]  35.294%
@@ -29,3119 +29,109 @@ Least likely tiles:
   [1,0]  35.294%
   [3,0]  35.294%
   [6,1]  35.294%
-  [2,2]  35.294%
+  [3,2]  35.294%
 
 Most likely hands:
-  0.008%  [3,2] [6,0] [6,3] [5,4] [4,0] [1,1]
-  0.008%  [6,0] [5,4] [4,0] [6,1] [1,0] [2,1]
-  0.008%  [2,2] [1,1] [2,0] [5,3] [6,1] [3,0]
-  0.008%  [3,2] [2,2] [6,3] [6,1] [1,0] [4,1]
-  0.008%  [6,1] [4,2] [2,0] [4,1] [6,2] [3,2]
+  0.008%  [4,0] [1,1] [4,2] [2,0] [6,5] [5,0]
+  0.008%  [4,0] [1,1] [4,2] [2,0] [6,5] [5,1]
+  0.008%  [4,0] [1,1] [4,2] [2,0] [6,5] [0,0]
+  0.008%  [6,2] [4,0] [1,1] [4,2] [2,0] [6,5]
+  0.008%  [3,2] [4,0] [1,1] [4,2] [2,0] [6,5]
 
 Actual hand:
-  [6,2] [1,1] [6,1] [2,1] [5,0] [4,1]
+  [5,4] [1,1] [3,0] [5,0] [6,2] [3,2]
   Probability: 0.008%
   Relative to uniform: 1.00x
-  Rank: 6168 / 12376
+  Rank: 6791 / 12376
 
 Depth: 5, Simulations: 10
-Move([6,4],Left )         mean=-0.079
-Move([3,1],Right)         mean=-0.099
-AvgNodes evaluated: 1,460
-AvgNodes/second: 2,497
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([6,4],Left ) (-0.079)
-Elapsed: 585 ms
+Move([4,3],Left )         mean=0.129 
+Move([6,3],Left )         mean=0.051 
+Move([3,1],Left )         mean=0.042 
+Move([5,3],Left )         mean=-0.028 
+AvgNodes evaluated: 3,381
+AvgNodes/second: 149
+Draw nodes: 10
+Draw simulations: 100
+Selected at depth 5: Move([4,3],Left ) (0.129)
+Elapsed: 22767 ms
 
-Depth: 7, Simulations: 20
-Move([3,1],Right)         mean=-0.095
-Move([6,4],Left )         mean=-0.107
-AvgNodes evaluated: 24,066
-AvgNodes/second: 6,667
-Draw nodes: 34
-Draw simulations: 340
-Selected at depth 7: Move([3,1],Right) (-0.095)
-Elapsed: 3610 ms
-
-FINAL DECISION: Move([3,1],Right)
+FINAL DECISION: Move([4,3],Left )
 ============================================================
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
 
 ============================================================
 ROBOT TURN
 
 ----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,4] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [3,4]
-right: [3,1] - [1,4]
-=======
-human(10): [6,1] [4,1] [2,1] [5,0] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x]
+human(0): [6,2] [1,1] [5,4] [5,0] [3,0]
+robot*(10): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
 spinner: [3,3]
 left: [4,3]
-right: [1,1] - [1,3]
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-up:
-down:
+right: [2,3]
+up: 
+down: 
 board score: 6
-
-<<<<<<< HEAD
-=======
-Opponent hand estimates:
-4368 possible hands
-Uniform hand probability: 0.023%
-
-Most likely tiles:
-  [2,1]  35.531%
-  [5,4]  35.306%
-  [1,0]  33.879%
-  [2,0]  33.758%
-  [6,0]  33.291%
-
-Least likely tiles:
-  [6,1]  22.146%
-  [5,0]  24.487%
-  [3,2]  28.508%
-  [5,3]  28.673%
-  [4,2]  30.381%
-
-Most likely hands:
-  0.043%  [6,0] [5,4] [2,0] [1,0] [2,1]
-  0.043%  [2,2] [5,4] [2,0] [1,0] [2,1]
-  0.042%  [5,4] [4,0] [2,0] [1,0] [2,1]
-  0.042%  [5,4] [6,0] [2,2] [1,0] [2,1]
-  0.042%  [5,4] [2,0] [4,1] [1,0] [2,1]
-
-Actual hand:
-  [6,2] [6,1] [2,1] [5,0] [4,1]
-  Probability: 0.014%
-  Relative to uniform: 0.60x
-  Rank: 4011 / 4368
-
-Depth: 5, Simulations: 10
-Move([5,1],Right)         mean=-0.092
-Move([6,4],Left )         mean=-0.131
-AvgNodes evaluated: 989
-AvgNodes/second: 8,042
-Draw nodes: 1
-Draw simulations: 10
-Selected at depth 5: Move([5,1],Right) (-0.092)
-Elapsed: 123 ms
-
-Depth: 7, Simulations: 20
-Move([5,1],Right)         mean=-0.104
-Move([6,4],Left )         mean=-0.140
-AvgNodes evaluated: 12,850
-AvgNodes/second: 3,335
-Draw nodes: 105
-Draw simulations: 1,050
-Selected at depth 7: Move([5,1],Right) (-0.104)
-Elapsed: 3854 ms
-
-FINAL DECISION: Move([5,1],Right)
-============================================================
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,4] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 6
-
-=======
-human(10): [6,1] [4,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [4,3]
-right: [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 4
-
-Opponent hand estimates:
-1365 possible hands
-Uniform hand probability: 0.073%
-
-Most likely tiles:
-  [2,0]  33.055%
-  [3,0]  32.089%
-  [2,1]  31.204%
-  [2,2]  30.051%
-  [1,0]  29.650%
-
-Least likely tiles:
-  [4,0]  19.646%
-  [6,3]  19.824%
-  [6,1]  22.617%
-  [5,4]  22.938%
-  [4,2]  23.820%
-
-Most likely hands:
-  0.175%  [2,0] [2,1] [2,2] [3,0]
-  0.172%  [1,0] [2,0] [2,1] [3,0]
-  0.167%  [2,0] [2,1] [3,0] [5,3]
-  0.163%  [1,0] [2,0] [2,2] [3,0]
-  0.161%  [2,0] [2,1] [3,0] [4,1]
-
-Actual hand:
-  [6,1] [4,1] [2,1] [6,2]
-  Probability: 0.071%
-  Relative to uniform: 0.98x
-  Rank: 635 / 1365
-
-Depth: 5, Simulations: 10
-Move([6,4],Left )         mean=-0.067
-Move([0,0],Right)         mean=-0.089
-AvgNodes evaluated: 526
-AvgNodes/second: 3,490
-Draw nodes: 10
-Draw simulations: 100
-Selected at depth 5: Move([6,4],Left ) (-0.067)
-Elapsed: 151 ms
-
-Depth: 7, Simulations: 20
-Move([6,4],Left )         mean=-0.065
-Move([0,0],Right)         mean=-0.088
-AvgNodes evaluated: 6,238
-AvgNodes/second: 5,033
-Draw nodes: 126
-Draw simulations: 1,260
-Selected at depth 7: Move([6,4],Left ) (-0.065)
-Elapsed: 1239 ms
-
-Depth: 9, Simulations: 20
-Move([0,0],Right)         mean=-0.108
-Move([6,4],Left )         mean=-0.188
-AvgNodes evaluated: 42,960
-AvgNodes/second: 6,135
-Draw nodes: 1,354
-Draw simulations: 13,540
-Selected at depth 9: Move([0,0],Right) (-0.108)
-Elapsed: 7003 ms
-
-FINAL DECISION: Move([0,0],Right)
-============================================================
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [4,5] - [5,3] - [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 7
-
-=======
-human(10): [6,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [1,4] - [4,3]
-right: [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 1
-
-Opponent hand estimates:
-364 possible hands
-Uniform hand probability: 0.275%
-
-Most likely tiles:
-  [2,0]  27.895%
-  [3,0]  27.188%
-  [2,1]  27.059%
-  [2,2]  25.155%
-  [1,0]  24.204%
-
-Least likely tiles:
-  [6,3]  13.247%
-  [4,0]  16.691%
-  [6,1]  16.971%
-  [6,0]  17.659%
-  [5,4]  17.957%
-
-Most likely hands:
-  0.661%  [2,0] [2,1] [3,0]
-  0.604%  [2,0] [2,2] [3,0]
-  0.601%  [2,0] [2,1] [2,2]
-  0.582%  [2,1] [2,2] [3,0]
-  0.577%  [1,0] [2,0] [3,0]
-
-Actual hand:
-  [6,1] [2,1] [6,2]
-  Probability: 0.272%
-  Relative to uniform: 0.99x
-  Rank: 165 / 364
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [4,5] - [5,3] - [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 7
-
-=======
-human(10): [6,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [1,4] - [4,3]
-right: [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 1
-
-Opponent hand estimates:
-286 possible hands
-Uniform hand probability: 0.350%
-
-Most likely tiles:
-  [2,0]  29.577%
-  [3,0]  28.840%
-  [2,1]  28.707%
-  [2,2]  26.718%
-  [1,0]  25.723%
-
-Least likely tiles:
-  [6,3]  14.164%
-  [4,0]  17.814%
-  [6,1]  18.110%
-  [6,0]  18.838%
-  [4,2]  21.166%
-
-Most likely hands:
-  0.806%  [2,0] [2,1] [3,0]
-  0.737%  [2,0] [2,2] [3,0]
-  0.732%  [2,0] [2,1] [2,2]
-  0.709%  [2,1] [2,2] [3,0]
-  0.703%  [1,0] [2,0] [3,0]
-
-Actual hand:
-  [6,1] [2,1] [6,2]
-  Probability: 0.332%
-  Relative to uniform: 0.95x
-  Rank: 142 / 286
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(10): [6,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [1,4] - [4,3]
-right: [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 1
-
-Opponent hand estimates:
-220 possible hands
-Uniform hand probability: 0.455%
-
-Most likely tiles:
-  [2,0]  32.286%
-  [3,0]  31.506%
-  [2,1]  31.364%
-  [1,0]  28.189%
-  [5,3]  26.617%
-
-Least likely tiles:
-  [6,3]  15.683%
-  [4,0]  19.664%
-  [6,1]  19.985%
-  [6,0]  20.775%
-  [4,2]  23.294%
-
-Most likely hands:
-  1.100%  [2,0] [2,1] [3,0]
-  0.959%  [1,0] [2,0] [3,0]
-  0.953%  [1,0] [2,0] [2,1]
-  0.923%  [1,0] [2,1] [3,0]
-  0.892%  [2,0] [3,0] [5,3]
-
-Actual hand:
-  [6,1] [2,1] [6,2]
-  Probability: 0.453%
-  Relative to uniform: 1.00x
-  Rank: 101 / 220
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [4,5] - [5,3] - [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 7
-
-=======
-human(10): [6,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [1,4] - [4,3]
-right: [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 1
-
-Opponent hand estimates:
-165 possible hands
-Uniform hand probability: 0.606%
-
-Most likely tiles:
-  [2,0]  34.826%
-  [3,0]  34.009%
-  [2,1]  33.860%
-  [1,0]  30.517%
-  [5,3]  28.854%
-
-Least likely tiles:
-  [6,3]  17.144%
-  [4,0]  21.434%
-  [6,1]  21.779%
-  [6,0]  22.627%
-  [6,2]  27.053%
-
-Most likely hands:
-  1.434%  [2,0] [2,1] [3,0]
-  1.250%  [1,0] [2,0] [3,0]
-  1.243%  [1,0] [2,0] [2,1]
-  1.203%  [1,0] [2,1] [3,0]
-  1.163%  [2,0] [3,0] [5,3]
-
-Actual hand:
-  [6,1] [2,1] [6,2]
-  Probability: 0.590%
-  Relative to uniform: 0.97x
-  Rank: 81 / 165
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [4,5] - [5,3] - [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 7
-
-=======
-human(10): [6,1] [2,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [1,4] - [4,3]
-right: [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 1
-
-Opponent hand estimates:
-120 possible hands
-Uniform hand probability: 0.833%
-
-Most likely tiles:
-  [2,0]  38.892%
-  [2,1]  37.868%
-  [1,0]  34.296%
-  [5,3]  32.502%
-  [3,2]  31.466%
-
-Least likely tiles:
-  [6,3]  19.596%
-  [4,0]  24.377%
-  [6,1]  24.759%
-  [6,0]  25.695%
-  [6,2]  30.548%
-
-Most likely hands:
-  1.883%  [1,0] [2,0] [2,1]
-  1.752%  [2,0] [2,1] [5,3]
-  1.679%  [2,0] [2,1] [3,2]
-  1.616%  [2,0] [2,1] [6,2]
-  1.527%  [1,0] [2,0] [5,3]
-
-Actual hand:
-  [6,1] [2,1] [6,2]
-  Probability: 0.895%
-  Relative to uniform: 1.07x
-  Rank: 47 / 120
-
-Depth: 5, Simulations: 10
-Move([3,0],Up   )         mean=-0.019
-Move([3,0],Right)         mean=-0.052
-AvgNodes evaluated: 621
-AvgNodes/second: 2,180
-Draw nodes: 10
-Draw simulations: 100
-Selected at depth 5: Move([3,0],Up   ) (-0.019)
-Elapsed: 285 ms
-
-Depth: 7, Simulations: 20
-Move([3,0],Right)         mean=-0.181
-Move([3,0],Up   )         mean=-0.190
-AvgNodes evaluated: 10,728
-AvgNodes/second: 4,993
-Draw nodes: 293
-Draw simulations: 2,930
-Selected at depth 7: Move([3,0],Right) (-0.181)
-Elapsed: 2149 ms
-
-Depth: 9, Simulations: 20
-Move([3,0],Right)         mean=-0.106
-Move([3,0],Up   )         mean=-0.332
-AvgNodes evaluated: 101,368
-AvgNodes/second: 17,089
-Draw nodes: 1,797
-Draw simulations: 17,970
-Selected at depth 9: Move([3,0],Right) (-0.106)
-Elapsed: 5932 ms
-
-FINAL DECISION: Move([3,0],Right)
-============================================================
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2] [3,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [4,5] - [5,3] - [3,4]
-right: [3,1] - [1,4]
-up:
-down:
-board score: 7
-
-
-Depth: 5, Simulations: 30
-  Move([6,4],Left )         mean=0.003 stddev=0.040 min=-0.071 max=0.125 pLoss=0.000 pWin=0.000
-  Move([6,4],Up   )         mean=-0.077 stddev=0.061 min=-0.154 max=0.154 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([6,4],Left ) (0.003)
-Elapsed: 38405 ms
-=======
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 5
-
-Opponent hand estimates:
-36 possible hands
-Uniform hand probability: 2.778%
-
-Most likely tiles:
-  [2,0]  30.733%
-  [1,0]  26.579%
-  [5,3]  25.005%
-  [3,2]  24.107%
-  [6,2]  23.317%
-
-Least likely tiles:
-  [6,3]  14.358%
-  [4,0]  18.171%
-  [6,1]  18.482%
-  [6,0]  19.249%
-  [6,2]  23.317%
-
-Most likely hands:
-  4.973%  [1,0] [2,0]
-  4.628%  [2,0] [5,3]
-  4.435%  [2,0] [3,2]
-  4.267%  [2,0] [6,2]
-  3.882%  [1,0] [5,3]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 2.363%
-  Relative to uniform: 0.85x
-  Rank: 25 / 36
-
-Depth: 5, Simulations: 10
-Move([4,2],Left )         mean=-0.099
-Move([5,2],Left )         mean=-0.132
-Move([2,2],Left )         mean=-0.512
-AvgNodes evaluated: 1,784
-AvgNodes/second: 2,780
-Draw nodes: 45
-Draw simulations: 450
-Selected at depth 5: Move([4,2],Left ) (-0.099)
-Elapsed: 642 ms
-
-Depth: 7, Simulations: 20
-Move([4,2],Left )         mean=-0.184
-Move([5,2],Left )         mean=-0.211
-Move([2,2],Left )         mean=-0.251
-AvgNodes evaluated: 34,953
-AvgNodes/second: 14,447
-Draw nodes: 509
-Draw simulations: 5,090
-Selected at depth 7: Move([4,2],Left ) (-0.184)
-Elapsed: 2419 ms
-
-Depth: 9, Simulations: 20
-Move([5,2],Left )         mean=-0.140
-Move([4,2],Left )         mean=-0.146
-Move([2,2],Left )         mean=-0.314
-AvgNodes evaluated: 330,803
-AvgNodes/second: 18,493
-Draw nodes: 9,215
-Draw simulations: 92,150
-Selected at depth 9: Move([5,2],Left ) (-0.140)
-Elapsed: 17888 ms
-
-FINAL DECISION: Move([5,2],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 6
-
-Opponent hand estimates:
-15 possible hands
-Uniform hand probability: 6.667%
-
-Most likely tiles:
-  [6,2]  47.539%
-  [6,0]  43.848%
-  [2,0]  31.876%
-  [1,0]  30.033%
-  [4,0]  23.674%
-
-Least likely tiles:
-  [6,1]  23.031%
-  [4,0]  23.674%
-  [1,0]  30.033%
-  [2,0]  31.876%
-  [6,0]  43.848%
-
-Most likely hands:
-  14.912%  [6,0] [6,2]
-  9.830%  [2,0] [6,2]
-  9.147%  [1,0] [6,2]
-  8.718%  [2,0] [6,0]
-  8.112%  [1,0] [6,0]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 6.719%
-  Relative to uniform: 1.01x
-  Rank: 7 / 15
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 6
-
-Opponent hand estimates:
-10 possible hands
-Uniform hand probability: 10.000%
-
-Most likely tiles:
-  [6,2]  53.202%
-  [6,0]  49.394%
-  [2,0]  36.453%
-  [1,0]  34.407%
-  [6,1]  26.545%
-
-Least likely tiles:
-  [6,1]  26.545%
-  [1,0]  34.407%
-  [2,0]  36.453%
-  [6,0]  49.394%
-  [6,2]  53.202%
-
-Most likely hands:
-  19.537%  [6,0] [6,2]
-  12.879%  [2,0] [6,2]
-  11.984%  [1,0] [6,2]
-  11.422%  [2,0] [6,0]
-  10.628%  [1,0] [6,0]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 8.803%
-  Relative to uniform: 0.88x
-  Rank: 6 / 10
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 6
-
-Opponent hand estimates:
-10 possible hands
-Uniform hand probability: 10.000%
-
-Most likely tiles:
-  [6,2]  53.202%
-  [6,0]  49.394%
-  [2,0]  36.453%
-  [1,0]  34.407%
-  [6,1]  26.545%
-
-Least likely tiles:
-  [6,1]  26.545%
-  [1,0]  34.407%
-  [2,0]  36.453%
-  [6,0]  49.394%
-  [6,2]  53.202%
-
-Most likely hands:
-  19.537%  [6,0] [6,2]
-  12.879%  [2,0] [6,2]
-  11.984%  [1,0] [6,2]
-  11.422%  [2,0] [6,0]
-  10.628%  [1,0] [6,0]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 8.803%
-  Relative to uniform: 0.88x
-  Rank: 6 / 10
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 6
-
-Opponent hand estimates:
-10 possible hands
-Uniform hand probability: 10.000%
-
-Most likely tiles:
-  [6,2]  53.202%
-  [6,0]  49.394%
-  [2,0]  36.453%
-  [1,0]  34.407%
-  [6,1]  26.545%
-
-Least likely tiles:
-  [6,1]  26.545%
-  [1,0]  34.407%
-  [2,0]  36.453%
-  [6,0]  49.394%
-  [6,2]  53.202%
-
-Most likely hands:
-  19.537%  [6,0] [6,2]
-  12.879%  [2,0] [6,2]
-  11.984%  [1,0] [6,2]
-  11.422%  [2,0] [6,0]
-  10.628%  [1,0] [6,0]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 8.803%
-  Relative to uniform: 0.88x
-  Rank: 6 / 10
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1] [6,2]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up:
-down:
-board score: 6
-
-Opponent hand estimates:
-10 possible hands
-Uniform hand probability: 10.000%
-
-Most likely tiles:
-  [6,2]  53.202%
-  [6,0]  49.394%
-  [2,0]  36.453%
-  [1,0]  34.407%
-  [6,1]  26.545%
-
-Least likely tiles:
-  [6,1]  26.545%
-  [1,0]  34.407%
-  [2,0]  36.453%
-  [6,0]  49.394%
-  [6,2]  53.202%
-
-Most likely hands:
-  19.537%  [6,0] [6,2]
-  12.879%  [2,0] [6,2]
-  11.984%  [1,0] [6,2]
-  11.422%  [2,0] [6,0]
-  10.628%  [1,0] [6,0]
-
-Actual hand:
-  [6,1] [6,2]
-  Probability: 8.803%
-  Relative to uniform: 0.88x
-  Rank: 6 / 10
-
-Depth: 5, Simulations: 10
-Move([3,2],Left )         mean=0.002
-Move([3,2],Up   )         mean=0.000
-AvgNodes evaluated: 539
-AvgNodes/second: 5,806
-Draw nodes: 19
-Draw simulations: 190
-Selected at depth 5: Move([3,2],Left ) (0.002)
-Elapsed: 93 ms
-
-Depth: 7, Simulations: 20
-Move([3,2],Up   )         mean=0.034
-Move([3,2],Left )         mean=-0.002
-AvgNodes evaluated: 12,037
-AvgNodes/second: 28,042
-Draw nodes: 142
-Draw simulations: 1,420
-Selected at depth 7: Move([3,2],Up   ) (0.034)
-Elapsed: 429 ms
-
-Depth: 9, Simulations: 20
-Move([3,2],Up   )         mean=0.100
-Move([3,2],Left )         mean=0.039
-AvgNodes evaluated: 119,914
-AvgNodes/second: 42,141
-Draw nodes: 2,208
-Draw simulations: 22,080
-Selected at depth 9: Move([3,2],Up   ) (0.100)
-Elapsed: 2846 ms
-
-Depth: 11, Simulations: 20
-Move([3,2],Up   )         mean=0.139
-Move([3,2],Left )         mean=0.120
-AvgNodes evaluated: 998,717
-AvgNodes/second: 41,947
-Draw nodes: 29,732
-Draw simulations: 297,320
-Selected at depth 11: Move([3,2],Up   ) (0.139)
-Elapsed: 23809 ms
-
-FINAL DECISION: Move([3,2],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [6,2] - [2,3]
-down:
-board score: 12
-
-Opponent hand estimates:
-4 possible hands
-Uniform hand probability: 25.000%
-
-Most likely tiles:
-  [6,0]  42.388%
-  [1,0]  24.694%
-  [6,1]  17.856%
-  [2,0]  15.063%
-
-Least likely tiles:
-  [2,0]  15.063%
-  [6,1]  17.856%
-  [1,0]  24.694%
-  [6,0]  42.388%
-
-Most likely hands:
-  42.388%  [6,0]
-  24.694%  [1,0]
-  17.856%  [6,1]
-  15.063%  [2,0]
-
-Actual hand:
-  [6,1]
-  Probability: 17.856%
-  Relative to uniform: 0.71x
-  Rank: 3 / 4
-
-Depth: 5, Simulations: 10
-Move([6,5],Up   )         mean=0.025
-Move([6,4],Up   )         mean=0.000
-Move([6,6],Up   )         mean=-0.297
-AvgNodes evaluated: 2,452
-AvgNodes/second: 21,638
-Draw nodes: 33
-Draw simulations: 330
-Selected at depth 5: Move([6,5],Up   ) (0.025)
-Elapsed: 113 ms
-
-Depth: 7, Simulations: 20
-Move([6,4],Up   )         mean=0.105
-Move([6,5],Up   )         mean=0.047
-Move([6,6],Up   )         mean=-0.570
-AvgNodes evaluated: 50,273
-AvgNodes/second: 49,482
-Draw nodes: 833
-Draw simulations: 8,330
-Selected at depth 7: Move([6,4],Up   ) (0.105)
-Elapsed: 1016 ms
-
-Depth: 9, Simulations: 20
-Move([6,5],Up   )         mean=0.121
-Move([6,4],Up   )         mean=0.098
-Move([6,6],Up   )         mean=-0.489
-AvgNodes evaluated: 287,625
-AvgNodes/second: 40,341
-Draw nodes: 9,445
-Draw simulations: 94,450
-Selected at depth 9: Move([6,5],Up   ) (0.121)
-Elapsed: 7130 ms
-
-FINAL DECISION: Move([6,5],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [3,3]
-left: [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [5,6] - [6,2] - [2,3]
-down:
-board score: 14
-
-Opponent hand estimates:
-4 possible hands
-Uniform hand probability: 25.000%
-
-Most likely tiles:
-  [6,0]  47.909%
-  [1,0]  19.893%
-  [6,1]  19.238%
-  [2,0]  12.960%
-
-Least likely tiles:
-  [2,0]  12.960%
-  [6,1]  19.238%
-  [1,0]  19.893%
-  [6,0]  47.909%
-
-Most likely hands:
-  47.909%  [6,0]
-  19.893%  [1,0]
-  19.238%  [6,1]
-  12.960%  [2,0]
-
-Actual hand:
-  [6,1]
-  Probability: 19.238%
-  Relative to uniform: 0.77x
-  Rank: 3 / 4
-
-Depth: 5, Simulations: 10
-Move([6,4],Left )         mean=0.038
-Move([6,6],Left )         mean=-0.325
-Move([5,4],Up   )         mean=-0.470
-Move([5,5],Up   )         mean=-0.583
-AvgNodes evaluated: 794
-AvgNodes/second: 15,461
-Draw nodes: 7
-Draw simulations: 70
-Selected at depth 5: Move([6,4],Left ) (0.038)
-Elapsed: 51 ms
-
-Depth: 7, Simulations: 20
-Move([6,4],Left )         mean=0.038
-Move([6,6],Left )         mean=-0.285
-Move([5,4],Up   )         mean=-0.393
-Move([5,5],Up   )         mean=-0.407
-AvgNodes evaluated: 19,183
-AvgNodes/second: 39,433
-Draw nodes: 367
-Draw simulations: 3,670
-Selected at depth 7: Move([6,4],Left ) (0.038)
-Elapsed: 486 ms
-
-Depth: 9, Simulations: 20
-Move([6,4],Left )         mean=0.172
-Move([6,6],Left )         mean=-0.202
-Move([5,4],Up   )         mean=-0.319
-Move([5,5],Up   )         mean=-0.433
-AvgNodes evaluated: 109,016
-AvgNodes/second: 58,150
-Draw nodes: 2,559
-Draw simulations: 25,590
-Selected at depth 9: Move([6,4],Left ) (0.172)
-Elapsed: 1875 ms
-
-Depth: 11, Simulations: 20
-Move([6,4],Left )         mean=0.172
-Move([6,6],Left )         mean=-0.137
-Move([5,4],Up   )         mean=-0.376
-Move([5,5],Up   )         mean=-0.430
-AvgNodes evaluated: 304,937
-AvgNodes/second: 91,910
-Draw nodes: 4,158
-Draw simulations: 41,580
-Selected at depth 11: Move([6,4],Left ) (0.172)
-Elapsed: 3318 ms
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-FINAL DECISION: Move([6,4],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1] [2,2]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [6,4] - [4,5] - [5,3] - [3,4]
-right: [2,3] - [3,1] - [1,4]
-up:
-down:
-board score: 8
-
-
-Depth: 5, Simulations: 30
-  Move([6,0],Left )         mean=0.069 stddev=0.033 min=0.000 max=0.111 pLoss=0.000 pWin=0.000
-  Move([6,2],Right)         mean=0.064 stddev=0.050 min=0.000 max=0.154 pLoss=0.000 pWin=0.000
-  Move([6,2],Left )         mean=0.056 stddev=0.035 min=0.000 max=0.154 pLoss=0.000 pWin=0.000
-  Move([5,2],Right)         mean=0.056 stddev=0.048 min=-0.111 max=0.154 pLoss=0.000 pWin=0.000
-  Move([2,0],Right)         mean=0.034 stddev=0.049 min=-0.071 max=0.111 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([6,0],Left ) (0.069)
-Elapsed: 14281 ms
-=======
-human(15): [1,0] [2,0] [6,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x]
-tiles: 28
-spinner: [3,3]
-left: [4,4] - [4,6] - [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [5,6] - [6,2] - [2,3]
-down:
-board score: 16
-
-Opponent hand estimates:
-4 possible hands
-Uniform hand probability: 25.000%
-
-Most likely tiles:
-  [6,0]  82.636%
-  [1,0]  73.298%
-  [6,1]  73.079%
-  [2,0]  70.987%
-
-Least likely tiles:
-  [2,0]  70.987%
-  [6,1]  73.079%
-  [1,0]  73.298%
-  [6,0]  82.636%
-
-Most likely hands:
-  29.013%  [1,0] [6,0] [6,1]
-  26.921%  [1,0] [2,0] [6,0]
-  26.702%  [2,0] [6,0] [6,1]
-  17.364%  [1,0] [2,0] [6,1]
-
-Actual hand:
-  [1,0] [2,0] [6,1]
-  Probability: 17.364%
-  Relative to uniform: 0.69x
-  Rank: 4 / 4
-
-Depth: 5, Simulations: 10
-Move([4,2],Left )         mean=0.089
-Move([5,5],Up   )         mean=0.038
-Move([5,4],Up   )         mean=0.038
-Move([4,0],Left )         mean=-0.030
-Move([5,4],Left )         mean=-0.074
-AvgNodes evaluated: 1,827
-AvgNodes/second: 59,877
-Draw nodes: 46
-Draw simulations: 460
-Selected at depth 5: Move([4,2],Left ) (0.089)
-Elapsed: 31 ms
-
-Depth: 7, Simulations: 20
-Move([5,4],Up   )         mean=0.172
-Move([5,5],Up   )         mean=0.038
-Move([4,2],Left )         mean=0.009
-Move([4,0],Left )         mean=-0.040
-Move([5,4],Left )         mean=-0.159
-AvgNodes evaluated: 15,307
-AvgNodes/second: 110,788
-Draw nodes: 126
-Draw simulations: 1,260
-Selected at depth 7: Move([5,4],Up   ) (0.172)
-Elapsed: 138 ms
-
-Depth: 9, Simulations: 20
-Move([5,5],Up   )         mean=0.172
-Move([5,4],Up   )         mean=0.087
-Move([4,2],Left )         mean=0.018
-Move([4,0],Left )         mean=-0.076
-Move([5,4],Left )         mean=-0.159
-AvgNodes evaluated: 32,663
-AvgNodes/second: 169,987
-Draw nodes: 102
-Draw simulations: 1,020
-Selected at depth 9: Move([5,5],Up   ) (0.172)
-Elapsed: 192 ms
-
-Depth: 11, Simulations: 20
-Move([5,5],Up   )         mean=0.172
-Move([5,4],Up   )         mean=0.087
-Move([4,2],Left )         mean=0.009
-Move([4,0],Left )         mean=-0.058
-Move([5,4],Left )         mean=-0.159
-AvgNodes evaluated: 61,344
-AvgNodes/second: 168,246
-Draw nodes: 118
-Draw simulations: 1,180
-Selected at depth 11: Move([5,5],Up   ) (0.172)
-Elapsed: 365 ms
-
-Depth: 15, Simulations: 30
-Move([5,5],Up   )         mean=0.172
-Move([5,4],Up   )         mean=0.087
-Move([4,2],Left )         mean=0.009
-Move([4,0],Left )         mean=-0.058
-Move([5,4],Left )         mean=-0.159
-AvgNodes evaluated: 105,346
-AvgNodes/second: 139,049
-Draw nodes: 174
-Draw simulations: 1,740
-Selected at depth 15: Move([5,5],Up   ) (0.172)
-Elapsed: 758 ms
-
-FINAL DECISION: Move([5,5],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,0] [1,0] [2,0] [6,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard:
-tiles: 28
-spinner: [3,3]
-left: [4,4] - [4,6] - [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [5,5] - [5,6] - [6,2] - [2,3]
-down:
-board score: 21
-
-Opponent hand estimates:
-1 possible hands
-Uniform hand probability: 100.000%
-
-Most likely tiles:
-  [6,0]  100.000%
-  [1,0]  100.000%
-  [2,0]  100.000%
-  [6,1]  100.000%
-
-Least likely tiles:
-  [6,1]  100.000%
-  [2,0]  100.000%
-  [1,0]  100.000%
-  [6,0]  100.000%
-
-Most likely hands:
-  100.000%  [1,0] [2,0] [6,0] [6,1]
-
-Actual hand:
-  [6,0] [1,0] [2,0] [6,1]
-  Probability: 100.000%
-  Relative to uniform: 1.00x
-  Rank: 1 / 1
-
-Depth: 5, Simulations: 10
-Move([5,4],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([5,4],Left )         mean=-0.159
-Move([4,0],Left )         mean=-0.205
-AvgNodes evaluated: 344
-AvgNodes/second: 81,911
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([5,4],Up   ) (0.172)
-Elapsed: 4 ms
-
-Depth: 7, Simulations: 20
-Move([5,4],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([5,4],Left )         mean=-0.159
-Move([4,0],Left )         mean=-0.205
-AvgNodes evaluated: 1,594
-AvgNodes/second: 89,584
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([5,4],Up   ) (0.172)
-Elapsed: 18 ms
-
-Depth: 9, Simulations: 20
-Move([5,4],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([5,4],Left )         mean=-0.159
-Move([4,0],Left )         mean=-0.205
-AvgNodes evaluated: 2,714
-AvgNodes/second: 96,251
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([5,4],Up   ) (0.172)
-Elapsed: 28 ms
-
-Depth: 11, Simulations: 20
-Move([5,4],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([5,4],Left )         mean=-0.159
-Move([4,0],Left )         mean=-0.205
-AvgNodes evaluated: 3,234
-AvgNodes/second: 106,233
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([5,4],Up   ) (0.172)
-Elapsed: 30 ms
-
-Depth: 15, Simulations: 30
-Move([5,4],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([5,4],Left )         mean=-0.159
-Move([4,0],Left )         mean=-0.205
-AvgNodes evaluated: 4,849
-AvgNodes/second: 85,823
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([5,4],Up   ) (0.172)
-Elapsed: 57 ms
-
-FINAL DECISION: Move([5,4],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,0] [1,0] [2,0] [6,1]
-robot*(20): [x,x] [x,x] [x,x] [x,x]
-boneyard:
-tiles: 28
-spinner: [3,3]
-left: [4,4] - [4,6] - [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [4,5] - [5,5] - [5,6] - [6,2] - [2,3]
-down:
-board score: 15
-
-Opponent hand estimates:
-1 possible hands
-Uniform hand probability: 100.000%
-
-Most likely tiles:
-  [6,0]  100.000%
-  [1,0]  100.000%
-  [2,0]  100.000%
-  [6,1]  100.000%
-
-Least likely tiles:
-  [6,1]  100.000%
-  [2,0]  100.000%
-  [1,0]  100.000%
-  [6,0]  100.000%
-
-Most likely hands:
-  100.000%  [1,0] [2,0] [6,0] [6,1]
-
-Actual hand:
-  [6,0] [1,0] [2,0] [6,1]
-  Probability: 100.000%
-  Relative to uniform: 1.00x
-  Rank: 1 / 1
-
-Depth: 5, Simulations: 10
-Move([4,2],Up   )         mean=0.172
-Move([4,0],Left )         mean=0.038
-Move([4,2],Left )         mean=0.038
-Move([4,0],Up   )         mean=0.038
-AvgNodes evaluated: 364
-AvgNodes/second: 41,326
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([4,2],Up   ) (0.172)
-Elapsed: 9 ms
-
-Depth: 7, Simulations: 20
-Move([4,2],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([4,0],Left )         mean=-0.040
-Move([4,0],Up   )         mean=-0.040
-AvgNodes evaluated: 1,484
-AvgNodes/second: 57,131
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([4,2],Up   ) (0.172)
-Elapsed: 26 ms
-
-Depth: 9, Simulations: 20
-Move([4,2],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([4,0],Left )         mean=-0.172
-Move([4,0],Up   )         mean=-0.172
-AvgNodes evaluated: 2,004
-AvgNodes/second: 103,660
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([4,2],Up   ) (0.172)
-Elapsed: 19 ms
-
-Depth: 11, Simulations: 20
-Move([4,2],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([4,0],Left )         mean=-0.172
-Move([4,0],Up   )         mean=-0.172
-AvgNodes evaluated: 2,004
-AvgNodes/second: 104,404
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([4,2],Up   ) (0.172)
-Elapsed: 19 ms
-
-Depth: 15, Simulations: 30
-Move([4,2],Up   )         mean=0.172
-Move([4,2],Left )         mean=0.038
-Move([4,0],Left )         mean=-0.172
-Move([4,0],Up   )         mean=-0.172
-AvgNodes evaluated: 3,004
-AvgNodes/second: 92,571
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([4,2],Up   ) (0.172)
-Elapsed: 32 ms
-
-FINAL DECISION: Move([4,2],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,0] [1,0] [6,1]
-robot*(20): [x,x] [x,x] [x,x]
-boneyard:
-tiles: 28
-spinner: [3,3]
-left: [4,4] - [4,6] - [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [0,2] - [2,4] - [4,5] - [5,5] - [5,6] - [6,2] - [2,3]
-down:
-board score: 11
-
-Opponent hand estimates:
-1 possible hands
-Uniform hand probability: 100.000%
-
-Most likely tiles:
-  [6,0]  100.000%
-  [1,0]  100.000%
-  [6,1]  100.000%
-
-Least likely tiles:
-  [6,1]  100.000%
-  [1,0]  100.000%
-  [6,0]  100.000%
-
-Most likely hands:
-  100.000%  [1,0] [6,0] [6,1]
-
-Actual hand:
-  [6,0] [1,0] [6,1]
-  Probability: 100.000%
-  Relative to uniform: 1.00x
-  Rank: 1 / 1
-
-Depth: 5, Simulations: 10
-Move([4,0],Up   )         mean=0.172
-Move([4,0],Left )         mean=-0.040
-AvgNodes evaluated: 72
-AvgNodes/second: 24,625
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([4,0],Up   ) (0.172)
-Elapsed: 3 ms
-
-Depth: 7, Simulations: 20
-Move([4,0],Up   )         mean=0.172
-Move([4,0],Left )         mean=-0.172
-AvgNodes evaluated: 222
-AvgNodes/second: 34,538
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([4,0],Up   ) (0.172)
-Elapsed: 6 ms
-
-Depth: 9, Simulations: 20
-Move([4,0],Up   )         mean=0.172
-Move([4,0],Left )         mean=-0.172
-AvgNodes evaluated: 222
-AvgNodes/second: 40,833
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([4,0],Up   ) (0.172)
-Elapsed: 5 ms
-
-Depth: 11, Simulations: 20
-Move([4,0],Up   )         mean=0.172
-Move([4,0],Left )         mean=-0.172
-AvgNodes evaluated: 222
-AvgNodes/second: 41,722
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([4,0],Up   ) (0.172)
-Elapsed: 5 ms
-
-Depth: 15, Simulations: 30
-Move([4,0],Up   )         mean=0.172
-Move([4,0],Left )         mean=-0.172
-AvgNodes evaluated: 332
-AvgNodes/second: 37,985
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([4,0],Up   ) (0.172)
-Elapsed: 9 ms
-
-FINAL DECISION: Move([4,0],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [6,0] [1,0] [6,1]
-robot*(35): [x,x] [x,x]
-boneyard:
-tiles: 28
-spinner: [3,3]
-left: [4,4] - [4,6] - [6,3] - [3,5] - [5,2] - [2,1] - [1,4] - [4,3]
-right: [3,0] - [0,0] - [0,5] - [5,1] - [1,1] - [1,3]
-up: [4,0] - [0,2] - [2,4] - [4,5] - [5,5] - [5,6] - [6,2] - [2,3]
-down:
-board score: 15
-
-Opponent hand estimates:
-1 possible hands
-Uniform hand probability: 100.000%
-
-Most likely tiles:
-  [6,0]  100.000%
-  [1,0]  100.000%
-  [6,1]  100.000%
-
-Least likely tiles:
-  [6,1]  100.000%
-  [1,0]  100.000%
-  [6,0]  100.000%
-
-Most likely hands:
-  100.000%  [1,0] [6,0] [6,1]
-
-Actual hand:
-  [6,0] [1,0] [6,1]
-  Probability: 100.000%
-  Relative to uniform: 1.00x
-  Rank: 1 / 1
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(15): [4,0] [2,2] [4,2] [6,4] [6,5] [5,0]
-robot*(35): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left:
-right:
-up:
-down:
-board score: 12
-
-Opponent hand estimates:
-38760 possible hands
-Uniform hand probability: 0.003%
-
-Most likely tiles:
-  [4,3]  30.000%
-  [2,2]  30.000%
-  [6,3]  30.000%
-  [3,1]  30.000%
-  [4,0]  30.000%
-
-Least likely tiles:
-  [5,1]  30.000%
-  [4,1]  30.000%
-  [5,2]  30.000%
-  [3,3]  30.000%
-  [6,5]  30.000%
-
-Most likely hands:
-  0.003%  [4,3] [2,2] [6,3] [3,1] [4,0] [1,1]
-  0.003%  [4,3] [2,2] [6,3] [3,1] [4,0] [6,1]
-  0.003%  [4,3] [2,2] [6,3] [3,1] [4,0] [4,2]
-  0.003%  [4,3] [2,2] [6,3] [3,1] [4,0] [2,0]
-  0.003%  [4,3] [2,2] [6,3] [3,1] [4,0] [5,0]
-
-Actual hand:
-  [2,2] [4,0] [4,2] [5,0] [6,4] [6,5]
-  Probability: 0.003%
-  Relative to uniform: 1.00x
-  Rank: 16564 / 38760
-
-Depth: 5, Simulations: 10
-Move([6,2],Left )         mean=0.271
-Move([6,0],Left )         mean=0.178
-AvgNodes evaluated: 1,363
-AvgNodes/second: 731
-Draw nodes: 3
-Draw simulations: 30
-Selected at depth 5: Move([6,2],Left ) (0.271)
-Elapsed: 1864 ms
-
-Depth: 7, Simulations: 20
-Move([6,0],Left )         mean=0.213
-Move([6,2],Left )         mean=0.190
-AvgNodes evaluated: 22,338
-AvgNodes/second: 6,664
-Draw nodes: 34
-Draw simulations: 340
-Selected at depth 7: Move([6,0],Left ) (0.213)
-Elapsed: 3352 ms
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-FINAL DECISION: Move([6,0],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1] [5,1]
-robot*(0): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [2,2] - [2,3] - [3,1] - [1,4]
-=======
-human(15): [4,0] [2,2] [4,2] [6,5] [5,0]
-robot*(35): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [0,6]
-right: [4,6]
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-up:
-down:
-board score: 4
-
-<<<<<<< HEAD
-
-Depth: 5, Simulations: 30
-  Move([5,2],Right)         mean=0.033 stddev=0.057 min=-0.174 max=0.120 pLoss=0.000 pWin=0.000
-  Move([1,0],Left )         mean=0.021 stddev=0.103 min=-0.273 max=0.200 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=0.014 stddev=0.068 min=-0.167 max=0.111 pLoss=0.000 pWin=0.000
-  Move([2,0],Right)         mean=0.002 stddev=0.078 min=-0.208 max=0.160 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=-0.005 stddev=0.099 min=-0.273 max=0.154 pLoss=0.000 pWin=0.000
-  Move([6,2],Right)         mean=-0.112 stddev=0.130 min=-0.336 max=0.111 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([5,2],Right) (0.033)
-Elapsed: 7984 ms
-
-FINAL DECISION: Move([5,2],Right)
-=======
-Opponent hand estimates:
-11628 possible hands
-Uniform hand probability: 0.009%
-
-Most likely tiles:
-  [3,3]  27.263%
-  [5,1]  27.204%
-  [2,2]  27.091%
-  [5,2]  27.091%
-  [4,0]  26.837%
-
-Least likely tiles:
-  [1,0]  25.146%
-  [3,1]  25.388%
-  [4,1]  25.590%
-  [5,0]  25.590%
-  [4,3]  25.590%
-
-Most likely hands:
-  0.010%  [2,2] [2,0] [5,1] [3,3] [5,2]
-  0.010%  [2,2] [4,0] [5,1] [3,3] [5,2]
-  0.010%  [2,2] [6,1] [5,1] [3,3] [5,2]
-  0.010%  [2,2] [2,1] [5,1] [3,3] [5,2]
-  0.010%  [4,0] [2,0] [5,1] [3,3] [5,2]
-
-Actual hand:
-  [2,2] [4,0] [4,2] [6,5] [5,0]
-  Probability: 0.008%
-  Relative to uniform: 0.99x
-  Rank: 6581 / 11628
-
-Depth: 5, Simulations: 10
-Move([5,4],Right)         mean=0.216
-Move([3,0],Left )         mean=0.169
-Move([6,2],Up   )         mean=0.130
-AvgNodes evaluated: 2,587
-AvgNodes/second: 4,569
-Draw nodes: 13
-Draw simulations: 130
-Selected at depth 5: Move([5,4],Right) (0.216)
-Elapsed: 566 ms
-
-Depth: 7, Simulations: 20
-Move([5,4],Right)         mean=0.336
-Move([3,0],Left )         mean=0.217
-Move([6,2],Up   )         mean=0.155
-AvgNodes evaluated: 41,866
-AvgNodes/second: 6,783
-Draw nodes: 234
-Draw simulations: 2,340
-Selected at depth 7: Move([5,4],Right) (0.336)
-Elapsed: 6172 ms
-
-FINAL DECISION: Move([5,4],Right)
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(0): [2,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up:
-down:
-board score: 1
-
-
-Depth: 5, Simulations: 30
-  Move([1,0],Left )         mean=-0.029 stddev=0.084 min=-0.227 max=0.071 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=-0.084 stddev=0.114 min=-0.292 max=0.034 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=-0.091 stddev=0.132 min=-0.286 max=0.115 pLoss=0.000 pWin=0.000
-  Move([1,0],Right)         mean=-0.092 stddev=0.112 min=-0.286 max=0.074 pLoss=0.000 pWin=0.000
-  Move([1,1],Right)         mean=-0.120 stddev=0.112 min=-0.400 max=0.074 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([1,0],Left ) (-0.029)
-Elapsed: 1861 ms
-
-Depth: 7, Simulations: 30
-  Move([1,0],Right)         mean=-0.022 stddev=0.125 min=-0.273 max=0.111 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=-0.043 stddev=0.115 min=-0.273 max=0.115 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=-0.056 stddev=0.127 min=-0.273 max=0.111 pLoss=0.000 pWin=0.000
-  Move([1,0],Left )         mean=-0.069 stddev=0.125 min=-0.273 max=0.071 pLoss=0.000 pWin=0.000
-  Move([1,1],Right)         mean=-0.080 stddev=0.114 min=-0.217 max=0.074 pLoss=0.000 pWin=0.000
-Selected at depth 7: Move([1,0],Right) (-0.022)
-Elapsed: 3141 ms
-
-FINAL DECISION: Move([1,0],Right)
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(0): [2,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [0,1] - [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up: [2,4]
-down:
-board score: 2
-
-
-Depth: 5, Simulations: 30
-  Move([2,0],Up   )         mean=0.051 stddev=0.020 min=0.034 max=0.080 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=0.000 stddev=0.069 min=-0.217 max=0.077 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=-0.005 stddev=0.069 min=-0.167 max=0.077 pLoss=0.000 pWin=0.000
-  Move([6,2],Up   )         mean=-0.039 stddev=0.065 min=-0.167 max=0.080 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([2,0],Up   ) (0.051)
-Elapsed: 792 ms
-
-Depth: 7, Simulations: 30
-  Move([2,0],Up   )         mean=0.058 stddev=0.062 min=-0.037 max=0.364 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=0.001 stddev=0.112 min=-0.217 max=0.364 pLoss=0.000 pWin=0.000
-  Move([6,2],Up   )         mean=-0.011 stddev=0.070 min=-0.167 max=0.111 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=-0.028 stddev=0.092 min=-0.200 max=0.077 pLoss=0.000 pWin=0.000
-Selected at depth 7: Move([2,0],Up   ) (0.058)
-Elapsed: 1197 ms
-
-Depth: 9, Simulations: 30
-  Move([0,0],Left )         mean=0.014 stddev=0.090 min=-0.217 max=0.208 pLoss=0.000 pWin=0.000
-  Move([2,0],Up   )         mean=0.011 stddev=0.109 min=-0.360 max=0.364 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=0.004 stddev=0.079 min=-0.217 max=0.200 pLoss=0.000 pWin=0.000
-  Move([6,2],Up   )         mean=-0.010 stddev=0.069 min=-0.125 max=0.208 pLoss=0.000 pWin=0.000
-Selected at depth 9: Move([0,0],Left ) (0.014)
-Elapsed: 1857 ms
-
-Depth: 11, Simulations: 30
-  Move([2,0],Up   )         mean=0.058 stddev=0.078 min=-0.308 max=0.429 pLoss=0.000 pWin=0.000
-  Move([0,0],Left )         mean=0.019 stddev=0.094 min=-0.167 max=0.364 pLoss=0.000 pWin=0.000
-  Move([2,0],Left )         mean=0.008 stddev=0.088 min=-0.246 max=0.200 pLoss=0.000 pWin=0.000
-  Move([6,2],Up   )         mean=-0.035 stddev=0.070 min=-0.174 max=0.148 pLoss=0.000 pWin=0.000
-Selected at depth 11: Move([2,0],Up   ) (0.058)
-Elapsed: 8578 ms
-
-FINAL DECISION: Move([2,0],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(5): [6,6] [6,1] [3,3] [2,1]
-robot*(5): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [5,0] - [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [0,1] - [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up: [0,2] - [2,4]
-down:
-board score: 5
-
-
-Depth: 5, Simulations: 30
-  Move([5,5],Left )         mean=0.075 stddev=0.002 min=0.074 max=0.080 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.054 stddev=0.095 min=0.000 max=0.556 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([5,5],Left ) (0.075)
-Elapsed: 78 ms
-
-Depth: 7, Simulations: 30
-  Move([5,5],Left )         mean=0.209 stddev=0.144 min=0.000 max=0.588 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.036 stddev=0.036 min=-0.040 max=0.248 pLoss=0.000 pWin=0.000
-Selected at depth 7: Move([5,5],Left ) (0.209)
-Elapsed: 186 ms
-
-Depth: 9, Simulations: 30
-  Move([5,5],Left )         mean=0.202 stddev=0.120 min=0.000 max=0.688 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.032 stddev=0.101 min=-0.162 max=0.381 pLoss=0.000 pWin=0.000
-Selected at depth 9: Move([5,5],Left ) (0.202)
-Elapsed: 3183 ms
-=======
-human(25): [4,0] [2,2] [4,2] [6,5]
-robot*(40): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [5,0] - [0,6]
-right: [5,4] - [4,6]
-up:
-down:
-board score: 10
-
-Opponent hand estimates:
-3060 possible hands
-Uniform hand probability: 0.033%
-
-Most likely tiles:
-  [5,2]  24.720%
-  [3,3]  24.039%
-  [6,5]  23.889%
-  [6,1]  23.808%
-  [5,1]  23.556%
-
-Least likely tiles:
-  [0,0]  18.009%
-  [4,3]  20.249%
-  [1,0]  20.773%
-  [4,1]  20.969%
-  [2,1]  21.459%
-
-Most likely hands:
-  0.049%  [3,3] [5,2] [6,1] [6,5]
-  0.048%  [3,3] [5,1] [5,2] [6,5]
-  0.048%  [3,3] [5,1] [5,2] [6,1]
-  0.047%  [5,1] [5,2] [6,1] [6,5]
-  0.047%  [2,2] [3,3] [5,2] [6,5]
-
-Actual hand:
-  [4,0] [2,2] [4,2] [6,5]
-  Probability: 0.035%
-  Relative to uniform: 1.06x
-  Rank: 1104 / 3060
-
-Depth: 5, Simulations: 10
-Move([5,5],Left )         mean=0.312
-Move([5,3],Left )         mean=0.155
-Move([6,2],Up   )         mean=0.108
-AvgNodes evaluated: 1,432
-AvgNodes/second: 3,398
-Draw nodes: 19
-Draw simulations: 190
-Selected at depth 5: Move([5,5],Left ) (0.312)
-Elapsed: 421 ms
-
-Depth: 7, Simulations: 20
-Move([5,5],Left )         mean=0.344
-Move([6,2],Up   )         mean=0.206
-Move([5,3],Left )         mean=0.177
-AvgNodes evaluated: 17,077
-AvgNodes/second: 3,862
-Draw nodes: 334
-Draw simulations: 3,340
-Selected at depth 7: Move([5,5],Left ) (0.344)
-Elapsed: 4422 ms
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-FINAL DECISION: Move([5,5],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(5): [6,6] [6,1] [3,3] [2,1]
-robot*(15): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [6,5] - [5,5] - [5,0] - [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [0,1] - [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up: [0,2] - [2,4]
-down:
-board score: 6
-
-
-Depth: 5, Simulations: 30
-  Move([0,0],Right)         mean=0.301 stddev=0.047 min=0.115 max=0.392 pLoss=0.000 pWin=0.000
-  Move([6,2],Left )         mean=0.251 stddev=0.102 min=0.037 max=0.392 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([0,0],Right) (0.301)
-Elapsed: 58 ms
-
-Depth: 7, Simulations: 30
-  Move([6,2],Left )         mean=0.308 stddev=0.102 min=0.037 max=0.462 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.262 stddev=0.067 min=0.037 max=0.392 pLoss=0.000 pWin=0.000
-Selected at depth 7: Move([6,2],Left ) (0.308)
-Elapsed: 261 ms
-
-Depth: 9, Simulations: 30
-  Move([6,2],Left )         mean=0.192 stddev=0.136 min=0.037 max=0.462 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.152 stddev=0.132 min=0.000 max=0.392 pLoss=0.000 pWin=0.000
-Selected at depth 9: Move([6,2],Left ) (0.192)
-Elapsed: 1066 ms
-
-Depth: 11, Simulations: 30
-  Move([6,2],Left )         mean=0.240 stddev=0.152 min=0.000 max=0.462 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.177 stddev=0.117 min=0.000 max=0.392 pLoss=0.000 pWin=0.000
-Selected at depth 11: Move([6,2],Left ) (0.240)
-Elapsed: 4305 ms
-
-FINAL DECISION: Move([6,2],Left )
-=======
-human(45): [4,0] [2,2] [4,2]
-robot*(55): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down:
-board score: 20
-
-Opponent hand estimates:
-680 possible hands
-Uniform hand probability: 0.147%
-
-Most likely tiles:
-  [5,2]  19.855%
-  [3,3]  19.270%
-  [6,1]  19.074%
-  [5,1]  18.858%
-  [2,2]  18.399%
-
-Least likely tiles:
-  [0,0]  14.200%
-  [4,3]  16.063%
-  [1,0]  16.502%
-  [4,1]  16.667%
-  [2,1]  17.080%
-
-Most likely hands:
-  0.204%  [3,3] [5,2] [6,1]
-  0.201%  [3,3] [5,1] [5,2]
-  0.199%  [5,1] [5,2] [6,1]
-  0.195%  [2,2] [3,3] [5,2]
-  0.193%  [2,0] [3,3] [5,2]
-
-Actual hand:
-  [4,0] [2,2] [4,2]
-  Probability: 0.145%
-  Relative to uniform: 0.99x
-  Rank: 375 / 680
-
-Depth: 5, Simulations: 10
-Move([5,3],Right)         mean=0.101
-Move([5,3],Left )         mean=0.098
-Move([6,2],Down )         mean=-0.032
-AvgNodes evaluated: 658
-AvgNodes/second: 15,683
-Draw nodes: 6
-Draw simulations: 60
-Selected at depth 5: Move([5,3],Right) (0.101)
-Elapsed: 42 ms
-
-Depth: 7, Simulations: 20
-Move([5,3],Left )         mean=0.022
-Move([5,3],Right)         mean=-0.006
-Move([6,2],Down )         mean=-0.056
-AvgNodes evaluated: 9,886
-AvgNodes/second: 9,534
-Draw nodes: 276
-Draw simulations: 2,760
-Selected at depth 7: Move([5,3],Left ) (0.022)
-Elapsed: 1037 ms
-
-Depth: 9, Simulations: 20
-Move([5,3],Left )         mean=0.049
-Move([5,3],Right)         mean=0.037
-Move([6,2],Down )         mean=-0.096
-AvgNodes evaluated: 66,499
-AvgNodes/second: 3,509
-Draw nodes: 2,875
-Draw simulations: 28,750
-Selected at depth 9: Move([5,3],Left ) (0.049)
-Elapsed: 18951 ms
-
-FINAL DECISION: Move([5,3],Left )
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(5): [6,6] [6,1] [3,3]
-robot*(15): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [1,2] - [2,6] - [6,5] - [5,5] - [5,0] - [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [0,1] - [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up: [0,2] - [2,4]
-down:
-board score: 1
-
-
-Depth: 5, Simulations: 30
-  Move([1,1],Left )         mean=0.282 stddev=0.080 min=0.115 max=0.412 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.090 stddev=0.074 min=-0.038 max=0.462 pLoss=0.000 pWin=0.000
-Selected at depth 5: Move([1,1],Left ) (0.282)
-Elapsed: 159 ms
-
-Depth: 7, Simulations: 30
-  Move([1,1],Left )         mean=0.310 stddev=0.066 min=0.115 max=0.412 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.075 stddev=0.067 min=-0.038 max=0.462 pLoss=0.000 pWin=0.000
-Selected at depth 7: Move([1,1],Left ) (0.310)
-Elapsed: 835 ms
-
-Depth: 9, Simulations: 30
-  Move([1,1],Left )         mean=0.312 stddev=0.029 min=0.287 max=0.412 pLoss=0.000 pWin=0.000
-  Move([0,0],Right)         mean=0.070 stddev=0.074 min=-0.077 max=0.462 pLoss=0.000 pWin=0.000
-Selected at depth 9: Move([1,1],Left ) (0.312)
-Elapsed: 6281 ms
-
-FINAL DECISION: Move([1,1],Left )
-=======
-human(45): [4,0] [2,2] [4,2]
-robot*(55): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down: [1,6]
-board score: 14
-
-Opponent hand estimates:
-120 possible hands
-Uniform hand probability: 0.833%
-
-Most likely tiles:
-  [2,2]  31.964%
-  [2,0]  31.711%
-  [4,4]  31.678%
-  [1,1]  30.807%
-  [4,2]  30.240%
-
-Least likely tiles:
-  [0,0]  25.368%
-  [1,0]  29.039%
-  [4,1]  29.296%
-  [2,1]  29.939%
-  [4,0]  29.958%
-
-Most likely hands:
-  1.041%  [2,0] [2,2] [4,4]
-  1.004%  [1,1] [2,0] [2,2]
-  1.003%  [1,1] [2,2] [4,4]
-  0.992%  [1,1] [2,0] [4,4]
-  0.980%  [2,0] [2,2] [4,2]
-
-Actual hand:
-  [4,0] [2,2] [4,2]
-  Probability: 0.910%
-  Relative to uniform: 1.09x
-  Rank: 29 / 120
-
-Depth: 5, Simulations: 10
-Move([3,0],Left )         mean=0.023
-Move([3,2],Left )         mean=-0.074
-AvgNodes evaluated: 556
-AvgNodes/second: 7,150
-Draw nodes: 20
-Draw simulations: 200
-Selected at depth 5: Move([3,0],Left ) (0.023)
-Elapsed: 78 ms
-
-Depth: 7, Simulations: 20
-Move([3,0],Left )         mean=-0.012
-Move([3,2],Left )         mean=-0.082
-AvgNodes evaluated: 6,383
-AvgNodes/second: 7,421
-Draw nodes: 308
-Draw simulations: 3,080
-Selected at depth 7: Move([3,0],Left ) (-0.012)
-Elapsed: 860 ms
-
-Depth: 9, Simulations: 20
-Move([3,0],Left )         mean=0.015
-Move([3,2],Left )         mean=-0.011
-AvgNodes evaluated: 44,503
-AvgNodes/second: 9,933
-Draw nodes: 2,229
-Draw simulations: 22,290
-Selected at depth 9: Move([3,0],Left ) (0.015)
-Elapsed: 4480 ms
-
-FINAL DECISION: Move([3,0],Left )
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(5): [6,6] [3,3]
-robot*(15): [x,x]
-boneyard: [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [6,1] - [1,1] - [1,2] - [2,6] - [6,5] - [5,5] - [5,0] - [0,6] - [6,4] - [4,5] - [5,3] - [3,4]
-right: [0,1] - [1,5] - [5,2] - [2,2] - [2,3] - [3,1] - [1,4]
-up: [0,2] - [2,4]
-down:
-board score: 6
-
-=======
-human(60): [2,2] [4,2]
-robot*(55): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down: [1,6]
-board score: 15
-
-Opponent hand estimates:
-36 possible hands
-Uniform hand probability: 2.778%
-
-Most likely tiles:
-  [2,2]  23.855%
-  [2,0]  23.641%
-  [4,4]  23.613%
-  [1,1]  22.879%
-  [4,2]  22.404%
-
-Least likely tiles:
-  [0,0]  18.426%
-  [1,0]  21.408%
-  [4,1]  21.620%
-  [2,1]  22.153%
-  [4,2]  22.404%
-
-Most likely hands:
-  3.233%  [2,0] [2,2]
-  3.228%  [2,2] [4,4]
-  3.195%  [2,0] [4,4]
-  3.113%  [1,1] [2,2]
-  3.081%  [1,1] [2,0]
-
-Actual hand:
-  [2,2] [4,2]
-  Probability: 3.039%
-  Relative to uniform: 1.09x
-  Rank: 7 / 36
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-<<<<<<< HEAD
-human(5): [3,1] [1,1] [6,1] [6,4] [5,0] [2,1] [5,4]
-robot*(35): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-=======
-human(60): [2,2] [4,2]
-robot*(55): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down: [1,6]
-board score: 15
-
-Opponent hand estimates:
-36 possible hands
-Uniform hand probability: 2.778%
-
-Most likely tiles:
-  [2,2]  23.855%
-  [2,0]  23.641%
-  [4,4]  23.613%
-  [1,1]  22.879%
-  [4,2]  22.404%
-
-Least likely tiles:
-  [0,0]  18.426%
-  [1,0]  21.408%
-  [4,1]  21.620%
-  [2,1]  22.153%
-  [4,2]  22.404%
-
-Most likely hands:
-  3.233%  [2,0] [2,2]
-  3.228%  [2,2] [4,4]
-  3.195%  [2,0] [4,4]
-  3.113%  [1,1] [2,2]
-  3.081%  [1,1] [2,0]
-
-Actual hand:
-  [2,2] [4,2]
-  Probability: 3.039%
-  Relative to uniform: 1.09x
-  Rank: 7 / 36
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(60): [2,2] [4,2]
-robot*(55): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down: [1,6]
-board score: 15
-
-Opponent hand estimates:
-36 possible hands
-Uniform hand probability: 2.778%
-
-Most likely tiles:
-  [2,2]  23.855%
-  [2,0]  23.641%
-  [4,4]  23.613%
-  [1,1]  22.879%
-  [4,2]  22.404%
-
-Least likely tiles:
-  [0,0]  18.426%
-  [1,0]  21.408%
-  [4,1]  21.620%
-  [2,1]  22.153%
-  [4,2]  22.404%
-
-Most likely hands:
-  3.233%  [2,0] [2,2]
-  3.228%  [2,2] [4,4]
-  3.195%  [2,0] [4,4]
-  3.113%  [1,1] [2,2]
-  3.081%  [1,1] [2,0]
-
-Actual hand:
-  [2,2] [4,2]
-  Probability: 3.039%
-  Relative to uniform: 1.09x
-  Rank: 7 / 36
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [2,2]
-robot*(55): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [2,4] - [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [5,6]
-down: [3,1] - [1,6]
-board score: 15
-
-Opponent hand estimates:
-8 possible hands
-Uniform hand probability: 12.500%
-
-Most likely tiles:
-  [2,2]  13.564%
-  [2,0]  13.423%
-  [4,4]  13.405%
-  [1,1]  12.926%
-  [2,1]  12.458%
-
-Least likely tiles:
-  [0,0]  10.126%
-  [1,0]  11.981%
-  [4,1]  12.117%
-  [2,1]  12.458%
-  [1,1]  12.926%
-
-Most likely hands:
-  13.564%  [2,2]
-  13.423%  [2,0]
-  13.405%  [4,4]
-  12.926%  [1,1]
-  12.458%  [2,1]
-
-Actual hand:
-  [2,2]
-  Probability: 13.564%
-  Relative to uniform: 1.09x
-  Rank: 1 / 8
-
-Depth: 5, Simulations: 10
-Move([3,2],Left )         mean=-0.137
-Move([6,2],Left )         mean=-0.356
-Move([6,3],Down )         mean=-0.389
-Move([3,2],Down )         mean=-0.393
-AvgNodes evaluated: 1,105
-AvgNodes/second: 26,292
-Draw nodes: 19
-Draw simulations: 190
-Selected at depth 5: Move([3,2],Left ) (-0.137)
-Elapsed: 42 ms
-
-Depth: 7, Simulations: 20
-Move([3,2],Left )         mean=0.090
-Move([6,2],Left )         mean=-0.170
-Move([3,2],Down )         mean=-0.189
-Move([6,3],Down )         mean=-0.353
-AvgNodes evaluated: 12,984
-AvgNodes/second: 20,171
-Draw nodes: 475
-Draw simulations: 4,750
-Selected at depth 7: Move([3,2],Left ) (0.090)
-Elapsed: 644 ms
-
-Depth: 9, Simulations: 20
-Move([3,2],Left )         mean=0.079
-Move([6,2],Left )         mean=-0.182
-Move([3,2],Down )         mean=-0.183
-Move([6,3],Down )         mean=-0.264
-AvgNodes evaluated: 33,948
-AvgNodes/second: 18,370
-Draw nodes: 1,251
-Draw simulations: 12,510
-Selected at depth 9: Move([3,2],Left ) (0.079)
-Elapsed: 1848 ms
-
-Depth: 11, Simulations: 20
-Move([3,2],Left )         mean=0.078
-Move([6,2],Left )         mean=-0.071
-Move([3,2],Down )         mean=-0.168
-Move([6,3],Down )         mean=-0.549
-AvgNodes evaluated: 114,302
-AvgNodes/second: 15,068
-Draw nodes: 5,297
-Draw simulations: 52,970
-Selected at depth 11: Move([3,2],Left ) (0.078)
-Elapsed: 7586 ms
-
-FINAL DECISION: Move([3,2],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [2,0] [1,0] [2,2]
-robot*(55): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [3,2] - [2,4] - [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [5,4] - [4,6]
-up: [2,5] - [5,6]
-down: [3,1] - [1,6]
-board score: 13
-
-Opponent hand estimates:
-56 possible hands
-Uniform hand probability: 1.786%
-
-Most likely tiles:
-  [2,2]  38.260%
-  [2,0]  38.159%
-  [4,4]  38.147%
-  [1,1]  37.804%
-  [2,1]  37.470%
-
-Least likely tiles:
-  [0,0]  35.804%
-  [1,0]  37.129%
-  [4,1]  37.226%
-  [2,1]  37.470%
-  [1,1]  37.804%
-
-Most likely hands:
-  1.923%  [2,0] [2,2] [4,4]
-  1.901%  [1,1] [2,0] [2,2]
-  1.900%  [1,1] [2,2] [4,4]
-  1.893%  [1,1] [2,0] [4,4]
-  1.878%  [2,0] [2,1] [2,2]
-
-Actual hand:
-  [2,0] [1,0] [2,2]
-  Probability: 1.856%
-  Relative to uniform: 1.04x
-  Rank: 10 / 56
-
-Depth: 5, Simulations: 10
-Move([6,2],Up   )         mean=0.100
-Move([6,3],Left )         mean=-0.127
-AvgNodes evaluated: 241
-AvgNodes/second: 9,881
-Draw nodes: 7
-Draw simulations: 70
-Selected at depth 5: Move([6,2],Up   ) (0.100)
-Elapsed: 24 ms
-
-Depth: 7, Simulations: 20
-Move([6,2],Up   )         mean=0.091
-Move([6,3],Left )         mean=-0.136
-AvgNodes evaluated: 384
-AvgNodes/second: 10,263
-Draw nodes: 10
-Draw simulations: 100
-Selected at depth 7: Move([6,2],Up   ) (0.091)
-Elapsed: 37 ms
-
-Depth: 9, Simulations: 20
-Move([6,2],Up   )         mean=0.091
-Move([6,3],Left )         mean=-0.147
-AvgNodes evaluated: 480
-AvgNodes/second: 11,536
-Draw nodes: 14
-Draw simulations: 140
-Selected at depth 9: Move([6,2],Up   ) (0.091)
-Elapsed: 42 ms
-
-Depth: 11, Simulations: 20
-Move([6,2],Up   )         mean=0.106
-Move([6,3],Left )         mean=-0.071
-AvgNodes evaluated: 402
-AvgNodes/second: 9,782
-Draw nodes: 11
-Draw simulations: 110
-Selected at depth 11: Move([6,2],Up   ) (0.106)
-Elapsed: 41 ms
-
-Depth: 15, Simulations: 30
-Move([6,2],Up   )         mean=0.120
-Move([6,3],Left )         mean=-0.108
-AvgNodes evaluated: 572
-AvgNodes/second: 8,752
-Draw nodes: 15
-Draw simulations: 150
-Selected at depth 15: Move([6,2],Up   ) (0.120)
-Elapsed: 65 ms
-
-FINAL DECISION: Move([6,2],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [2,0] [1,0] [2,2]
-robot*(55): [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [6,6]
-left: [3,2] - [2,4] - [4,0] - [0,3] - [3,5] - [5,5] - [5,0] - [0,6]
-right: [1,5] - [5,4] - [4,6]
-up: [6,2] - [2,5] - [5,6]
-down: [3,1] - [1,6]
-board score: 13
-
-Opponent hand estimates:
-56 possible hands
-Uniform hand probability: 1.786%
-
-Most likely tiles:
-  [2,2]  38.260%
-  [2,0]  38.159%
-  [4,4]  38.147%
-  [1,1]  37.804%
-  [2,1]  37.470%
-
-Least likely tiles:
-  [0,0]  35.804%
-  [1,0]  37.129%
-  [4,1]  37.226%
-  [2,1]  37.470%
-  [1,1]  37.804%
-
-Most likely hands:
-  1.923%  [2,0] [2,2] [4,4]
-  1.901%  [1,1] [2,0] [2,2]
-  1.900%  [1,1] [2,2] [4,4]
-  1.893%  [1,1] [2,0] [4,4]
-  1.878%  [2,0] [2,1] [2,2]
-
-Actual hand:
-  [2,0] [1,0] [2,2]
-  Probability: 1.856%
-  Relative to uniform: 1.04x
-  Rank: 10 / 56
-
-Depth: 5, Simulations: 10
-Move([6,3],Up   )         mean=0.055
-Move([6,3],Left )         mean=-0.067
-AvgNodes evaluated: 2
-AvgNodes/second: 2,774
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([6,3],Up   ) (0.055)
-Elapsed: 1 ms
-
-Depth: 7, Simulations: 20
-Move([6,3],Up   )         mean=0.063
-Move([6,3],Left )         mean=-0.080
-AvgNodes evaluated: 2
-AvgNodes/second: 1,307
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([6,3],Up   ) (0.063)
-Elapsed: 2 ms
-
-Depth: 9, Simulations: 20
-Move([6,3],Up   )         mean=0.033
-Move([6,3],Left )         mean=-0.066
-AvgNodes evaluated: 2
-AvgNodes/second: 1,445
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([6,3],Up   ) (0.033)
-Elapsed: 1 ms
-
-Depth: 11, Simulations: 20
-Move([6,3],Up   )         mean=0.027
-Move([6,3],Left )         mean=-0.093
-AvgNodes evaluated: 2
-AvgNodes/second: 1,280
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([6,3],Up   ) (0.027)
-Elapsed: 2 ms
-
-Depth: 15, Simulations: 30
-Move([6,3],Up   )         mean=0.059
-Move([6,3],Left )         mean=-0.075
-AvgNodes evaluated: 2
-AvgNodes/second: 2,908
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([6,3],Up   ) (0.059)
-Elapsed: 1 ms
-
-FINAL DECISION: Move([6,3],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [4,4] [6,0] [0,0] [5,5] [5,1] [6,6] [3,2]
-robot*(70): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
->>>>>>> 16e9b4180873a4fb20bde01bac6c52ede9df0f44
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: None
-left:
-right:
-up:
-down:
-board score: 0
-
-<<<<<<< HEAD
-=======
-Opponent hand estimates:
-
-Depth: 5, Simulations: 10
-Move([3,1],Left )         mean=-0.062
-Move([4,0],Left )         mean=-0.078
-Move([5,4],Left )         mean=-0.084
-Move([6,5],Left )         mean=-0.093
-Move([2,2],Left )         mean=-0.126
-Move([2,1],Left )         mean=-0.130
-Move([4,3],Left )         mean=-0.180
-AvgNodes evaluated: 3,278
-AvgNodes/second: 175
-Draw nodes: 9
-Draw simulations: 90
-Selected at depth 5: Move([3,1],Left ) (-0.062)
-Elapsed: 18766 ms
-
-FINAL DECISION: Move([3,1],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [4,4] [6,0] [0,0] [5,5] [5,1] [6,6]
-robot*(70): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: None
-left: [2,3] - [3,1]
-right:
-up:
-down:
-board score: 3
-
-Opponent hand estimates:
-38760 possible hands
-Uniform hand probability: 0.003%
-
-Most likely tiles:
-  [6,1]  34.938%
-  [6,0]  34.018%
-  [4,1]  32.781%
-  [6,3]  32.155%
-  [3,3]  31.925%
-
-Least likely tiles:
-  [1,1]  19.619%
-  [5,5]  27.300%
-  [6,2]  27.414%
-  [4,4]  27.766%
-  [0,0]  28.259%
-
-Most likely hands:
-  0.005%  [6,0] [6,3] [6,1] [5,0] [3,3] [4,1]
-  0.005%  [6,0] [6,3] [6,6] [6,1] [3,3] [4,1]
-  0.005%  [6,0] [6,3] [6,1] [1,0] [3,3] [4,1]
-  0.005%  [6,0] [6,3] [6,6] [6,1] [5,0] [4,1]
-  0.005%  [6,0] [6,3] [6,1] [1,0] [5,0] [4,1]
-
-Actual hand:
-  [6,6] [5,1] [0,0] [4,4] [6,0] [5,5]
-  Probability: 0.002%
-  Relative to uniform: 0.92x
-  Rank: 23230 / 38760
-
-Depth: 5, Simulations: 10
-Move([2,1],Right)         mean=0.004
-Move([2,2],Left )         mean=-0.073
-Move([2,1],Left )         mean=-0.111
-AvgNodes evaluated: 947
-AvgNodes/second: 253
-Draw nodes: 9
-Draw simulations: 90
-Selected at depth 5: Move([2,1],Right) (0.004)
-Elapsed: 3747 ms
-
-FINAL DECISION: Move([2,1],Right)
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(75): [5,3] [3,0] [6,4] [4,1] [6,3] [4,4] [6,0] [0,0] [5,5] [5,1] [6,6]
-robot*(70): [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: None
-left: [0,2] - [2,3] - [3,1] - [1,2]
-right:
-up:
-down:
-board score: 2
 
 Opponent hand estimates:
 4368 possible hands
 Uniform hand probability: 0.023%
 
 Most likely tiles:
-  [6,1]  71.462%
-  [6,0]  70.959%
-  [4,1]  70.276%
-  [6,3]  69.929%
-  [3,3]  69.800%
+  [3,0]  35.749%
+  [6,2]  32.732%
+  [6,1]  32.349%
+  [5,4]  32.068%
+  [1,1]  31.925%
 
 Least likely tiles:
-  [1,1]  62.636%
-  [5,5]  67.179%
-  [4,4]  67.447%
-  [0,0]  67.729%
-  [3,0]  67.990%
+  [4,0]  27.005%
+  [2,0]  29.529%
+  [2,1]  30.091%
+  [6,0]  30.122%
+  [0,0]  30.672%
 
 Most likely hands:
-  0.036%  [6,0] [6,3] [6,6] [6,1] [1,0] [6,4] [5,0] [3,3] [5,3] [4,1] [5,1]
-  0.035%  [6,0] [6,3] [6,6] [1,0] [5,0] [6,1] [3,0] [3,3] [5,3] [4,1] [5,1]
-  0.035%  [6,0] [6,3] [6,6] [1,0] [6,4] [5,0] [3,3] [6,1] [3,0] [4,1] [5,1]
-  0.034%  [6,0] [6,3] [6,6] [6,1] [1,0] [5,0] [0,0] [3,3] [5,3] [4,1] [5,1]
-  0.034%  [6,0] [6,3] [6,6] [1,0] [6,4] [5,0] [4,1] [6,1] [3,0] [3,3] [5,3]
+  0.033%  [6,2] [5,4] [1,1] [6,1] [3,0]
+  0.033%  [6,2] [5,4] [5,1] [6,1] [3,0]
+  0.033%  [6,2] [1,1] [5,1] [6,1] [3,0]
+  0.032%  [6,2] [5,4] [1,0] [6,1] [3,0]
+  0.032%  [6,2] [5,4] [1,1] [3,0] [5,1]
 
 Actual hand:
-  [6,3] [6,6] [3,0] [6,4] [5,3] [0,0] [4,4] [6,0] [5,5] [4,1] [5,1]
-  Probability: 0.023%
-  Relative to uniform: 1.01x
-  Rank: 1743 / 4368
+  [6,2] [5,4] [1,1] [3,0] [5,0]
+  Probability: 0.031%
+  Relative to uniform: 1.37x
+  Rank: 20 / 4368
 
 Depth: 5, Simulations: 10
-Move([4,0],Left )         mean=-0.122
-Move([2,2],Right)         mean=-0.284
-AvgNodes evaluated: 695
-AvgNodes/second: 4,186
-Draw nodes: 5
-Draw simulations: 50
-Selected at depth 5: Move([4,0],Left ) (-0.122)
-Elapsed: 166 ms
+Move([2,2],Right)         mean=0.122 
+Move([6,4],Left )         mean=0.112 
+Move([4,1],Left )         mean=0.098 
+Move([3,1],Up   )         mean=0.088 
+Move([5,3],Up   )         mean=0.039 
+Move([6,3],Up   )         mean=0.015 
+AvgNodes evaluated: 8,363
+AvgNodes/second: 3,697
+Draw nodes: 7
+Draw simulations: 70
+Selected at depth 5: Move([2,2],Right) (0.122)
+Elapsed: 2262 ms
 
 Depth: 7, Simulations: 20
-Move([4,0],Left )         mean=-0.186
-Move([2,2],Right)         mean=-0.429
-AvgNodes evaluated: 14,033
-AvgNodes/second: 7,026
-Draw nodes: 122
-Draw simulations: 1,220
-Selected at depth 7: Move([4,0],Left ) (-0.186)
-Elapsed: 1997 ms
-
-Depth: 9, Simulations: 20
-Move([4,0],Left )         mean=-0.059
-Move([2,2],Right)         mean=-0.418
-AvgNodes evaluated: 96,466
-AvgNodes/second: 12,520
-Draw nodes: 910
-Draw simulations: 9,100
-Selected at depth 9: Move([4,0],Left ) (-0.059)
-Elapsed: 7705 ms
-
-FINAL DECISION: Move([4,0],Left )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(85): [5,3] [3,0] [6,4] [4,1] [6,3] [6,0] [0,0] [5,5] [5,1] [6,6]
-robot*(70): [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [2,1] - [1,3] - [3,2] - [2,0] - [0,4]
-right:
-up:
-down:
-board score: 10
-
-Opponent hand estimates:
-3003 possible hands
-Uniform hand probability: 0.033%
-
-Most likely tiles:
-  [6,1]  69.405%
-  [6,0]  68.878%
-  [4,1]  68.165%
-  [6,3]  67.802%
-  [3,3]  67.668%
-
-Least likely tiles:
-  [1,1]  60.235%
-  [5,5]  64.938%
-  [0,0]  65.510%
-  [3,0]  65.781%
-  [6,4]  66.338%
-
-Most likely hands:
-  0.050%  [6,0] [6,3] [6,6] [6,1] [1,0] [5,0] [3,3] [5,3] [4,1] [5,1]
-  0.050%  [6,0] [6,3] [6,6] [6,1] [1,0] [6,4] [5,0] [3,3] [4,1] [5,1]
-  0.050%  [6,0] [6,3] [6,6] [6,1] [1,0] [6,4] [5,0] [4,1] [3,3] [5,3]
-  0.049%  [6,0] [6,3] [6,6] [1,0] [5,0] [3,3] [6,1] [3,0] [4,1] [5,1]
-  0.049%  [6,0] [6,3] [6,6] [6,1] [6,4] [5,0] [3,3] [5,3] [4,1] [5,1]
-
-Actual hand:
-  [6,3] [6,6] [3,0] [6,4] [5,3] [0,0] [6,0] [5,5] [4,1] [5,1]
-  Probability: 0.034%
-  Relative to uniform: 1.03x
-  Rank: 1101 / 3003
-
-Depth: 5, Simulations: 10
-Move([4,3],Right)         mean=-0.153
-Move([5,4],Right)         mean=-0.358
-Move([2,2],Left )         mean=-0.405
-AvgNodes evaluated: 2,032
-AvgNodes/second: 28,508
-Draw nodes: 2
-Draw simulations: 20
-Selected at depth 5: Move([4,3],Right) (-0.153)
-Elapsed: 71 ms
-
-Depth: 7, Simulations: 20
-Move([2,2],Left )         mean=-0.163
-Move([4,3],Right)         mean=-0.270
-Move([5,4],Right)         mean=-0.410
-AvgNodes evaluated: 37,993
-AvgNodes/second: 41,077
-Draw nodes: 10
-Draw simulations: 100
-Selected at depth 7: Move([2,2],Left ) (-0.163)
-Elapsed: 925 ms
-
-Depth: 9, Simulations: 20
-Move([4,3],Right)         mean=-0.164
-Move([5,4],Right)         mean=-0.475
-Move([2,2],Left )         mean=-0.535
-AvgNodes evaluated: 211,639
-AvgNodes/second: 30,424
-Draw nodes: 2,509
-Draw simulations: 25,090
-Selected at depth 9: Move([4,3],Right) (-0.164)
-Elapsed: 6956 ms
-
-FINAL DECISION: Move([4,3],Right)
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(85): [5,3] [3,0] [4,1] [6,3] [6,0] [0,0] [5,5] [5,1] [6,6]
-robot*(75): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [2,1] - [1,3] - [3,2] - [2,0] - [0,4]
-right: [3,4]
-up: [6,4]
-down:
-board score: 11
-
-Opponent hand estimates:
-2002 possible hands
-Uniform hand probability: 0.050%
-
-Most likely tiles:
-  [6,1]  70.652%
-  [6,0]  69.424%
-  [6,6]  68.382%
-  [5,5]  67.929%
-  [6,3]  66.941%
-
-Least likely tiles:
-  [1,1]  58.257%
-  [4,1]  59.091%
-  [3,0]  59.992%
-  [5,1]  60.008%
-  [5,0]  61.799%
-
-Most likely hands:
-  0.117%  [6,3] [6,6] [6,1] [1,0] [0,0] [6,0] [5,5] [3,3] [5,3]
-  0.113%  [6,3] [6,6] [6,1] [5,0] [0,0] [6,0] [5,5] [3,3] [5,3]
-  0.109%  [6,3] [6,6] [6,1] [1,0] [5,0] [3,3] [0,0] [6,0] [5,5]
-  0.105%  [6,3] [6,6] [6,1] [5,1] [0,0] [6,0] [5,5] [3,3] [5,3]
-  0.105%  [6,3] [6,6] [0,0] [6,0] [5,5] [6,1] [3,0] [3,3] [5,3]
-
-Actual hand:
-  [6,3] [6,6] [3,0] [5,3] [0,0] [6,0] [5,5] [4,1] [5,1]
-  Probability: 0.052%
-  Relative to uniform: 1.04x
-  Rank: 786 / 2002
-
-Depth: 5, Simulations: 10
-Move([6,5],Up   )         mean=0.777
-Move([5,4],Down )         mean=0.360
-Move([2,2],Left )         mean=-0.005
-AvgNodes evaluated: 3,173
-AvgNodes/second: 36,294
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([6,5],Up   ) (0.777)
-Elapsed: 87 ms
-
-Depth: 7, Simulations: 20
-Move([6,5],Up   )         mean=0.840
-Move([5,4],Down )         mean=0.299
-Move([2,2],Left )         mean=-0.412
-AvgNodes evaluated: 14,007
-AvgNodes/second: 28,493
-Draw nodes: 139
-Draw simulations: 1,390
-Selected at depth 7: Move([6,5],Up   ) (0.840)
-Elapsed: 492 ms
-
-Depth: 9, Simulations: 20
-Move([6,5],Up   )         mean=0.826
-Move([5,4],Down )         mean=0.290
-Move([2,2],Left )         mean=-0.315
-AvgNodes evaluated: 78,614
-AvgNodes/second: 13,037
-Draw nodes: 3,736
-Draw simulations: 37,360
-Selected at depth 9: Move([6,5],Up   ) (0.826)
-Elapsed: 6030 ms
-
-FINAL DECISION: Move([6,5],Up   )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(100): [5,3] [3,0] [4,1] [6,3] [6,0] [0,0] [5,1] [6,6]
-robot*(85): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [2,1] - [1,3] - [3,2] - [2,0] - [0,4]
-right: [3,4]
-up: [5,5] - [5,6] - [6,4]
-down:
-board score: 15
-
-Opponent hand estimates:
-1287 possible hands
-Uniform hand probability: 0.078%
-
-Most likely tiles:
-  [6,1]  68.346%
-  [6,0]  66.636%
-  [6,6]  65.937%
-  [6,3]  65.063%
-  [0,0]  63.525%
-
-Least likely tiles:
-  [1,1]  55.572%
-  [4,1]  56.189%
-  [5,1]  57.086%
-  [3,0]  57.145%
-  [1,0]  60.009%
-
-Most likely hands:
-  0.173%  [6,0] [6,3] [6,6] [6,1] [5,0] [0,0] [3,3] [5,3]
-  0.173%  [6,0] [6,3] [6,6] [6,1] [1,0] [0,0] [3,3] [5,3]
-  0.166%  [6,0] [6,3] [6,6] [6,1] [1,0] [5,0] [3,3] [0,0]
-  0.155%  [6,0] [6,3] [6,6] [0,0] [6,1] [3,0] [3,3] [5,3]
-  0.155%  [6,0] [6,3] [6,6] [6,1] [5,1] [0,0] [3,3] [5,3]
-
-Actual hand:
-  [6,0] [6,3] [6,6] [3,0] [5,3] [0,0] [4,1] [5,1]
-  Probability: 0.075%
-  Relative to uniform: 0.97x
-  Rank: 630 / 1287
-
-Depth: 5, Simulations: 10
-Move([5,4],Down )         mean=0.889
-Move([2,2],Left )         mean=0.693
-Move([5,4],Up   )         mean=0.509
-AvgNodes evaluated: 160
-AvgNodes/second: 11,538
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([5,4],Down ) (0.889)
-Elapsed: 14 ms
-
-Depth: 7, Simulations: 20
-Move([5,4],Down )         mean=0.853
-Move([2,2],Left )         mean=0.686
-Move([5,4],Up   )         mean=0.611
-AvgNodes evaluated: 319
-AvgNodes/second: 33,781
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([5,4],Down ) (0.853)
-Elapsed: 9 ms
-
-Depth: 9, Simulations: 20
-Move([5,4],Down )         mean=0.905
-Move([2,2],Left )         mean=0.693
-Move([5,4],Up   )         mean=0.557
-AvgNodes evaluated: 328
-AvgNodes/second: 34,633
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([5,4],Down ) (0.905)
-Elapsed: 9 ms
-
-Depth: 11, Simulations: 20
-Move([5,4],Down )         mean=0.880
-Move([2,2],Left )         mean=0.727
-Move([5,4],Up   )         mean=0.565
-AvgNodes evaluated: 336
-AvgNodes/second: 25,036
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([5,4],Down ) (0.880)
-Elapsed: 13 ms
-
-Depth: 15, Simulations: 30
-Move([5,4],Down )         mean=0.868
-Move([2,2],Left )         mean=0.691
-Move([5,4],Up   )         mean=0.584
-AvgNodes evaluated: 485
-AvgNodes/second: 28,378
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([5,4],Down ) (0.868)
-Elapsed: 17 ms
-
-FINAL DECISION: Move([5,4],Down )
-============================================================
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(100): [3,0] [4,1] [6,3] [6,0] [0,0] [5,1] [6,6]
-robot*(105): [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [2,1] - [1,3] - [3,2] - [2,0] - [0,4]
-right: [5,3] - [3,4]
-up: [5,5] - [5,6] - [6,4]
-down: [5,4]
-board score: 22
-
-Opponent hand estimates:
-792 possible hands
-Uniform hand probability: 0.126%
-
-Most likely tiles:
-  [6,3]  71.523%
-  [6,0]  71.093%
-  [6,6]  70.691%
-  [5,1]  66.327%
-  [3,0]  65.638%
-
-Least likely tiles:
-  [1,0]  41.781%
-  [5,0]  44.277%
-  [3,3]  44.692%
-  [0,0]  46.488%
-  [6,1]  50.312%
-
-Most likely hands:
-  1.077%  [6,0] [6,3] [6,6] [1,1] [3,0] [4,1] [5,1]
-  0.661%  [6,0] [6,3] [6,6] [1,1] [5,1] [6,1] [3,0]
-  0.649%  [6,0] [6,3] [6,6] [6,1] [3,0] [4,1] [5,1]
-  0.604%  [6,0] [6,3] [6,6] [1,1] [6,1] [4,1] [5,1]
-  0.587%  [6,0] [6,3] [6,6] [1,1] [4,1] [6,1] [3,0]
-
-Actual hand:
-  [6,0] [6,3] [6,6] [3,0] [0,0] [4,1] [5,1]
-  Probability: 0.566%
-  Relative to uniform: 4.48x
-  Rank: 7 / 792
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(100): [2,2] [1,1] [5,5] [3,3] [4,4] [5,0] [1,0]
-robot*(145): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: None
-left:
-right:
-up:
-down:
-board score: 0
-
-Opponent hand estimates:
-
-Depth: 5, Simulations: 10
-Move([4,1],Left )         mean=0.936
-Move([3,2],Left )         mean=0.934
-Move([3,1],Left )         mean=0.914
-Move([4,3],Left )         mean=0.909
-Move([3,0],Left )         mean=0.887
-Move([5,1],Left )         mean=0.849
-AvgNodes evaluated: 4,558
-AvgNodes/second: 52
-Draw nodes: 23
-Draw simulations: 230
-Selected at depth 5: Move([4,1],Left ) (0.936)
-Elapsed: 88416 ms
+Move([4,1],Left )         mean=0.135 
+Move([2,2],Right)         mean=0.127 
+Move([6,4],Left )         mean=0.115 
+Move([3,1],Up   )         mean=0.080 
+Move([6,3],Up   )         mean=0.067 
+Move([5,3],Up   )         mean=0.022 
+AvgNodes evaluated: 146,774
+AvgNodes/second: 2,978
+Draw nodes: 882
+Draw simulations: 8,820
+Selected at depth 7: Move([4,1],Left ) (0.135)
+Elapsed: 49289 ms
 
 FINAL DECISION: Move([4,1],Left )
 ============================================================
@@ -3150,69 +140,60 @@ FINAL DECISION: Move([4,1],Left )
 ROBOT TURN
 
 ----------------------------------
-human(100): [2,2] [1,1] [5,5] [3,3] [5,0] [1,0]
-robot*(150): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+human(0): [6,2] [5,4] [5,0] [3,0]
+robot*(10): [x,x] [x,x] [x,x] [x,x] [x,x]
 boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
-spinner: [4,4]
-left: [1,4]
-right:
-up:
-down:
-board score: 9
+spinner: [3,3]
+left: [1,1] - [1,4] - [4,3]
+right: [2,3]
+up: 
+down: 
+board score: 4
 
 Opponent hand estimates:
-38760 possible hands
-Uniform hand probability: 0.003%
+1365 possible hands
+Uniform hand probability: 0.073%
 
 Most likely tiles:
-  [5,2]  32.506%
-  [2,2]  31.766%
-  [1,1]  31.530%
-  [0,0]  31.437%
-  [5,5]  31.352%
+  [3,0]  34.001%
+  [2,1]  28.977%
+  [6,5]  28.690%
+  [5,4]  28.297%
+  [1,0]  27.283%
 
 Least likely tiles:
-  [6,1]  20.481%
-  [6,6]  27.553%
-  [6,4]  28.081%
-  [5,3]  29.504%
-  [6,2]  30.004%
+  [4,0]  23.496%
+  [2,0]  23.707%
+  [4,2]  23.856%
+  [6,2]  24.244%
+  [5,0]  25.724%
 
 Most likely hands:
-  0.004%  [1,1] [5,2] [0,0] [5,5] [6,0] [2,2]
-  0.004%  [1,1] [4,2] [5,2] [0,0] [2,2] [5,5]
-  0.004%  [1,1] [6,5] [5,2] [0,0] [2,2] [5,5]
-  0.004%  [1,1] [6,5] [5,2] [0,0] [6,0] [2,2]
-  0.004%  [1,1] [4,2] [5,2] [0,0] [6,0] [2,2]
+  0.133%  [2,1] [3,0] [5,4] [6,5]
+  0.126%  [1,0] [2,1] [3,0] [6,5]
+  0.125%  [2,1] [3,0] [5,1] [6,5]
+  0.124%  [1,0] [2,1] [3,0] [5,4]
+  0.123%  [2,1] [3,0] [5,1] [5,4]
 
 Actual hand:
-  [1,1] [1,0] [5,0] [3,3] [2,2] [5,5]
-  Probability: 0.003%
-  Relative to uniform: 1.28x
-  Rank: 3316 / 38760
+  [6,2] [5,4] [5,0] [3,0]
+  Probability: 0.092%
+  Relative to uniform: 1.25x
+  Rank: 201 / 1365
 
 Depth: 5, Simulations: 10
-Move([3,1],Left )         mean=0.930
-Move([4,3],Right)         mean=0.925
-Move([5,1],Left )         mean=0.864
-AvgNodes evaluated: 2,212
-AvgNodes/second: 1,212
-Draw nodes: 5
-Draw simulations: 50
-Selected at depth 5: Move([3,1],Left ) (0.930)
-Elapsed: 1825 ms
-
-Depth: 7, Simulations: 20
-Move([3,1],Left )         mean=0.959
-Move([4,3],Right)         mean=0.933
-Move([5,1],Left )         mean=0.832
-AvgNodes evaluated: 40,379
-AvgNodes/second: 2,553
-Draw nodes: 176
-Draw simulations: 1,760
-Selected at depth 7: Move([3,1],Left ) (0.959)
-Elapsed: 15818 ms
+Move([3,1],Left )         mean=0.186 
+Move([6,3],Up   )         mean=0.123 
+Move([3,1],Up   )         mean=0.112 
+Move([2,2],Right)         mean=0.104 
+Move([5,3],Up   )         mean=0.037 
+AvgNodes evaluated: 4,791
+AvgNodes/second: 513
+Draw nodes: 24
+Draw simulations: 240
+Selected at depth 5: Move([3,1],Left ) (0.186)
+Elapsed: 9344 ms
 
 FINAL DECISION: Move([3,1],Left )
 ============================================================
@@ -3221,545 +202,325 @@ FINAL DECISION: Move([3,1],Left )
 ROBOT TURN
 
 ----------------------------------
-human(100): [2,2] [1,1] [5,5] [5,0] [1,0]
-robot*(150): [x,x] [x,x] [x,x] [x,x] [x,x]
+human(5): [6,2] [5,4] [5,0]
+robot*(15): [x,x] [x,x] [x,x] [x,x]
 boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
-spinner: [4,4]
-left: [3,3] - [3,1] - [1,4]
-right:
-up:
-down:
-board score: 14
+spinner: [3,3]
+left: [3,1] - [1,1] - [1,4] - [4,3]
+right: [2,3]
+up: [0,3]
+down: 
+board score: 5
 
 Opponent hand estimates:
-11628 possible hands
-Uniform hand probability: 0.009%
+364 possible hands
+Uniform hand probability: 0.275%
 
 Most likely tiles:
-  [5,2]  28.943%
-  [2,0]  28.865%
-  [1,1]  28.749%
-  [2,2]  28.248%
-  [5,5]  28.101%
+  [5,4]  23.443%
+  [6,5]  23.041%
+  [2,1]  23.017%
+  [6,0]  22.621%
+  [5,1]  22.552%
 
 Least likely tiles:
-  [6,1]  18.751%
-  [4,2]  20.084%
-  [6,6]  23.967%
-  [6,4]  25.553%
-  [5,0]  26.395%
+  [4,2]  19.021%
+  [4,0]  19.232%
+  [6,2]  19.588%
+  [5,2]  19.711%
+  [2,0]  19.754%
 
 Most likely hands:
-  0.015%  [1,1] [2,0] [5,2] [2,2] [5,5]
-  0.014%  [2,2] [1,1] [2,0] [5,2] [0,0]
-  0.014%  [5,5] [1,1] [2,0] [5,2] [0,0]
-  0.014%  [2,2] [4,0] [1,1] [2,0] [5,2]
-  0.014%  [5,5] [4,0] [1,1] [2,0] [5,2]
+  0.362%  [2,1] [5,4] [6,5]
+  0.355%  [5,4] [6,0] [6,5]
+  0.354%  [2,1] [5,4] [6,0]
+  0.354%  [5,1] [5,4] [6,5]
+  0.353%  [2,1] [5,1] [5,4]
 
 Actual hand:
-  [1,1] [1,0] [5,0] [2,2] [5,5]
-  Probability: 0.012%
-  Relative to uniform: 1.35x
-  Rank: 1002 / 11628
+  [6,2] [5,4] [5,0]
+  Probability: 0.290%
+  Relative to uniform: 1.06x
+  Rank: 106 / 364
 
 Depth: 5, Simulations: 10
-Move([3,2],Left )         mean=0.967
-Move([4,3],Right)         mean=0.931
-Move([3,0],Left )         mean=0.912
-Move([6,3],Left )         mean=0.895
-Move([4,3],Left )         mean=0.882
-AvgNodes evaluated: 2,110
-AvgNodes/second: 1,115
-Draw nodes: 16
-Draw simulations: 160
-Selected at depth 5: Move([3,2],Left ) (0.967)
-Elapsed: 1893 ms
+Move([5,3],Down )         mean=0.111 
+Move([2,2],Right)         mean=0.099 
+Move([6,3],Left )         mean=0.096 
+Move([5,3],Left )         mean=0.034 
+Move([6,3],Down )         mean=0.030 
+AvgNodes evaluated: 1,866
+AvgNodes/second: 23,208
+Draw nodes: 19
+Draw simulations: 190
+Selected at depth 5: Move([5,3],Down ) (0.111)
+Elapsed: 80 ms
 
 Depth: 7, Simulations: 20
-Move([3,2],Left )         mean=0.967
-Move([4,3],Right)         mean=0.946
-Move([3,0],Left )         mean=0.906
-Move([4,3],Left )         mean=0.869
-Move([6,3],Left )         mean=0.869
-AvgNodes evaluated: 21,980
-AvgNodes/second: 1,138
-Draw nodes: 209
-Draw simulations: 2,090
-Selected at depth 7: Move([3,2],Left ) (0.967)
-Elapsed: 19309 ms
+Move([2,2],Right)         mean=0.121 
+Move([6,3],Left )         mean=-0.053 
+Move([5,3],Left )         mean=-0.059 
+Move([5,3],Down )         mean=-0.065 
+Move([6,3],Down )         mean=-0.111 
+AvgNodes evaluated: 13,057
+AvgNodes/second: 15,395
+Draw nodes: 544
+Draw simulations: 5,440
+Selected at depth 7: Move([2,2],Right) (0.121)
+Elapsed: 848 ms
 
-FINAL DECISION: Move([3,2],Left )
+Depth: 9, Simulations: 20
+Move([2,2],Right)         mean=0.062 
+Move([5,3],Down )         mean=0.008 
+Move([5,3],Left )         mean=-0.006 
+Move([6,3],Left )         mean=-0.092 
+Move([6,3],Down )         mean=-0.133 
+AvgNodes evaluated: 57,701
+AvgNodes/second: 4,185
+Draw nodes: 3,007
+Draw simulations: 30,070
+Selected at depth 9: Move([2,2],Right) (0.062)
+Elapsed: 13787 ms
+
+FINAL DECISION: Move([2,2],Right)
 ============================================================
 
 ============================================================
 ROBOT TURN
 
 ----------------------------------
-human(100): [1,1] [5,5] [5,0] [1,0]
-robot*(160): [x,x] [x,x] [x,x] [x,x]
+human(5): [6,2] [5,4]
+robot*(15): [x,x] [x,x] [x,x]
 boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
-spinner: [4,4]
-left: [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right:
-up:
-down:
+spinner: [3,3]
+left: [3,1] - [1,1] - [1,4] - [4,3]
+right: [2,2] - [2,3]
+up: [5,0] - [0,3]
+down: 
 board score: 12
 
 Opponent hand estimates:
-3060 possible hands
-Uniform hand probability: 0.033%
+78 possible hands
+Uniform hand probability: 1.282%
 
 Most likely tiles:
-  [5,2]  24.674%
-  [2,0]  24.603%
-  [1,1]  24.498%
-  [5,5]  23.911%
-  [0,0]  23.649%
+  [6,5]  23.867%
+  [5,1]  21.573%
+  [6,0]  19.845%
+  [6,1]  19.740%
+  [5,4]  18.552%
 
 Least likely tiles:
-  [6,1]  15.636%
-  [4,2]  16.795%
-  [6,6]  20.209%
-  [6,4]  21.621%
-  [5,0]  22.375%
+  [2,0]  4.991%
+  [4,2]  6.450%
+  [4,0]  11.621%
+  [0,0]  13.092%
+  [5,2]  13.405%
 
 Most likely hands:
-  0.052%  [1,1] [2,0] [5,2] [5,5]
-  0.051%  [0,0] [1,1] [2,0] [5,2]
-  0.050%  [1,1] [2,0] [4,0] [5,2]
-  0.049%  [0,0] [2,0] [5,2] [5,5]
-  0.049%  [0,0] [1,1] [5,2] [5,5]
+  2.764%  [5,4] [6,5]
+  2.761%  [2,1] [5,4]
+  2.704%  [5,4] [6,0]
+  2.704%  [2,1] [6,5]
+  2.694%  [5,1] [5,4]
 
 Actual hand:
-  [1,1] [5,5] [5,0] [1,0]
-  Probability: 0.041%
-  Relative to uniform: 1.26x
-  Rank: 464 / 3060
-
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(100): [1,1] [5,5] [5,0] [1,0]
-robot*(160): [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [1,2] - [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right: [3,4]
-up:
-down:
-board score: 4
-
-Opponent hand estimates:
-126 possible hands
-Uniform hand probability: 0.794%
-
-Most likely tiles:
-  [1,1]  48.316%
-  [5,5]  47.470%
-  [0,0]  47.087%
-  [1,0]  45.453%
-  [6,5]  45.415%
-
-Least likely tiles:
-  [6,1]  33.997%
-  [6,6]  41.805%
-  [5,0]  45.189%
-  [6,0]  45.266%
-  [6,5]  45.415%
-
-Most likely hands:
-  1.135%  [0,0] [1,0] [1,1] [5,5]
-  1.134%  [0,0] [1,1] [5,5] [6,5]
-  1.128%  [0,0] [1,1] [5,5] [6,0]
-  1.125%  [0,0] [1,1] [5,0] [5,5]
-  1.070%  [1,0] [1,1] [5,5] [6,5]
-
-Actual hand:
-  [1,1] [5,5] [5,0] [1,0]
-  Probability: 1.061%
-  Relative to uniform: 1.34x
-  Rank: 8 / 126
+  [6,2] [5,4]
+  Probability: 2.282%
+  Relative to uniform: 1.78x
+  Rank: 20 / 78
 
 Depth: 5, Simulations: 10
-Move([5,1],Left )         mean=0.980
-Move([6,3],Right)         mean=0.964
-Move([3,0],Right)         mean=0.950
-AvgNodes evaluated: 584
-AvgNodes/second: 9,708
-Draw nodes: 13
-Draw simulations: 130
-Selected at depth 5: Move([5,1],Left ) (0.980)
-Elapsed: 60 ms
+Move([5,3],Up   )         mean=0.131 
+Move([6,3],Left )         mean=0.102 
+Move([6,3],Down )         mean=-0.055 
+Move([5,3],Left )         mean=-0.088 
+Move([5,3],Down )         mean=-0.143 
+AvgNodes evaluated: 987
+AvgNodes/second: 9,974
+Draw nodes: 30
+Draw simulations: 300
+Selected at depth 5: Move([5,3],Up   ) (0.131)
+Elapsed: 99 ms
 
 Depth: 7, Simulations: 20
-Move([5,1],Left )         mean=0.986
-Move([3,0],Right)         mean=0.955
-Move([6,3],Right)         mean=0.941
-AvgNodes evaluated: 5,877
-AvgNodes/second: 22,433
-Draw nodes: 224
-Draw simulations: 2,240
-Selected at depth 7: Move([5,1],Left ) (0.986)
-Elapsed: 262 ms
+Move([5,3],Up   )         mean=0.431 
+Move([6,3],Left )         mean=0.181 
+Move([5,3],Down )         mean=0.028 
+Move([6,3],Down )         mean=-0.024 
+Move([5,3],Left )         mean=-0.118 
+AvgNodes evaluated: 7,414
+AvgNodes/second: 784
+Draw nodes: 366
+Draw simulations: 3,660
+Selected at depth 7: Move([5,3],Up   ) (0.431)
+Elapsed: 9455 ms
 
-Depth: 9, Simulations: 20
-Move([5,1],Left )         mean=0.990
-Move([3,0],Right)         mean=0.968
-Move([6,3],Right)         mean=0.963
-AvgNodes evaluated: 56,919
-AvgNodes/second: 23,831
-Draw nodes: 2,384
-Draw simulations: 23,840
-Selected at depth 9: Move([5,1],Left ) (0.990)
-Elapsed: 2388 ms
-
-Depth: 11, Simulations: 20
-Move([5,1],Left )         mean=0.996
-Move([3,0],Right)         mean=0.973
-Move([6,3],Right)         mean=0.961
-AvgNodes evaluated: 288,950
-AvgNodes/second: 28,258
-Draw nodes: 12,655
-Draw simulations: 126,550
-Selected at depth 11: Move([5,1],Left ) (0.996)
-Elapsed: 10225 ms
-
-FINAL DECISION: Move([5,1],Left )
+FINAL DECISION: Move([5,3],Up   )
 ============================================================
 
 ============================================================
 ROBOT TURN
 
 ----------------------------------
-human(100): [1,1] [5,0] [1,0]
-robot*(160): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+human(5): [5,4]
+robot*(25): [x,x] [x,x]
+boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
-spinner: [4,4]
-left: [5,5] - [5,1] - [1,2] - [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right: [3,4]
-up:
-down:
-board score: 13
+spinner: [3,3]
+left: [3,1] - [1,1] - [1,4] - [4,3]
+right: [6,2] - [2,2] - [2,3]
+up: [3,5] - [5,0] - [0,3]
+down: 
+board score: 12
 
 Opponent hand estimates:
-56 possible hands
-Uniform hand probability: 1.786%
+12 possible hands
+Uniform hand probability: 8.333%
 
 Most likely tiles:
-  [1,1]  41.608%
-  [0,0]  40.392%
-  [1,0]  38.791%
-  [6,5]  38.754%
-  [6,0]  38.608%
+  [5,4]  17.544%
+  [6,5]  17.183%
+  [6,0]  16.808%
+  [5,1]  16.747%
+  [6,1]  15.373%
 
 Least likely tiles:
-  [6,1]  28.035%
-  [6,6]  35.278%
-  [5,0]  38.533%
-  [6,0]  38.608%
-  [6,5]  38.754%
+  [4,2]  0.549%
+  [2,1]  0.686%
+  [4,0]  2.778%
+  [5,2]  2.858%
+  [2,0]  2.865%
 
 Most likely hands:
-  2.392%  [0,0] [1,0] [1,1]
-  2.389%  [0,0] [1,1] [6,5]
-  2.376%  [0,0] [1,1] [6,0]
-  2.369%  [0,0] [1,1] [5,0]
-  2.253%  [1,0] [1,1] [6,5]
+  17.544%  [5,4]
+  17.183%  [6,5]
+  16.808%  [6,0]
+  16.747%  [5,1]
+  15.373%  [6,1]
 
 Actual hand:
-  [1,1] [5,0] [1,0]
-  Probability: 2.235%
-  Relative to uniform: 1.25x
-  Rank: 8 / 56
+  [5,4]
+  Probability: 17.544%
+  Relative to uniform: 2.11x
+  Rank: 1 / 12
 
 Depth: 5, Simulations: 10
-Move([3,0],Right)         mean=0.956
-Move([6,3],Right)         mean=0.954
-AvgNodes evaluated: 594
-AvgNodes/second: 21,146
-Draw nodes: 18
-Draw simulations: 180
-Selected at depth 5: Move([3,0],Right) (0.956)
-Elapsed: 28 ms
+Move([6,3],Right)         mean=0.977 
+Move([6,4],Right)         mean=0.544 
+Move([6,3],Left )         mean=0.356 
+Move([6,3],Down )         mean=0.208 
+AvgNodes evaluated: 353
+AvgNodes/second: 108
+Draw nodes: 14
+Draw simulations: 140
+Selected at depth 5: Move([6,3],Right) (0.977)
+Elapsed: 3283 ms
 
-Depth: 7, Simulations: 20
-Move([6,3],Right)         mean=0.976
-Move([3,0],Right)         mean=0.959
-AvgNodes evaluated: 11,164
-AvgNodes/second: 17,791
-Draw nodes: 477
-Draw simulations: 4,770
-Selected at depth 7: Move([6,3],Right) (0.976)
-Elapsed: 627 ms
-
-Depth: 9, Simulations: 20
-Move([3,0],Right)         mean=0.985
-Move([6,3],Right)         mean=0.973
-AvgNodes evaluated: 49,063
-AvgNodes/second: 27,581
-Draw nodes: 1,979
-Draw simulations: 19,790
-Selected at depth 9: Move([3,0],Right) (0.985)
-Elapsed: 1779 ms
-
-Depth: 11, Simulations: 20
-Move([3,0],Right)         mean=0.986
-Move([6,3],Right)         mean=0.979
-AvgNodes evaluated: 523,189
-AvgNodes/second: 24,804
-Draw nodes: 22,572
-Draw simulations: 225,720
-Selected at depth 11: Move([3,0],Right) (0.986)
-Elapsed: 21093 ms
-
-FINAL DECISION: Move([3,0],Right)
+FINAL DECISION: Move([6,3],Right)
 ============================================================
 
 ============================================================
 ROBOT TURN
 
 ----------------------------------
-human(115): [1,1] [1,0]
-robot*(170): [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+human(5): [6,1] [2,1] [4,4] [6,0] [2,0] [6,5] [4,2] [5,1] [6,6] [4,0] [0,0] [5,5] [5,2] [1,0] [5,4]
+robot*(25): [x,x]
+boneyard: 
 tiles: 28
-spinner: [4,4]
-left: [5,5] - [5,1] - [1,2] - [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right: [5,0] - [0,3] - [3,4]
-up:
-down:
-board score: 15
+spinner: [3,3]
+left: [3,1] - [1,1] - [1,4] - [4,3]
+right: [3,6] - [6,2] - [2,2] - [2,3]
+up: [3,5] - [5,0] - [0,3]
+down: 
+board score: 9
 
 Opponent hand estimates:
-21 possible hands
-Uniform hand probability: 4.762%
+1 possible hands
+Uniform hand probability: 100.000%
 
 Most likely tiles:
-  [1,1]  32.360%
-  [0,0]  31.240%
-  [1,0]  29.784%
-  [6,5]  29.751%
-  [6,0]  29.620%
+  [4,0]  100.000%
+  [6,1]  100.000%
+  [4,2]  100.000%
+  [2,0]  100.000%
+  [6,5]  100.000%
 
 Least likely tiles:
-  [6,1]  20.574%
-  [6,6]  26.672%
-  [6,0]  29.620%
-  [6,5]  29.751%
-  [1,0]  29.784%
+  [2,1]  100.000%
+  [1,0]  100.000%
+  [6,6]  100.000%
+  [5,4]  100.000%
+  [5,5]  100.000%
 
 Most likely hands:
-  6.148%  [0,0] [1,1]
-  5.800%  [1,0] [1,1]
-  5.792%  [1,1] [6,5]
-  5.761%  [1,1] [6,0]
-  5.552%  [0,0] [1,0]
+  100.000%  [4,0] [6,1] [4,2] [2,0] [6,5] [5,2] [5,1] [0,0] [4,4] [6,0] [5,5] [5,4] [6,6] [1,0] [2,1]
 
 Actual hand:
-  [1,1] [1,0]
-  Probability: 5.800%
-  Relative to uniform: 1.22x
-  Rank: 2 / 21
+  [4,0] [6,1] [4,2] [2,0] [6,5] [5,2] [5,1] [0,0] [4,4] [6,0] [5,5] [5,4] [6,6] [1,0] [2,1]
+  Probability: 100.000%
+  Relative to uniform: 1.00x
+  Rank: 1 / 1
 
 ============================================================
 ROBOT TURN
 
 ----------------------------------
-human(115): [1,1] [1,0]
-robot*(170): [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+human(5): [3,1] [5,3] [6,0] [2,1] [2,0] [5,2]
+robot*(105): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
+boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
 tiles: 28
 spinner: [4,4]
-left: [5,5] - [5,1] - [1,2] - [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right: [5,0] - [0,3] - [3,4]
-up:
-down:
-board score: 15
+left: [0,4]
+right: 
+up: 
+down: 
+board score: 8
 
 Opponent hand estimates:
-21 possible hands
-Uniform hand probability: 4.762%
+18564 possible hands
+Uniform hand probability: 0.005%
 
 Most likely tiles:
-  [1,1]  32.360%
-  [0,0]  31.240%
-  [1,0]  29.784%
-  [6,5]  29.751%
-  [6,0]  29.620%
+  [6,2]  33.333%
+  [6,0]  33.333%
+  [6,3]  33.333%
+  [3,1]  33.333%
+  [5,4]  33.333%
 
 Least likely tiles:
-  [6,1]  20.574%
-  [6,6]  26.672%
-  [6,0]  29.620%
-  [6,5]  29.751%
-  [1,0]  29.784%
+  [5,1]  33.333%
+  [4,1]  33.333%
+  [5,3]  33.333%
+  [5,2]  33.333%
+  [6,5]  33.333%
 
 Most likely hands:
-  6.148%  [0,0] [1,1]
-  5.800%  [1,0] [1,1]
-  5.792%  [1,1] [6,5]
-  5.761%  [1,1] [6,0]
-  5.552%  [0,0] [1,0]
+  0.005%  [6,0] [3,1] [1,1] [2,0] [6,4] [5,3]
+  0.005%  [3,1] [5,4] [2,1] [5,2] [6,4] [6,5]
+  0.005%  [2,0] [6,4] [1,0] [2,1] [4,1] [5,1]
+  0.005%  [6,2] [6,3] [5,4] [3,0] [6,5] [5,2]
+  0.005%  [1,1] [2,0] [1,0] [2,1] [4,1] [5,1]
 
 Actual hand:
-  [1,1] [1,0]
-  Probability: 5.800%
-  Relative to uniform: 1.22x
-  Rank: 2 / 21
+  [6,0] [3,1] [2,1] [2,0] [5,2] [5,3]
+  Probability: 0.005%
+  Relative to uniform: 1.00x
+  Rank: 2535 / 18564
 
 Depth: 5, Simulations: 10
-Move([5,3],Left )         mean=1.000
-Move([5,3],Right)         mean=1.000
-AvgNodes evaluated: 210
-AvgNodes/second: 11,899
-Draw nodes: 7
-Draw simulations: 70
-Selected at depth 5: Move([5,3],Right) (1.000)
-Elapsed: 18 ms
+Move([4,3],Right)         mean=0.979 
+Move([4,2],Right)         mean=0.978 
+Move([0,0],Left )         mean=0.967 
+AvgNodes evaluated: 2,722
+AvgNodes/second: 743
+Draw nodes: 3
+Draw simulations: 30
+Selected at depth 5: Move([4,3],Right) (0.979)
+Elapsed: 3665 ms
 
-Depth: 7, Simulations: 20
-Move([5,3],Left )         mean=1.000
-Move([5,3],Right)         mean=1.000
-AvgNodes evaluated: 393
-AvgNodes/second: 16,971
-Draw nodes: 13
-Draw simulations: 130
-Selected at depth 7: Move([5,3],Right) (1.000)
-Elapsed: 23 ms
-
-Depth: 9, Simulations: 20
-Move([5,3],Left )         mean=1.000
-Move([5,3],Right)         mean=1.000
-AvgNodes evaluated: 345
-AvgNodes/second: 13,843
-Draw nodes: 12
-Draw simulations: 120
-Selected at depth 9: Move([5,3],Right) (1.000)
-Elapsed: 25 ms
-
-Depth: 11, Simulations: 20
-Move([5,3],Left )         mean=1.000
-Move([5,3],Right)         mean=1.000
-AvgNodes evaluated: 514
-AvgNodes/second: 16,985
-Draw nodes: 18
-Draw simulations: 180
-Selected at depth 11: Move([5,3],Right) (1.000)
-Elapsed: 30 ms
-
-Depth: 15, Simulations: 30
-Move([5,3],Left )         mean=1.000
-Move([5,3],Right)         mean=1.000
-AvgNodes evaluated: 686
-AvgNodes/second: 15,367
-Draw nodes: 24
-Draw simulations: 240
-Selected at depth 15: Move([5,3],Right) (1.000)
-Elapsed: 45 ms
-
-FINAL DECISION: Move([5,3],Right)
+FINAL DECISION: Move([4,3],Right)
 ============================================================
 
-============================================================
-ROBOT TURN
-
-----------------------------------
-human(115): [1,1] [1,0]
-robot*(170): [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [4,4]
-left: [5,5] - [5,1] - [1,2] - [2,2] - [2,3] - [3,3] - [3,1] - [1,4]
-right: [3,5] - [5,0] - [0,3] - [3,4]
-up: [6,4]
-down:
-board score: 19
-
-Opponent hand estimates:
-15 possible hands
-Uniform hand probability: 6.667%
-
-Most likely tiles:
-  [1,1]  37.820%
-  [0,0]  36.577%
-  [1,0]  34.952%
-  [6,0]  34.768%
-  [6,6]  31.442%
-
-Least likely tiles:
-  [6,1]  24.441%
-  [6,6]  31.442%
-  [6,0]  34.768%
-  [1,0]  34.952%
-  [0,0]  36.577%
-
-Most likely hands:
-  8.752%  [0,0] [1,1]
-  8.256%  [1,0] [1,1]
-  8.201%  [1,1] [6,0]
-  7.903%  [0,0] [1,0]
-  7.851%  [0,0] [6,0]
-
-Actual hand:
-  [1,1] [1,0]
-  Probability: 8.256%
-  Relative to uniform: 1.24x
-  Rank: 2 / 15
-
-Depth: 5, Simulations: 10
-Move([6,3],Right)         mean=1.000
-Move([6,3],Up   )         mean=1.000
-AvgNodes evaluated: 2
-AvgNodes/second: 1,990
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 5: Move([6,3],Up   ) (1.000)
-Elapsed: 1 ms
-
-Depth: 7, Simulations: 20
-Move([6,3],Right)         mean=1.000
-Move([6,3],Up   )         mean=1.000
-AvgNodes evaluated: 2
-AvgNodes/second: 1,420
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 7: Move([6,3],Up   ) (1.000)
-Elapsed: 1 ms
-
-Depth: 9, Simulations: 20
-Move([6,3],Right)         mean=1.000
-Move([6,3],Up   )         mean=1.000
-AvgNodes evaluated: 2
-AvgNodes/second: 1,388
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 9: Move([6,3],Up   ) (1.000)
-Elapsed: 1 ms
-
-Depth: 11, Simulations: 20
-Move([6,3],Right)         mean=1.000
-Move([6,3],Up   )         mean=1.000
-AvgNodes evaluated: 2
-AvgNodes/second: 1,825
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 11: Move([6,3],Up   ) (1.000)
-Elapsed: 1 ms
-
-Depth: 15, Simulations: 30
-Move([6,3],Right)         mean=1.000
-Move([6,3],Up   )         mean=1.000
-AvgNodes evaluated: 2
-AvgNodes/second: 1,602
-Draw nodes: 0
-Draw simulations: 0
-Selected at depth 15: Move([6,3],Up   ) (1.000)
-Elapsed: 1 ms
-
-FINAL DECISION: Move([6,3],Up   )
-============================================================

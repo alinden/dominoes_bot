@@ -17,4 +17,38 @@ case class MinNode(
   }
 
   override protected def childSimulations: Int = numSimulations
+
+  def scoredMoves(possibleMoves: List[Move]): List[(Score, Move)] =
+    possibleMoves.flatMap { move =>
+      game.act(move, false, true).map { future =>
+        val score = AvgNode(
+          perspective,
+          game,
+          future,
+          move,
+          depthRemaining - 1,
+          childSimulations
+        ).score()
+
+        (score, move)
+      }
+    }
+
+  def goodMoves(scoredMoves: List[(Score, Move)]): List[Move] = {
+    val margin = 0.02
+
+    val sortedMoves = scoredMoves.sortWith {
+      case ((xScore, _), (yScore, _)) =>
+        isBetterScore(xScore, yScore)
+    }
+
+    val bestScore = sortedMoves.head._1
+
+    sortedMoves
+      .filter { case (score, _) =>
+        isBetterScore(score, bestScore, margin)
+      }
+      .map(_._2)
+  }
+
 }

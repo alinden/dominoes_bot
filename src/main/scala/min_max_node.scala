@@ -41,29 +41,6 @@ trait MinMaxNode {
       }
     }
 
-  def goodActions(): List[Action] = {
-    val futures = possibleFutures()
-    if (futures.length == 1) {
-      List(futures.head._2)
-    } else {
-      val margin = 0.02
-      val sortedMoves = getScoredMoves()
-        .sortWith {
-          case ((xScore, _), (yScore, _)) => {
-            isBetterScore(xScore, yScore)
-          }
-        }
-      val bestScore = sortedMoves.head._1
-      sortedMoves
-        .withFilter {
-          case (score, move) => {
-            isBetterScore(score, bestScore, margin)
-          }
-        }
-        .map(_._2)
-    }
-  }
-
   def safeGame(): Game = {
     game.withReplacedActiveHand(perspective.hand)
   }

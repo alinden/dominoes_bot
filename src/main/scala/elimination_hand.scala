@@ -2,6 +2,7 @@ package game
 
 import scala.util.Random
 import cats.implicits._
+import scala.collection.mutable
 
 case class EliminationHand(
     playerName: String,
@@ -147,6 +148,7 @@ case class EliminationHand(
       )
     }
   }
+
   def updateForHighestDouble(entry: HighestDoubleEntry): EliminationHand = {
     val tile = entry.highestDouble
     val higherDoubles = Domino
@@ -173,6 +175,7 @@ case class EliminationHand(
       )
     }
   }
+
   def updateForMove(
       entry: MoveLogEntry,
       before: Game,
@@ -185,14 +188,249 @@ case class EliminationHand(
     }
   }
 
-  def updateForSelfMove(
-      move: Move,
-      before: Game,
-      skipBayes: Boolean = true,
+  private def logObservations(
+    observations: List[BayesObservation]
+  ): Unit = {
+
+    def sortedTiles(hand: Set[Domino]): List[Domino] =
+      hand.toList.sortBy(d => (d.high, d.low))
+
+    def logGroup(
+      label: String,
+      group: List[BayesObservation]
+    ): Unit = {
+      println(s"[Bayes] $label (${group.size})")
+
+      group
+        .sortBy(o => sortedTiles(o.hand).map(d => (d.high, d.low)))
+        .foreach { observation =>
+          val hand = sortedTiles(observation.hand).mkString(" ")
+
+          val scores = observation.scoredMoves
+            .sortWith { case ((a, _), (b, _)) =>
+              a.value < b.value // MinNode: lower is better
+            }
+            .map { case (score, move) =>
+              val preferred =
+                if (observation.preferredMoves.contains(move)) "*" else ""
+
+              f"$move: ${score.value}%.3f$preferred"
+            }
+            .mkString(", ")
+
+          if (observation.evaluation == ForcedMove) {
+            println(s"  $hand | FORCED")
+          } else {
+            println(s"  $hand | $scores")
+          }
+        }
+    }
+
+    logGroup("GOOD", observations.filter(_.evaluation == GoodMove))
+    logGroup("BAD", observations.filter(_.evaluation == BadMove))
+    logGroup("FORCED", observations.filter(_.evaluation == ForcedMove))
+  }
+
+  private def updateUsingTileEvidence(
+    updated: EliminationHand,
+    move: Move,
+    before: Game,
+    config: BayesConfig
   ): EliminationHand = {
 
-    // Eliminate hands that couldn't have played this tile,
-    // then remove the played tile from the remaining hands.
+    val observations: List[BayesObservation] =
+      (0 until config.sample).toList.map { _ =>
+        val remainingHand = updated.getSample()
+        evaluateMove(move, before, remainingHand.toSet, config)
+      }
+
+    // Log all observations, including forced moves.
+    logObservations(observations)
+
+    // Forced moves provide no evidence about strategic preferences.
+    val informative = observations.filterNot(_.evaluation == ForcedMove)
+
+    val goodCount = informative.count(_.evaluation == GoodMove)
+    val badCount = informative.count(_.evaluation == BadMove)
+    val forcedCount = observations.size - informative.size
+
+    println(
+      s"[Bayes] GOOD=$goodCount BAD=$badCount FORCED=$forcedCount"
+    )
+
+    // No useful evidence if every informative observation agrees,
+    // or if all observations were forced.
+    if (goodCount == 0 || badCount == 0) {
+      return updated
+    }
+
+    val overallGoodRate = goodCount.toDouble / informative.size
+
+    val tileCounts = mutable.Map.empty[Domino, (Int, Int)]
+
+    informative.foreach { observation =>
+      val isGood = observation.evaluation == GoodMove
+
+      observation.hand.foreach { tile =>
+        val (total, good) = tileCounts.getOrElse(tile, (0, 0))
+
+        tileCounts(tile) = (
+          total + 1,
+          good + (if (isGood) 1 else 0)
+        )
+      }
+    }
+
+    val tileWeights = tileCounts.iterator.map {
+      case (tile, (total, good)) =>
+        tile -> EliminationHand.estimateTileWeight(
+          goodWithTile = good,
+          totalWithTile = total,
+          overallGoodRate = overallGoodRate,
+          priorStrength = Config.bayesPriorStrength
+        )
+    }.toMap
+
+    updated.applyTileWeights(
+      tileWeights,
+      Config.bayesEvidenceStrength
+    )
+  }
+
+  def applyHandEvidence(
+    evaluations: Vector[(PossibleHand, Option[Boolean])],
+    badMoveWeight: Double = Config.bayesBadMoveWeight,
+  ): EliminationHand = {
+    require(badMoveWeight > 0.0 && badMoveWeight <= 1.0)
+
+    val badCount = evaluations.count(_._2.contains(false))
+
+    // No update if all informative evaluations agree.
+    if (badCount == 0 || badCount == evaluations.size) {
+      this
+    } else {
+      val adjusted = evaluations.map { case (ph, evaluation) =>
+        val weight = evaluation match {
+          case Some(true)  => 1.0
+          case Some(false) => badMoveWeight
+          case None        => 1.0
+        }
+
+        ph.multiplyLikelihood(weight)
+      }
+
+      copy(possibilities = adjusted).normalizeUnique()
+    }
+  }
+
+  private def updateHandsDirectly(
+    updated: EliminationHand,
+    move: Move,
+    before: Game,
+    config: BayesConfig
+  ): EliminationHand = {
+
+    val evaluations = updated.possibilities.map { ph =>
+      val observation = evaluateMove(move, before, ph.hand, config)
+      (ph, observation)
+    }
+
+    logObservations(evaluations.map(_._2).toList)
+
+    val evidence = evaluations.map { case (ph, observation) =>
+      val result = observation.evaluation match {
+        case GoodMove   => Some(true)
+        case BadMove    => Some(false)
+        case ForcedMove => None
+      }
+
+      ph -> result
+    }
+
+    updated.applyHandEvidence(evidence)
+  }
+
+  private def evaluateMove(
+    move: Move,
+    before: Game,
+    remainingHand: Set[Domino],
+    config: BayesConfig
+  ): BayesObservation = {
+
+    val originalHand = move.domino :: remainingHand.toList
+    val hypotheticalGame = before.withReplacedActiveHand(originalHand)
+    val legalMoves = hypotheticalGame.legalMoves()
+    val simplifiedMoves = hypotheticalGame.simplify(legalMoves).collect{ case m: Move => m}
+
+    if (simplifiedMoves.size == 1) {
+      BayesObservation(
+        remainingHand,
+        ForcedMove,
+        List(move),
+        List.empty
+      )
+    } else {
+
+      val knownTiles = originalHand ++ before.board.tiles()
+
+      val unknownCount = 28 - knownTiles.distinct.size
+
+      val robotHandSize = before.playerByName("robot").hand.size
+
+      val possibleHands =
+        EliminationHand.combinationCount(unknownCount, robotHandSize)
+
+      val opponentHand =
+        if (possibleHands <= Config.bayesOpponentHandSamples) {
+          EliminationHand.createFromOpponentHand("robot", knownTiles)
+        } else {
+          EliminationHand.sampleFromOpponentHand(
+            "robot",
+            knownTiles,
+            numSamples = Config.bayesOpponentHandSamples
+          )
+        }
+
+      val perspective = Perspective(
+        "human",
+        "robot",
+        originalHand,
+        None,
+        opponentHand,
+        Some(this)
+      )
+
+      val node = MinNode(
+        perspective,
+        hypotheticalGame,
+        config.depth,
+        config.simulations,
+        true
+      )
+
+      val scores = node.scoredMoves(simplifiedMoves)
+      val preferredMoves = node.goodMoves(scores)
+
+      BayesObservation(
+        remainingHand,
+        if (preferredMoves.contains(move)) GoodMove else BadMove,
+        preferredMoves,
+        scores
+      )
+    }
+  }
+
+  private def bayesConfig(handCount: Int): BayesConfig =
+    Config.bayesConfigs.reverse.find { config =>
+      config.handThreshold.forall(handCount <= _)
+    }.get
+
+  def updateForSelfMove(
+    move: Move,
+    before: Game,
+    skipBayes: Boolean = true,
+  ): EliminationHand = {
+
     val updated = EliminationHand(
       playerName,
       possibilities.collect {
@@ -202,93 +440,29 @@ case class EliminationHand(
       impossible + move.domino,
     ).normalizeUnique()
 
-    if (skipBayes || updated.possibilities.isEmpty) {
-      return updated
-    }
+    val handCount = updated.possibilities.size
 
-    // ------------------------------------------------------------
-    // Sample hypothetical hands and evaluate the observed move.
-    // ------------------------------------------------------------
+    if (skipBayes || handCount == 0) {
+      updated
+    } else {
+      val config = bayesConfig(updated.possibilities.size)
 
-    val observations: List[(Set[Domino], Boolean)] =
-      (0 until Config.bayesSamples).toList.map { _ =>
-        val remainingHand = updated.getSample()
-        val originalHand = move.domino :: remainingHand
+      EliminationHand.benchmark(
+        s"${config.phaseName} | " +
+        s"method=${config.method} | " +
+        s"hands=${updated.possibilities.size} | " +
+        s"depth=${config.depth} | " +
+        s"simulations=${config.simulations}"
+      ) {
+        config.method match {
+          case DirectBayes =>
+            updateHandsDirectly(updated, move, before, config)
 
-        val goodActions = MinNode(
-          Perspective(
-            "human",
-            "robot",
-            originalHand,
-            None,
-            EliminationHand.sampleFromOpponentHand(
-              "robot",
-              originalHand ++ before.board.tiles(),
-              numSamples = Config.bayesInitialHandSamples,
-            ),
-            Some(this),
-          ),
-          before,
-          Config.bayesDepth,
-          Config.bayesSimulations,
-          true, // isRoot
-        ).goodActions()
-
-        (
-          remainingHand.toSet,
-          goodActions.contains(move),
-        )
-      }
-
-    // ------------------------------------------------------------
-    // Estimate P(good move | tile) for each observed tile.
-    // ------------------------------------------------------------
-
-    val goodCount = observations.count(_._2)
-
-    // If every sampled hand produces the same result,
-    // there is no useful distinction to learn.
-    if (goodCount == 0 || goodCount == Config.bayesSamples) {
-      return updated
-    }
-
-    val overallGoodRate = goodCount.toDouble / Config.bayesSamples
-
-    val priorStrength = Config.bayesPriorStrength
-
-    val evidenceStrength = Config.bayesEvidenceStrength
-
-    val tileCounts = scala.collection.mutable.Map.empty[
-      Domino,
-      (Int, Int),
-    ]
-
-    observations.foreach { case (hand, isGood) =>
-      hand.foreach { tile =>
-        val (total, good) = tileCounts.getOrElse(tile, (0, 0))
-
-        tileCounts(tile) = (
-          total + 1,
-          good + (if (isGood) 1 else 0),
-        )
+          case TileBayes =>
+            updateUsingTileEvidence(updated, move, before, config)
+        }
       }
     }
-
-    val tileWeights: Map[Domino, Double] =
-      tileCounts.iterator.map { case (tile, (total, good)) =>
-        tile -> EliminationHand.estimateTileWeight(
-          goodWithTile = good,
-          totalWithTile = total,
-          overallGoodRate = overallGoodRate,
-          priorStrength = priorStrength,
-        )
-      }.toMap
-
-    // ------------------------------------------------------------
-    // Apply the inferred tile weights to every possible hand.
-    // ------------------------------------------------------------
-
-    updated.applyTileWeights(tileWeights, evidenceStrength)
   }
 
   def quickUpdateForEntry(
@@ -476,17 +650,6 @@ object EliminationHand {
     }
   }
 
-  private def combinationCount(n: Int, k: Int): Long = {
-    if (k < 0 || k > n) 0L
-    else {
-      val r = math.min(k, n - k)
-
-      (1 to r).foldLeft(1L) { (result, i) =>
-        result * (n - r + i) / i
-      }
-    }
-  }
-
   def estimateTileWeight(
       goodWithTile: Int,
       totalWithTile: Int,
@@ -501,4 +664,31 @@ object EliminationHand {
     // Likelihood ratio relative to the overall good rate.
     pGoodGivenTile / overallGoodRate
   }
+
+  private def benchmark[A](label: String)(f: => A): A = {
+    if (!Config.benchmarkBayes) {
+      f
+    } else {
+      val start = System.nanoTime()
+
+      try {
+        f
+      } finally {
+        val elapsedMs = (System.nanoTime() - start) / 1e6
+        println(f"[Bayes] $label: $elapsedMs%.1f ms")
+      }
+    }
+  }
+
+  private def combinationCount(n: Int, k: Int): Long = {
+    if (k < 0 || k > n) 0L
+    else {
+      val r = math.min(k, n - k)
+
+      (1 to r).foldLeft(1L) { (result, i) =>
+        result * (n - r + i) / i
+      }
+    }
+  }
+
 }
