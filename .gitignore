@@ -3,3 +3,4 @@ project/project/*
 project/target/*
 src/target/*
 src/project/*
+/cpp/build/

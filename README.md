@@ -2,6 +2,21 @@
 Beats you at dominoes.
 
 ## How to run the program
+
+### C++ terminal game
+
+Build and start a human-versus-greedy match from the repository root with a C++20 compiler and CMake.
+
+```sh
+cmake -S cpp -B cpp/build/debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build cpp/build/debug
+./cpp/build/debug/dominoes
+```
+
+Run `./cpp/build/debug/dominoes --show-bot-hand` to reveal the bot's hand for testing. The boneyard stays hidden. Type `h` during your turn for the command list and tile indices.
+
+### Scala game
+
 To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt -J-Xmx4G "run --play_human"`.
 This sets the maximum JVM heap size to 4 GB, which is recommended for AI search. The program can run
 with less memory, but performance may suffer.
@@ -105,8 +120,9 @@ Type `h` for the help menu. Type `m 0 l` to move the 0th piece to the left, for 
 After that, it'll be the computer's turn. It can take a while to decide what to play, especially at the beginning
 of the game.
 
-The rules are based on the **Fives** version of dominoes. The game is made up of several rounds and ends when one player
-has more than 150 points - and more points than their opponent - at the end of a round. Rounds can end in **dominoes** if
+The rules are based on the **Fives** version of dominoes. The match ends after round scoring if one player has at least
+150 points and leads their opponent. A tie starts another round, even at or above 150. Reaching 150 during play leaves
+the current round in progress. Rounds can end in **dominoes** if
 a player is able to play all of their tiles. It can also end in a **locked game** if neither player is able to play and
 the **boneyard** - the pile of dominoes to draw from - is empty. If a player gets **dominoes**, they start the next round
 with the piece of their choice. The first round and any round following a **locked game** starts with the highest double
@@ -137,5 +153,5 @@ are counted. For other pieces, only the number that can be connected to counts.
 At the end of a round that ends in **dominoes**, the player who played all their tiles get the sum of the opponent's tiles,
 rounded to the nearest 5.
 
-At the end of a round that ends in a **locked game**, the player with a lower tile count gets the sum of their opponent's tiles minus the sum
-of the their tiles, rounded to the nearest 5.
+In a **locked game**, the player with fewer remaining pips receives the difference between the two hands' pip totals,
+rounded to the nearest 5. Equal pip totals award neither player points.
