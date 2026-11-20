@@ -138,6 +138,23 @@ case class Game(
       case Down  => board.down
     }
 
+  // Used by bayes analysis to avoid getting confused by the human playing on
+  // a branch that the ai wouldn't have chosen if they are equivalent.
+  def canonicalMove(move: Move): Move = {
+    val simplified = simplify(legalMoves())
+
+    if (simplified.contains(move)) {
+      move
+    } else {
+      simplified.collectFirst {
+        case candidate: Move
+            if candidate.domino == move.domino &&
+               simplify(List(candidate, move)) == List(candidate) =>
+          candidate
+      }.getOrElse(move)
+    }
+  }
+
   def simplify(actions: List[Action]): List[Action] = {
     val emptyDirections = Direction.all.filter(dir => chain(dir).isEmpty)
     def filterRedundant(

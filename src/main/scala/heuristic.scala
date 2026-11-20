@@ -13,7 +13,7 @@ object Heuristic {
 
   val targetScore = 150.0
   val minimumRunway = 30.0
-  val dominoesBonus = 5.0
+  val dominoesBonus = Config.dominoesBonus
   val sensitivity = 1.0
 
   def evaluate(

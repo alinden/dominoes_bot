@@ -47,6 +47,21 @@ case class AvgNode(
     }
   }
 
+  def scoreEstimate(): ScoreEstimate = {
+    if (
+      depthRemaining <= 0 &&
+      !afterGame.isOver &&
+      afterGame.playerOne.hand.nonEmpty &&
+      afterGame.playerTwo.hand.nonEmpty
+    ) {
+      ScoreEstimate(heuristic(), 0.0)
+    } else {
+      ScoreAccumulator.estimateAverage(
+        opponentHands().map(evaluateHand)
+      )
+    }
+  }
+
   def score(): Score = {
     SearchStats.visit()
 
