@@ -63,8 +63,47 @@ double weight_of(const Outcomes& outcomes) {
 double score_action(const Outcomes& outcomes, const Action& action, Seat perspective, int remaining,
                     SearchPass& pass);
 
+double score_no_draws(const Game& game, Seat perspective, int remaining, double alpha, double beta,
+                      bool guaranteed_settlement, SearchPass& pass) {
+    const bool maximize = game.active_seat() == perspective;
+    double best = maximize ? -1.0 : 1.0;
+    for (const auto& action : game.legal_actions()) {
+        pass.check_deadline();
+        Game next = game;
+        const auto result = next.apply(action).value();
+        double score;
+        if (remaining == 1 || result.round) {
+            pass.reached_cutoff |= !result.round;
+            score = evaluate_position(next, perspective, result.round);
+        } else {
+            // With a closed window, this branch is visited to check settlement.
+            score = score_no_draws(next, perspective, remaining - 1,
+                                   alpha < beta ? alpha : -1.0, alpha < beta ? beta : 1.0,
+                                   guaranteed_settlement, pass);
+        }
+        if (maximize) {
+            best = std::max(best, score);
+            alpha = std::max(alpha, best);
+        } else {
+            best = std::min(best, score);
+            beta = std::min(beta, best);
+        }
+        // A pruned branch could hide a depth cutoff. Skip it only if the pass has
+        // already seen a cutoff or the available depth guarantees settlement.
+        if (alpha >= beta && (pass.reached_cutoff || guaranteed_settlement)) break;
+    }
+    return best;
+}
+
 double score_continuation(const Outcomes& outcomes, Seat perspective, int remaining, SearchPass& pass) {
     const auto& game = outcomes.front().game;
+    if (game.boneyard().empty()) {
+        // Each nonfinal pass is followed by a play, and a lock leaves at least
+        // two tiles unplayed. A full window returns an exact value to averaging.
+        const int tiles = static_cast<int>(Domino::tile_count - game.board().size());
+        const bool guaranteed_settlement = remaining >= 2 * (tiles - 1);
+        return score_no_draws(game, perspective, remaining, -1.0, 1.0, guaranteed_settlement, pass);
+    }
     const bool maximize = game.active_seat() == perspective;
     double best = maximize ? -std::numeric_limits<double>::infinity()
                            : std::numeric_limits<double>::infinity();
@@ -329,6 +368,28 @@ TimedSearchResult search_until(
     } catch (const SearchExpired&) {
         last.timed_out = true;
         return last;
+    }
+}
+
+TimedSearchResult search_to_round_end(
+    const Game& position, Seat perspective, std::span<const SearchSample> samples,
+    std::chrono::steady_clock::time_point deadline, std::size_t workers) {
+    if (workers == 0) throw std::invalid_argument("worker count must be positive");
+    // A nonfinal pass must be followed by a play. A lock needs two final passes and
+    // leaves at least two tiles unplayed. Each remaining draw step consumes a tile.
+    const int depth = 2 * (static_cast<int>(Domino::tile_count - position.board().size()) - 1) +
+                      static_cast<int>(position.boneyard().size());
+    SearchPass pass{deadline};
+    try {
+        pass.check_deadline();
+        const auto [groups, total_weight] = prepare_samples(position, perspective, depth, samples);
+        auto scores = score_root(position, perspective, depth, groups, total_weight, pass, workers);
+        pass.check_deadline();
+        return {std::move(scores), depth, !pass.reached_cutoff, false};
+    } catch (const SearchExpired&) {
+        TimedSearchResult result;
+        result.timed_out = true;
+        return result;
     }
 }
 

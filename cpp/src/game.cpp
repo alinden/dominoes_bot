@@ -159,6 +159,31 @@ std::vector<Action> Game::legal_actions() const {
     return actions;
 }
 
+Move Game::canonical_move(Move move) const {
+    const auto keep = canonical_directions(board_);
+    if (keep[static_cast<std::size_t>(move.direction)]) {
+        return move;
+    }
+    const auto shape = board_.shape();
+    if (shape == BoardShape::empty || shape == BoardShape::spinner_only || shape == BoardShape::snake) {
+        return {move.tile, Direction::left};
+    }
+    const auto& original = board_.chain(move.direction);
+    for (std::size_t i = 0; i < directions.size(); ++i) {
+        if (!keep[i]) continue;
+        const auto& arm = board_.chain(directions[i]);
+        if (original.empty() && arm.empty()) {
+            return {move.tile, directions[i]};
+        }
+        if (shape == BoardShape::cross && !original.empty() && !arm.empty() &&
+            (!arm.front().tile().is_double() || arm.front().score() == 0) &&
+            original.front().exposed_pip() == arm.front().exposed_pip()) {
+            return {move.tile, directions[i]};
+        }
+    }
+    return move;
+}
+
 std::optional<TurnResult> Game::apply(const Action& action, DrawEvidence draw_evidence) {
     if (std::holds_alternative<PlayHighestDouble>(action)) {
         return play_highest_double();

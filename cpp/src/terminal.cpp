@@ -185,11 +185,12 @@ Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& 
             return legal.front();
         }
 
-        auto scores = candidates->score_moves(game, depth, random, workers);
-        if (!scores.empty()) {
+        const auto samples = candidates->sample_for_search(game, HandCandidates::search_samples, random);
+        if (!samples.worlds.empty()) {
+            auto scores = score_sampled_actions(game, Seat::second, depth, samples.worlds, workers);
             const auto chosen = std::ranges::max_element(scores, {}, &ScoredAction::score)->action;
             if (log) {
-                log_search_scores(*log, depth, HandCandidates::search_samples, scores);
+                log_search_scores(*log, depth, samples, scores);
             }
             return chosen;
         }
@@ -201,9 +202,10 @@ Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& 
 }
 
 int play_match(bool show_bot_hand, bool use_search, int depth, std::size_t workers,
-               std::ostream* decision_log) {
+               int inference_seconds, std::ostream* decision_log) {
     Game game;
     std::mt19937 random(std::random_device{}());
+    std::mt19937 inference_random(std::random_device{}());
     std::optional<HandCandidates> candidates;
     const auto finish_turn = [&](const TurnResult& result) {
         announce(result);
@@ -222,7 +224,7 @@ int play_match(bool show_bot_hand, bool use_search, int depth, std::size_t worke
             }
             if (use_search) {
                 candidates.emplace(Seat::second, game.player(Seat::second).hand,
-                                   game.player(Seat::first).hand.size());
+                                   game.player(Seat::first).hand.size(), inference_seconds > 0);
             }
             break;
         }
@@ -235,16 +237,27 @@ int play_match(bool show_bot_hand, bool use_search, int depth, std::size_t worke
         case Phase::playing:
             print_board(game, show_bot_hand);
             if (game.active_seat() == Seat::first) {
+                std::optional<Game> before;
+                if (inference_seconds > 0) before = game;
                 const auto result = play_human(game);
                 if (!result) {
                     return 0;
                 }
-                finish_turn(*result);
+                if (before && candidates) {
+                    announce(*result);
+                    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(inference_seconds);
+                    const auto evidence = candidates->observe_with_inference(
+                        *before, game, *result, inference_random, deadline, workers);
+                    if (decision_log) log_inference(*decision_log, evidence);
+                } else {
+                    finish_turn(*result);
+                }
             } else {
                 show_robot_thinking();
                 if (decision_log) {
                     *decision_log << "ROBOT TURN (human " << game.player(Seat::first).score
                                   << ", robot " << game.player(Seat::second).score << ")\n";
+                    if (candidates) candidates->log_estimates(*decision_log, game.player(Seat::first).hand);
                 }
                 const auto action = choose_bot_action(game, candidates, depth, workers, random, decision_log);
                 if (decision_log) {
@@ -271,6 +284,7 @@ int main(int argc, char* argv[]) {
     bool use_search = false;
     int depth = 3;
     int workers = 1;
+    int inference_seconds = 0;
     const char* decision_log_path = nullptr;
     for (int i = 1; i < argc; ++i) {
         const std::string_view argument = argv[i];
@@ -278,10 +292,15 @@ int main(int argc, char* argv[]) {
             show_bot_hand = true;
         } else if (argument == "--search") {
             use_search = true;
-        } else if (argument == "--depth" || argument == "--workers") {
+        } else if (argument == "--bayes") {
+            if (inference_seconds == 0) inference_seconds = 15;
+            use_search = true;
+        } else if (argument == "--depth" || argument == "--workers" ||
+                   argument == "--inference-time-seconds") {
             const std::string_view value = i + 1 < argc ? argv[++i] : "";
             const auto* end = value.data() + value.size();
-            int& setting = argument == "--depth" ? depth : workers;
+            int& setting = argument == "--depth" ? depth
+                : argument == "--workers" ? workers : inference_seconds;
             const auto [parsed, error] = std::from_chars(value.data(), end, setting);
             if (error != std::errc{} || parsed != end || setting < 1) {
                 std::cerr << argument << " requires a positive integer.\n";
@@ -295,9 +314,11 @@ int main(int argc, char* argv[]) {
             }
             decision_log_path = argv[++i];
         } else if (argument == "--help" || argument == "-h") {
-            std::cout << "Usage: dominoes [--search] [--depth N] [--workers N] [--show-bot-hand] [--log-decisions FILE]\n"
+            std::cout << "Usage: dominoes [--search] [--depth N] [--workers N] [--bayes]\n"
+                         "                [--inference-time-seconds N] [--show-bot-hand] [--log-decisions FILE]\n"
                          "--depth N enables search and sets its depth (default: 3).\n"
-                         "--workers N enables search and sets its worker limit (default: 1).\n";
+                         "--workers N enables search and sets its worker limit (default: 1).\n"
+                         "--bayes enables inference with a 15-second budget per observed play.\n";
             return 0;
         } else {
             std::cerr << "Unknown option: " << argument << '\n';
@@ -312,6 +333,6 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    return play_match(show_bot_hand, use_search, depth, static_cast<std::size_t>(workers),
+    return play_match(show_bot_hand, use_search, depth, static_cast<std::size_t>(workers), inference_seconds,
                       decision_log_path ? &decision_log : nullptr);
 }

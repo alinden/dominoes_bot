@@ -18,10 +18,20 @@ Run `./cpp/build/debug/dominoes --show-bot-hand` to reveal the bot's hand for te
 Add `--search` to play against the lookahead bot. It samples equally from hands consistent with observed actions
 and searches three actions ahead across 16 samples. Use `--depth N` to enable search at a different depth. Both flags
 can be combined with `--show-bot-hand`.
+When 32 or fewer opponent hands remain possible, move search covers every hand with its model weight. With three
+or fewer boneyard tiles, it also checks every draw order. The decision log reports when it uses this coverage.
 Use `--workers N` to enable parallel search with up to `N` workers. The default is one.
+
+Use `--bayes` to enable Bayesian hand weighting. Public plays, draws, and passes first eliminate impossible hands.
+After an opponent play, the bot evaluates each feasible hand directly when at most 200 remain. It updates the weights
+only after every sampled search branch reaches round settlement. If the inference deadline expires, it keeps the hard
+evidence and previously learned weights. The 15-second inference budget is independent of move search. Set a different
+budget with `--inference-time-seconds N`. The decision log reports when inference runs, skips, or times out.
 
 Use `--log-decisions cpp-decisions.log` alongside `--search` or `--depth N` to record candidate moves, their mean
 search scores, and the chosen move. Each run overwrites the specified log file.
+The log also shows the most and least likely opponent tiles, top candidate hands, and the actual hand's reported
+probability and rank. The actual hand is included for diagnostics, and the log can reveal it during play.
 
 ### Scala game
 
@@ -71,6 +81,8 @@ breadth of 30 and depth 68 a breadth of 12. Both breadths default to 16.
 The search budget defaults to the same value for both bots. After the breadths, optionally pass the second bot's
 budget and the worker limit for both bots. A budget of `0` runs one direct search at the configured depth without a
 time limit. For example, `68 15 60 1 49 target/bot-match-logs 12 30 60 4` uses up to four workers per search.
+Two final arguments can enable C++ inference independently, with `0` selecting the hard-constraint baseline.
+For a Bayes versus baseline pair, use `15 15 60 1 50 target/bot-match-logs 16 16 60 4 15 0`.
 
 To run unit tests: `sbt test`.
 

@@ -6,10 +6,11 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.TimeUnit
 
 final class CppMatchBot(binary: String, seat: Int, val depth: Int, seed: Int, log: Path,
-    searchSeconds: Int = 0, breadth: Int = 16, workers: Int = 1)
+    searchSeconds: Int = 0, breadth: Int = 16, workers: Int = 1, val inferenceSeconds: Int = 0)
     extends AutoCloseable {
   private val process = new ProcessBuilder(binary, seat.toString, depth.toString,
-    Integer.toUnsignedString(seed), log.toString, searchSeconds.toString, breadth.toString, workers.toString)
+    Integer.toUnsignedString(seed), log.toString, searchSeconds.toString, breadth.toString, workers.toString,
+    inferenceSeconds.toString)
     .redirectError(ProcessBuilder.Redirect.INHERIT).start()
   private val input = new BufferedWriter(new OutputStreamWriter(process.getOutputStream, UTF_8))
   private val output = new BufferedReader(new InputStreamReader(process.getInputStream, UTF_8))
@@ -117,36 +118,49 @@ object CppDepthMatch {
       breadthB <- args.lift(8).getOrElse("16").toIntOption.filter(_ > 0)
       secondsB <- args.lift(9).getOrElse(seconds.toString).toIntOption.filter(_ >= 0)
       workers <- args.lift(10).getOrElse("1").toIntOption.filter(_ > 0)
-      binary <- args.headOption if args.length <= 11 && depthA != depthB
-    } yield (binary, depthA, depthB, seconds, pairs, seed, breadthA, breadthB, secondsB, workers)
-    val (binary, depthA, depthB, secondsA, pairs, seed, breadthA, breadthB, secondsB, workers) = settings.getOrElse {
-      println("Usage: runMain CppDepthMatch CPP_BINARY [DEPTH_A [DEPTH_B [SECONDS_A [PAIRS [SEED [LOG_DIR [BREADTH_A [BREADTH_B [SECONDS_B [WORKERS]]]]]]]]]]")
+      inferenceA <- args.lift(11).getOrElse("0").toIntOption.filter(_ >= 0)
+      inferenceB <- args.lift(12).getOrElse("0").toIntOption.filter(_ >= 0)
+      binary <- args.headOption if args.length <= 13 && (depthA != depthB || (inferenceA > 0) != (inferenceB > 0))
+    } yield (binary, depthA, depthB, seconds, pairs, seed, breadthA, breadthB, secondsB, workers, inferenceA, inferenceB)
+    val (binary, depthA, depthB, secondsA, pairs, seed, breadthA, breadthB, secondsB, workers,
+      inferenceA, inferenceB) = settings.getOrElse {
+      println("Usage: runMain CppDepthMatch CPP_BINARY [DEPTH_A DEPTH_B SECONDS_A PAIRS SEED LOG_DIR " +
+        "BREADTH_A BREADTH_B SECONDS_B WORKERS INFERENCE_A INFERENCE_B]")
       return
     }
 
     val base = Files.createDirectories(Paths.get(args.lift(6).getOrElse("target/bot-match-logs")))
     val logDir = Files.createTempDirectory(base, "cpp-depth-").toAbsolutePath
-    val logA = Files.createFile(logDir.resolve(s"depth-$depthA.log"))
-    val logB = Files.createFile(logDir.resolve(s"depth-$depthB.log"))
-    println(s"Depth $depthA decision log $logA")
-    println(s"Depth $depthB decision log $logB")
+    val sameDepth = depthA == depthB
+    val labelA = label(depthA, inferenceA, sameDepth)
+    val labelB = label(depthB, inferenceB, sameDepth)
+    def createLog(name: String): Path = Files.createFile(logDir.resolve(name.toLowerCase(java.util.Locale.ROOT)
+      .replace(' ', '-') + ".log"))
+    val logA = createLog(labelA)
+    val logB = createLog(labelB)
+    println(s"$labelA decision log $logA")
+    println(s"$labelB decision log $logB")
 
     var winsA = 0
     var winsB = 0
     def budget(seconds: Int): String = if (seconds == 0) "direct, uncapped" else s"${seconds}s cap"
     for (pair <- 0 until pairs; seatA <- 0 to 1) {
       val dealSeed = seed + pair
-      println(s"Pair ${pair + 1} | deal seed $dealSeed | depth $depthA breadth $breadthA seat ${seatA + 1} " +
-        s"(${budget(secondsA)}) | depth $depthB breadth $breadthB seat ${2 - seatA} (${budget(secondsB)}) | " +
+      println(s"Pair ${pair + 1} | deal seed $dealSeed | $labelA seat ${seatA + 1} " +
+        s"(depth $depthA, breadth $breadthA, ${budget(secondsA)}, inference ${inferenceA}s) | " +
+        s"$labelB seat ${2 - seatA} (depth $depthB, breadth $breadthB, ${budget(secondsB)}, inference ${inferenceB}s) | " +
         s"$workers search worker(s) per bot")
-      val a = new CppMatchBot(binary, seatA, depthA, dealSeed, logA, secondsA, breadthA, workers)
+      val a = new CppMatchBot(binary, seatA, depthA, dealSeed, logA, secondsA, breadthA, workers, inferenceA)
       val (scoreA, scoreB) = try {
-        val b = new CppMatchBot(binary, 1 - seatA, depthB, dealSeed, logB, secondsB, breadthB, workers)
+        val b = new CppMatchBot(binary, 1 - seatA, depthB, dealSeed, logB, secondsB, breadthB, workers, inferenceB)
         try App.playCppGame(a, seatA, dealSeed, 0, 0, None, Some(b))
         finally b.close()
       } finally a.close()
       if (scoreA > scoreB) winsA += 1 else winsB += 1
-      println(s"Result: depth $depthA $scoreA / depth $depthB $scoreB | Wins: $winsA–$winsB")
+      println(s"Result: $labelA $scoreA / $labelB $scoreB | Wins: $winsA–$winsB")
     }
   }
+
+  def label(depth: Int, inferenceSeconds: Int, sameDepth: Boolean): String =
+    if (!sameDepth) s"Depth $depth" else if (inferenceSeconds > 0) "Bayes" else "Baseline"
 }

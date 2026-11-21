@@ -17,9 +17,14 @@ void log_action(std::ostream& log, const Action& action) {
     }
 }
 
-void log_search_scores(std::ostream& log, int depth, std::size_t samples,
+void log_search_scores(std::ostream& log, int depth, const DecisionSamples& samples,
                        std::vector<ScoredAction>& scores) {
-    log << "Depth: " << depth << ", Samples: " << samples << '\n';
+    log << "Depth: " << depth << ", Samples: " << samples.worlds.size() << '\n';
+    if (samples.all_hands) {
+        log << "Hand coverage: all feasible hands";
+        if (samples.all_draw_orders) log << " and draw orders";
+        log << ".\n";
+    }
     std::ranges::stable_sort(scores, std::ranges::greater{}, &ScoredAction::score);
     for (const auto& scored : scores) {
         log_action(log, scored.action);

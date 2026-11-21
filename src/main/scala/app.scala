@@ -311,8 +311,10 @@ object App {
     var dealNeeded = true
     var turns = 0
     val bots = cpp :: otherCpp.toList
-    val firstLabel = if (otherCpp.isDefined) s"Depth ${cpp.depth}" else "C++"
-    val secondLabel = otherCpp.map(bot => s"Depth ${bot.depth}").getOrElse("Scala")
+    val sameDepth = otherCpp.exists(_.depth == cpp.depth)
+    val firstLabel = if (otherCpp.isDefined) CppDepthMatch.label(cpp.depth, cpp.inferenceSeconds, sameDepth) else "C++"
+    val secondLabel = otherCpp.map(bot => CppDepthMatch.label(bot.depth, bot.inferenceSeconds, sameDepth))
+      .getOrElse("Scala")
     while (!session.game.isOver) {
       if (dealNeeded) {
         val tiles = random.shuffle(Domino.all())

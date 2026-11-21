@@ -40,4 +40,9 @@ TimedSearchResult search_until(
     const Game& position, Seat perspective, int max_depth, std::span<const SearchSample> samples,
     std::chrono::steady_clock::time_point deadline, std::size_t workers = 1);
 
+// One depth pass bounded by the remaining round, with no partial scores on timeout.
+TimedSearchResult search_to_round_end(
+    const Game& position, Seat perspective, std::span<const SearchSample> samples,
+    std::chrono::steady_clock::time_point deadline, std::size_t workers = 1);
+
 }  // namespace dominoes

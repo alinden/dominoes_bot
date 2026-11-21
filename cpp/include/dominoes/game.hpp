@@ -61,6 +61,7 @@ public:
         std::span<const Domino> draw_order) const;
     std::vector<Move> legal_moves() const;
     std::vector<Action> legal_actions() const;
+    Move canonical_move(Move move) const;
     std::vector<Domino> playable_tiles() const;
     [[nodiscard]] std::optional<TurnResult> apply(
         const Action& action, DrawEvidence draw_evidence = DrawEvidence::collect);

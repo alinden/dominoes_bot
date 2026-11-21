@@ -5,6 +5,8 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -157,6 +159,143 @@ void check_public_draw_evidence() {
     }
 }
 
+void check_bayesian_opening(const Game& game) {
+    // Seat one has already played its opening double. Start the model before that public play.
+    auto original_hand = game.player(Seat::first).hand;
+    original_hand.push_back({6, 6});
+    HandCandidates prior(Seat::first, original_hand, 7, true);
+    Game after = game;
+    const auto result = after.apply(Move{{6, 1}, Direction::down}).value();
+    std::mt19937 random(11);
+    const auto report = prior.observe_with_inference(
+        game, after, result, random, std::chrono::steady_clock::now() + std::chrono::seconds(15), 1);
+    if (!report.too_many_hands || report.candidates != 38760 ||
+        report.updated || report.good + report.bad + report.forced != 0) {
+        throw std::runtime_error("opening inference should keep only the hard update");
+    }
+    const auto samples = prior.sample(after, 64, random);
+    if (samples.size() != 64 || std::ranges::any_of(samples, [&](const auto& sample) {
+            return sample.opponent_hand.size() != 6 ||
+                   !after.with_hidden_tiles(Seat::first, sample.opponent_hand, sample.draw_order);
+        })) {
+        throw std::runtime_error("Bayesian inference must preserve hard constraints on its samples");
+    }
+
+    std::ostringstream log;
+    prior.log_estimates(log, after.player(Seat::second).hand);
+    const auto summary = log.str();
+    if (!summary.starts_with("Opponent hand estimates:\n38760 possible hands\n"
+                             "Uniform hand probability: 0.003%\n") ||
+        summary.find("Most likely tiles:\n  [1,1]  30.000%") == std::string::npos ||
+        summary.find("Least likely tiles:\n") == std::string::npos ||
+        summary.find("Most likely hands:\n") == std::string::npos ||
+        summary.find("Actual hand:\n  [6,3] [5,5] [5,4] [5,2] [5,0] [4,4]\n"
+                     "  Probability: 0.003%\n  Relative to uniform: 1.00x\n") == std::string::npos ||
+        summary.find("Rank: 0 / 38760") != std::string::npos) {
+        throw std::runtime_error("hand estimate log must report probabilities and the actual hand's rank");
+    }
+}
+
+void check_direct_bayesian_update() {
+    std::mt19937 random(97);
+    bool checked_sampled_orders = false;
+    bool checked_all_orders = false;
+    for (int attempt = 0; attempt < 12; ++attempt) {
+        auto tiles = Domino::all();
+        std::shuffle(tiles.begin(), tiles.end(), random);
+        Game game;
+        if (!game.deal(tiles)) throw std::runtime_error("invalid direct-inference fixture deal");
+        std::array candidates{
+            HandCandidates(Seat::first, game.player(Seat::first).hand, 7, true),
+            HandCandidates(Seat::second, game.player(Seat::second).hand, 7, true),
+        };
+        const auto opening = game.apply(PlayHighestDouble{}).value();
+        for (auto& model : candidates) model.observe(game, opening);
+        while (const auto actor = game.active_seat()) {
+            const auto actions = game.legal_actions();
+            const auto& action = actions[random() % actions.size()];
+            Game before = game;
+            const auto event = game.apply(action).value();
+            if (event.round) break;
+            const Seat observer = *actor == Seat::first ? Seat::second : Seat::first;
+            auto& model = candidates[static_cast<std::size_t>(observer)];
+            const auto own = static_cast<std::size_t>(*actor);
+            candidates[own].observe(game, event);
+            const auto boneyard_size = game.boneyard().size();
+            const auto hand_size = game.player(*actor).hand.size();
+            const bool check_orders = !checked_all_orders && boneyard_size >= 2 && boneyard_size <= 3 && hand_size <= 3;
+            const bool check_hands = !checked_sampled_orders && boneyard_size > 3 && hand_size == 1;
+            if (event.placement && (check_orders || check_hands)) {
+                auto expired = model;
+                const auto report = model.observe_with_inference(
+                    before, game, event, random, std::chrono::steady_clock::now() + std::chrono::seconds(15), 1);
+                if (report.candidates > 1) {
+                    if (report.too_many_hands || report.timed_out || report.incomplete ||
+                        report.good + report.bad + report.forced != report.candidates) {
+                        throw std::runtime_error("late inference should finish every feasible hand through settlement");
+                    }
+                    auto hard_only = expired;
+                    hard_only.observe(game, event);
+                    const auto timeout = expired.observe_with_inference(
+                        before, game, event, random, std::chrono::steady_clock::now(), 1);
+                    std::ostringstream expired_log, hard_log;
+                    expired.log_estimates(expired_log, game.player(*actor).hand);
+                    hard_only.log_estimates(hard_log, game.player(*actor).hand);
+                    if (!timeout.timed_out || timeout.updated || timeout.candidates != report.candidates ||
+                        expired_log.str() != hard_log.str()) {
+                        throw std::runtime_error("expired inference must retain only the completed hard update");
+                    }
+                    std::mt19937 sampling(11);
+                    const auto coverage = model.sample_for_search(game, 1, sampling);
+                    constexpr std::array<std::size_t, 4> permutations{1, 1, 2, 6};
+                    const bool all_orders = boneyard_size < permutations.size();
+                    const auto orders = all_orders ? permutations[boneyard_size] : 1;
+                    std::map<TileMask, std::set<std::vector<std::size_t>>> sequences;
+                    double weight = 0.0;
+                    double actual_weight = 0.0;
+                    const auto hand_mask = [](const std::vector<Domino>& hand) {
+                        TileMask mask = 0;
+                        for (auto tile : hand) mask |= tile_bit(tile);
+                        return mask;
+                    };
+                    const auto actual = hand_mask(game.player(*actor).hand);
+                    for (const auto& world : coverage.worlds) {
+                        const auto hand = hand_mask(world.opponent_hand);
+                        std::vector<std::size_t> order;
+                        for (auto tile : world.draw_order) order.push_back(tile.id());
+                        sequences[hand].insert(std::move(order));
+                        weight += world.weight;
+                        if (hand == actual) actual_weight += world.weight;
+                    }
+                    if (!coverage.all_hands || coverage.all_draw_orders != all_orders ||
+                        sequences.size() != report.candidates ||
+                        coverage.worlds.size() != report.candidates * orders ||
+                        !sequences.contains(actual) ||
+                        std::ranges::any_of(sequences, [orders](const auto& entry) {
+                            return entry.second.size() != orders;
+                        })) {
+                        throw std::runtime_error("late search must cover all feasible hands and small draw orders");
+                    }
+                    std::ostringstream log;
+                    model.log_estimates(log, game.player(*actor).hand);
+                    const auto summary = log.str();
+                    const auto start = summary.find("  Probability: ") + std::string_view("  Probability: ").size();
+                    const double logged = std::stod(summary.substr(start)) / 100.0;
+                    if (std::abs(actual_weight / weight - logged) > 0.00000501) {
+                        throw std::runtime_error("late search must retain posterior hand probabilities");
+                    }
+                    checked_sampled_orders |= !all_orders;
+                    checked_all_orders |= all_orders;
+                    if (checked_sampled_orders && checked_all_orders) return;
+                }
+            } else {
+                model.observe(game, event);
+            }
+        }
+    }
+    throw std::runtime_error("the fixture did not cover both late-game draw regimes");
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -197,6 +336,8 @@ int main(int argc, char* argv[]) {
         check_sampled_hands(game);
         check_sampled_draws(game);
         check_public_draw_evidence();
+        check_bayesian_opening(game);
+        check_direct_bayesian_update();
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
         return 1;
