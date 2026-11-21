@@ -1,8 +1,13 @@
 import './style.css';
+import { renderBoard } from './board-view';
+import { createBoardDrag } from './board-drag';
 import type { Action, GameState, Reply, Request, Settings } from './protocol';
 
 const get = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const board = get<HTMLPreElement>('board');
+const boardView = get('board-view');
+const setBoardMoves = createBoardDrag(boardView, submitAction);
+const display = get<HTMLSelectElement>('display-mode');
 const notice = get<HTMLPreElement>('notice');
 const status = get('status');
 const draw = get<HTMLButtonElement>('draw');
@@ -41,6 +46,10 @@ function updateControls() {
   const actions = busy ? [] : state?.actions ?? [];
   draw.disabled = actions.length !== 1 || actions[0][1] !== 4;
   pass.disabled = actions.length !== 1 || actions[0][1] !== 5;
+  const graphical = display.value === 'board';
+  get('direction-rows').hidden = graphical;
+  setBoardMoves(graphical && !busy ? state?.boardMoves ?? [] : []);
+  if (graphical) return;
   for (const row of moveRows) row.replaceChildren();
   for (const action of actions) {
     const [id, direction] = action;
@@ -59,6 +68,23 @@ function render(position: GameState) {
   get('series').textContent = `Best of ${settings.bestOf} · Game ${game} · You ${wins[0]} / Bot ${wins[1]}`;
   get('model-label').textContent = settings.model === 'greedy' ? 'Greedy bot'
     : settings.bayes ? 'Search + Bayes' : 'Search bot';
+  renderDisplay(position);
+  notice.textContent = position.notice;
+}
+
+function renderDisplay(position?: GameState) {
+  board.hidden = display.value === 'board';
+  boardView.hidden = !board.hidden;
+  boardView.classList.toggle('round-ended', Boolean(position?.roundEnded));
+  if (board.hidden) {
+    if (position) renderBoard(boardView, position);
+    else boardView.replaceChildren();
+    return;
+  }
+  if (!position) {
+    board.textContent = '';
+    return;
+  }
   board.textContent = [
     `human${position.active === 0 ? '*' : ''}(${position.humanScore}): ${position.humanHand.map(tile).join(' ')}`,
     `robot${position.active === 1 ? '*' : ''}(${position.botScore}): ${position.botHand.map(tile).join(' ')}`,
@@ -68,7 +94,6 @@ function render(position: GameState) {
     ...position.chains.map((chain, i) => `${directions[i]}: ${chain.map(([a, b]) => `[${a},${b}]`).join(' - ')}`),
     `board score: ${position.boardScore}`,
   ].join('\n');
-  notice.textContent = position.notice;
 }
 
 function queueAdvance(message: string, delay: number) {
@@ -96,9 +121,9 @@ function receive(reply: Reply) {
       ? state.winner === 0 ? 'You win the series.' : 'The bot wins the series.'
       : state.winner === 0 ? 'You win this game.' : 'The bot wins this game.';
     next.hidden = seriesComplete();
-  } else if (state.phase === 0) queueAdvance('Dealing the next round…', 950);
+  } else if (state.phase === 0) queueAdvance('Dealing the next round…', state.roundEnded ? 5000 : 950);
   else if (state.phase === 1) queueAdvance('First turn, playing the highest double…', 1500);
-  else if (state.active === 1) queueAdvance('Robot thinking…', 450);
+  else if (state.active === 1) queueAdvance('Robot thinking…', state.forcedRobotPlay ? 1000 + Math.random() * 4000 : 450);
   else status.textContent = 'Your turn.';
   updateControls();
 }
@@ -110,7 +135,7 @@ function startGame() {
   worker.onmessage = ({ data }: MessageEvent<Reply>) => receive(data);
   worker.onerror = () => receive({ error: 'The browser worker could not start.' });
   state = undefined;
-  board.textContent = '';
+  renderDisplay();
   notice.textContent = '';
   next.hidden = true;
   status.textContent = 'Loading the local engine…';
@@ -140,6 +165,12 @@ function readSettings(): Settings {
 }
 
 modelInput.onchange = () => { searchSettings.disabled = modelInput.value === 'greedy'; };
+display.value = localStorage.getItem('dominoes-display') === 'board' ? 'board' : 'terminal';
+display.onchange = () => {
+  localStorage.setItem('dominoes-display', display.value);
+  renderDisplay(state);
+  updateControls();
+};
 searchSettings.disabled = true;
 get('settings-button').onclick = () => dialog.showModal();
 get('close-settings').onclick = () => dialog.close();

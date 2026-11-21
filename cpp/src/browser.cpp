@@ -27,6 +27,7 @@ struct Session {
     std::optional<Game> before;
     std::optional<TurnResult> pending;
     std::string notice;
+    bool round_ended = false;
     int depth;
     int breadth;
     int search_seconds;
@@ -38,6 +39,7 @@ struct Session {
           search_seconds(search_seconds), inference_seconds(inference_seconds), search(search) {}
 
     void deal() {
+        round_ended = false;
         auto tiles = Domino::all();
         std::shuffle(tiles.begin(), tiles.end(), random);
         if (!game.deal(tiles)) throw std::logic_error("Engine rejected the deal");
@@ -46,6 +48,7 @@ struct Session {
     }
 
     void announce(const TurnResult& result) {
+        round_ended = result.round.has_value();
         if (!result.actor) {
             notice = "Nobody had a double. Redealing.";
             return;
@@ -163,11 +166,18 @@ EMSCRIPTEN_KEEPALIVE const char* game_state(int show_bot_hand) {
     const auto& current = session.value();
     const auto& game = current.game;
     const auto& board = game.board();
+    bool forced_robot_play = false;
+    if (game.phase() == Phase::playing && game.active_seat() == robot && !current.pending) {
+        const auto actions = game.legal_actions();
+        forced_robot_play = actions.size() == 1 && std::holds_alternative<Move>(actions.front());
+    }
     std::ostringstream out;
     out << "{\"phase\":" << static_cast<int>(game.phase())
         << ",\"active\":" << seat_id(game.active_seat())
         << ",\"winner\":" << seat_id(game.winner())
         << ",\"pendingInference\":" << (current.pending ? "true" : "false")
+        << ",\"roundEnded\":" << (current.round_ended ? "true" : "false")
+        << ",\"forcedRobotPlay\":" << (forced_robot_play ? "true" : "false")
         << ",\"notice\":\"" << current.notice << "\""
         << ",\"humanScore\":" << game.player(human).score
         << ",\"botScore\":" << game.player(robot).score << ",\"humanHand\":";
@@ -187,13 +197,23 @@ EMSCRIPTEN_KEEPALIVE const char* game_state(int show_bot_hand) {
         });
     }
     out << "],\"actions\":";
-    const auto actions = game.active_seat() == human && !current.pending ? game.legal_actions() : std::vector<Action>{};
+    const bool human_turn = game.active_seat() == human && !current.pending;
+    const auto actions = human_turn ? game.legal_actions() : std::vector<Action>{};
     write_array(out, actions, [&](const Action& action) {
         if (const auto* move = std::get_if<Move>(&action)) {
             out << '[' << move->tile.id() << ',' << static_cast<int>(move->direction) << ']';
         } else {
             out << "[-1," << (std::holds_alternative<Draw>(action) ? draw : pass) << ']';
         }
+    });
+    out << ",\"boardMoves\":";
+    // The search deduplicates equivalent moves, but players can use any physical end.
+    auto moves = human_turn ? game.legal_moves() : std::vector<Move>{};
+    if (board.shape() == BoardShape::empty || board.shape() == BoardShape::spinner_only) {
+        std::erase_if(moves, [](const Move& move) { return move.direction != Direction::left; });
+    }
+    write_array(out, moves, [&](const Move& move) {
+        out << '[' << move.tile.id() << ',' << static_cast<int>(move.direction) << ']';
     });
     out << '}';
     response = out.str();

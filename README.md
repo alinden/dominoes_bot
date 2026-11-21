@@ -66,8 +66,10 @@ npm --prefix web ci
 npm --prefix web run dev
 ```
 
-Open the local URL Vite prints. Choose a tile from the row for its direction,
-or use Draw or Pass when available. After a C++ change, rebuild and copy both engine files again.
+Open the local URL Vite prints. In Terminal view, choose a tile from its direction
+row. In Board view, hold a tile and drag it to a highlighted end. Draw and Pass
+are available in both views. Switch views in Settings during play. After a C++
+change, rebuild and copy both engine files again.
 Run `npm --prefix web run build` to generate the static site in `web/dist`.
 
 ### C++ versus Scala

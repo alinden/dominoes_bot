@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Play dominoes against a C++ bot running on your device.">
-    <title>Dominoes</title>
+    <title>dominoes_bot</title>
   </head>
   <body>
     <main>
       <header>
-        <h1>Dominoes</h1>
+        <h1>dominoes_bot</h1>
         <button id="settings-button" type="button">Settings</button>
       </header>
       <div class="series-bar">
@@ -18,6 +18,7 @@
       </div>
       <section class="terminal" aria-label="Game">
         <pre id="board" tabindex="0"></pre>
+        <div id="board-view" hidden></div>
         <pre id="notice" aria-live="polite"></pre>
         <div id="status" role="status"></div>
       </section>
@@ -26,16 +27,24 @@
           <button id="draw" type="button" disabled>Draw</button>
           <button id="pass" type="button" disabled>Pass</button>
         </div>
-        <div class="move-row"><span>Left</span><div id="moves-left" role="group" aria-label="Left"></div></div>
-        <div class="move-row"><span>Right</span><div id="moves-right" role="group" aria-label="Right"></div></div>
-        <div class="move-row"><span>Up</span><div id="moves-up" role="group" aria-label="Up"></div></div>
-        <div class="move-row"><span>Down</span><div id="moves-down" role="group" aria-label="Down"></div></div>
+        <div id="direction-rows">
+          <div class="move-row"><span>Left</span><div id="moves-left" role="group" aria-label="Left"></div></div>
+          <div class="move-row"><span>Right</span><div id="moves-right" role="group" aria-label="Right"></div></div>
+          <div class="move-row"><span>Up</span><div id="moves-up" role="group" aria-label="Up"></div></div>
+          <div class="move-row"><span>Down</span><div id="moves-down" role="group" aria-label="Down"></div></div>
+        </div>
       </section>
       <button id="next-game" type="button" hidden>Next game</button>
     </main>
     <dialog id="settings">
+      <h2>Settings</h2>
+      <label class="display-setting">Display
+        <select id="display-mode">
+          <option value="terminal">Terminal</option>
+          <option value="board">Board</option>
+        </select>
+      </label>
       <form id="settings-form">
-        <h2>Settings</h2>
         <label>Bot model
           <select name="model"><option value="greedy">Greedy</option><option value="search">Search</option></select>
         </label>

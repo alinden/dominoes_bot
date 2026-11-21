@@ -16,6 +16,8 @@ export interface GameState {
   active: number;
   winner: number;
   pendingInference: boolean;
+  roundEnded: boolean;
+  forcedRobotPlay: boolean;
   notice: string;
   humanScore: number;
   botScore: number;
@@ -26,6 +28,7 @@ export interface GameState {
   boardScore: number;
   chains: [number, number][][];
   actions: Action[];
+  boardMoves: Action[];
 }
 
 export type Request =
