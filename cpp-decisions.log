@@ -1,0 +1,58 @@
+ROBOT TURN (human 0, robot 0)
+Depth: 15, Samples: 16
+Move [6,0] left  mean=0.147216
+Move [6,2] left  mean=0.099183
+Move [6,5] left  mean=0.061962
+FINAL DECISION: Move [6,0] left
+
+ROBOT TURN (human 0, robot 0)
+Depth: 15, Samples: 16
+Move [6,2] right  mean=0.044196
+Move [6,5] right  mean=-0.107698
+FINAL DECISION: Move [6,2] right
+
+ROBOT TURN (human 5, robot 0)
+Depth: 15, Samples: 16
+Move [6,5] up  mean=0.091404
+Move [3,2] right  mean=0.084023
+Move [3,0] left  mean=0.067458
+Move [2,1] right  mean=0.064574
+Move [3,2] left  mean=0.046333
+FINAL DECISION: Move [6,5] up
+
+ROBOT TURN (human 5, robot 10)
+Depth: 15, Samples: 16
+Move [2,1] right  mean=0.147631
+Move [1,0] up  mean=0.147587
+Move [3,0] left  mean=0.113493
+Move [3,2] left  mean=0.097310
+Move [3,2] right  mean=0.042225
+Move [2,1] up  mean=0.040739
+FINAL DECISION: Move [2,1] right
+
+ROBOT TURN (human 5, robot 15)
+Forced action.
+FINAL DECISION: Move [1,0] left
+
+ROBOT TURN (human 5, robot 15)
+Forced action.
+FINAL DECISION: Move [3,2] left
+
+ROBOT TURN (human 20, robot 20)
+Depth: 15, Samples: 16
+Move [6,6] left  mean=0.064913
+Move [4,4] right  mean=-0.022177
+Move [6,1] left  mean=-0.085531
+Move [6,2] left  mean=-0.104203
+Move [4,3] right  mean=-0.139812
+FINAL DECISION: Move [6,6] left
+
+ROBOT TURN (human 20, robot 20)
+Depth: 15, Samples: 16
+Move [4,3] right  mean=0.198881
+Move [4,4] left  mean=0.067075
+Move [6,1] up  mean=-0.069233
+Move [6,2] up  mean=-0.078321
+Move [4,3] left  mean=-0.140979
+FINAL DECISION: Move [4,3] right
+

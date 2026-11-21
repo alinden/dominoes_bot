@@ -7,6 +7,14 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 
 object Robot {
+  def sampleUnknownHand(game: Game): EliminationHand =
+    EliminationHand.sampleFromOpponentHand(
+      "human",
+      game.playerByName("robot").hand ++ game.board.tiles(),
+      initialHandSize = game.playerByName("human").hand.size,
+      numSamples = Config.bayesOpponentHandSamples,
+    )
+
   def getRandomLegalAction(game: Game): Option[Action] = {
     val options = game.allLegalActions()
     Random.shuffle(options).headOption
@@ -50,27 +58,22 @@ object Robot {
 
   def act(
       game: Game,
-      guess: EliminationHand,
+      guess: Option[EliminationHand],
       debug: Boolean,
       decisionLog: Option[java.io.PrintWriter] = None,
   ): Option[Action] = {
-    showThinking(game, debug)
     val distinctMoves = game.simplify(game.legalMoves()).length
     if (distinctMoves <= 1) {
-      if (!debug && distinctMoves == 1) {
+      if (!debug && distinctMoves == 1 && TurnDeadline.current.isEmpty) {
         // Faking thinking to not give away having no options.
         val sleepSeconds = Random.nextInt(12) * 1000
         Thread.sleep(sleepSeconds)
       }
       return getRandomLegalAction(game)
     } else {
-      val move = searchUntilTimeout(
-        game,
-        guess,
-        debug,
-        decisionLog,
-        Config.moveParams.toList,
-      )
+      val move = guess.flatMap { hand =>
+        searchUntilTimeout(game, hand, debug, decisionLog, Config.moveParams)
+      }.orElse(greedyMove(game))
 
       move.foreach { action =>
         decisionLog.foreach(logFinalDecision(_, action))
@@ -80,7 +83,7 @@ object Robot {
     }
   }
 
-  private def showThinking(game: Game, debug: Boolean): Unit = {
+  def showThinking(game: Game, debug: Boolean): Unit = {
     println("")
     println(game)
 
@@ -149,7 +152,8 @@ object Robot {
       previousElapsedMs: Double = 0.0,
       previousMove: Option[Action] = None,
   ): Option[Action] = {
-    if (previousElapsedMs >= Config.moveTimeMs || remainingParams.isEmpty) {
+    val capped = TurnDeadline.current.nonEmpty
+    if ((!capped && previousElapsedMs >= Config.moveTimeMs) || remainingParams.isEmpty) {
       previousMove
     } else {
       val (depth, simulations) = remainingParams.head
@@ -157,29 +161,30 @@ object Robot {
       SearchStats.reset()
       val start = System.nanoTime()
 
-      val result = getBestMove(
-        game,
-        guess,
-        debug,
-        depth,
-        simulations,
-        onScoredMoves =
-          scoredMoves => decisionLog.foreach(logScoredMoves(_, depth, simulations, scoredMoves)),
-      ).runSyncUnsafe()
-
-      val elapsedMs = (System.nanoTime() - start) / 1000000.0
-
-      decisionLog.foreach(logSearchResult(_, depth, result, elapsedMs))
-
-      searchUntilTimeout(
-        game,
-        guess,
-        debug,
-        decisionLog,
-        remainingParams.tail,
-        elapsedMs,
-        Some(result._2),
-      )
+      val completed = TurnDeadline.attempt {
+        TurnDeadline.check()
+        val result = getBestMove(
+          game,
+          guess,
+          debug,
+          depth,
+          simulations,
+          onScoredMoves =
+            scoredMoves => decisionLog.foreach(logScoredMoves(_, depth, simulations, scoredMoves)),
+        ).runSyncUnsafe()
+        TurnDeadline.check()
+        result
+      }
+      completed match {
+        case Some(result) =>
+          val elapsedMs = (System.nanoTime() - start) / 1000000.0
+          decisionLog.foreach(logSearchResult(_, depth, result, elapsedMs))
+          searchUntilTimeout(game, guess, debug, decisionLog, remainingParams.tail,
+            elapsedMs, Some(result._2))
+        case None =>
+          decisionLog.foreach(_.println("Turn deadline reached during search."))
+          previousMove
+      }
     }
   }
 }

@@ -15,6 +15,13 @@ cmake --build cpp/build/debug
 
 Run `./cpp/build/debug/dominoes --show-bot-hand` to reveal the bot's hand for testing. The boneyard stays hidden. Type `h` during your turn for the command list and tile indices.
 
+Add `--search` to play against the lookahead bot. It samples equally from hands consistent with observed actions
+and searches three actions ahead across 16 samples. Use `--depth N` to enable search at a different depth. Both flags
+can be combined with `--show-bot-hand`.
+
+Use `--log-decisions cpp-decisions.log` alongside `--search` or `--depth N` to record candidate moves, their mean
+search scores, and the chosen move. Each run overwrites the specified log file.
+
 ### Scala game
 
 To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt -J-Xmx4G "run --play_human"`.
@@ -24,6 +31,40 @@ with less memory, but performance may suffer.
 To see how its thinking, use the decision log: `sbt -J-Xmx4G "run --play_human --log-decisions decisions.log"`.
 Consider reading through the sample [decisions.log](decisions.log) in the repo to see an example of how the bot thinks
 without needing to run a game yourself.
+
+The Scala bot defaults to 15 seconds for opponent-hand inference and a fresh 30 seconds for move search. Set the
+budgets with `--inference-time-seconds N` and `--turn-time-seconds N` in the `run` arguments. If inference runs out
+of time, search uses the available hand estimate or samples one from the unknown tiles. Setting `--turn-time-seconds 0`
+uses the original timing policy. Display pauses are outside both budgets.
+
+### C++ versus Scala
+
+Build the Release C++ binaries, then run a paired head-to-head match from the repository root.
+
+```sh
+cmake -S cpp -B cpp/build/release -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build/release
+sbt -J-Xmx4G 'runMain BotMatch ./cpp/build/release/dominoes_match_bot 15 30 30 1 42'
+```
+
+The arguments after the executable path are C++ depth, Scala inference seconds, Scala search seconds, number of
+pairs, and the first deal seed. C++ uses its hard-constraint hand model and 16 samples. Each pair swaps seats and
+reuses the same ordered deals. The runner checks scores after each action and prints decision times and game results.
+
+The runner prints paths to separate C++ and Scala decision logs at startup. Follow both in another pane with
+`tail -F /path/to/cpp-decisions.log /path/to/scala-decisions.log`, or follow one per pane. Both logs use the turn
+numbers shown in the match output. Pass a directory after the seed to change where the runner creates its log folder.
+
+### C++ depth comparison
+
+Run a seat-swapped pair with depth ceilings of 15 and 68 and a 60-second search budget for each bot.
+
+```sh
+sbt 'runMain CppDepthMatch ./cpp/build/release/dominoes_match_bot 15 68 60 1 48'
+```
+
+Each decision log shows the deepest completed pass and whether it reached round settlement on every sampled branch.
+On timeout the bot plays the best move from the last completed pass. The optional final argument sets the log directory.
 
 To run unit tests: `sbt test`.
 

@@ -54,15 +54,19 @@ public:
 
     // A deal is seven tiles per seat, then the boneyard in draw order.
     [[nodiscard]] bool deal(std::span<const Domino> tiles);
+    // Replace the hidden tiles for one observer while preserving the public position.
+    [[nodiscard]] std::optional<Game> with_hidden_tiles(
+        Seat observer, std::span<const Domino> opponent_hand,
+        std::span<const Domino> draw_order) const;
     std::vector<Move> legal_moves() const;
     std::vector<Action> legal_actions() const;
+    std::vector<Domino> playable_tiles() const;
     [[nodiscard]] std::optional<TurnResult> apply(const Action& action);
 
 private:
     std::optional<TurnResult> play_highest_double();
     TurnResult play_move(Seat seat, Move move, Board next);
     RoundResult settle(RoundEnd reason, Seat actor);
-    std::vector<Domino> playable_tiles() const;
 
     Board board_;
     std::array<Player, 2> players_;

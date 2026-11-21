@@ -46,6 +46,8 @@ object Config {
   // Continue to the next (depth, breadth) pair if computation
   // takes less than this amount of time.
   val moveTimeMs = 3000.0
+  val turnTimeSeconds = 30
+  val inferenceTimeSeconds = 15
 
   def nextBreadth(breadth: Int): Int = math.max(1, (breadth + 1) / 2)
 

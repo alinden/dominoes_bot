@@ -80,6 +80,43 @@ bool Game::deal(std::span<const Domino> tiles) {
     return true;
 }
 
+std::optional<Game> Game::with_hidden_tiles(
+    Seat observer, std::span<const Domino> opponent_hand,
+    std::span<const Domino> draw_order) const {
+    const Seat opponent = other(observer);
+    if (phase_ != Phase::playing || opponent_hand.size() != player(opponent).hand.size() ||
+        draw_order.size() != boneyard_.size()) {
+        return std::nullopt;
+    }
+
+    std::bitset<Domino::tile_count> used;
+    for (auto tile : player(observer).hand) {
+        used.set(tile.id());
+    }
+    for (auto tile : Domino::all()) {
+        if (board_.contains(tile)) {
+            used.set(tile.id());
+        }
+    }
+    for (auto tiles : {opponent_hand, draw_order}) {
+        for (auto tile : tiles) {
+            if (used.test(tile.id())) {
+                return std::nullopt;
+            }
+            used.set(tile.id());
+        }
+    }
+    if (!used.all()) {
+        return std::nullopt;
+    }
+
+    Game copy = *this;
+    copy.players_[static_cast<std::size_t>(opponent)].hand.assign(opponent_hand.begin(),
+                                                                 opponent_hand.end());
+    copy.boneyard_.assign(draw_order.begin(), draw_order.end());
+    return copy;
+}
+
 std::vector<Move> Game::legal_moves() const {
     std::vector<Move> moves;
     if (const auto seat = active_seat()) {

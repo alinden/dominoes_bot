@@ -1,9 +1,12 @@
+#include "dominoes/decision_log.hpp"
 #include "dominoes/greedy.hpp"
+#include "dominoes/hand_candidates.hpp"
 
 #include <algorithm>
 #include <charconv>
 #include <cctype>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -173,9 +176,40 @@ void show_robot_thinking() {
     }
 }
 
-int play_match(bool show_bot_hand) {
+Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& candidates,
+                         int depth, std::mt19937& random, std::ostream* log) {
+    if (candidates) {
+        const auto legal = game.legal_actions();
+        if (legal.size() == 1) {
+            if (log) *log << "Forced action.\n";
+            return legal.front();
+        }
+
+        auto scores = candidates->score_moves(game, depth, random);
+        if (!scores.empty()) {
+            const auto chosen = std::ranges::max_element(scores, {}, &ScoredAction::score)->action;
+            if (log) {
+                log_search_scores(*log, depth, scores);
+            }
+            return chosen;
+        }
+        if (log) *log << "No sampled hands available. Using greedy play.\n";
+    } else if (log) {
+        *log << "Greedy play.\n";
+    }
+    return choose_greedy_action(game, random).value();
+}
+
+int play_match(bool show_bot_hand, bool use_search, int depth, std::ostream* decision_log) {
     Game game;
     std::mt19937 random(std::random_device{}());
+    std::optional<HandCandidates> candidates;
+    const auto finish_turn = [&](const TurnResult& result) {
+        announce(result);
+        if (candidates) {
+            candidates->observe(game, result);
+        }
+    };
     std::cout << "New Game!\n";
     while (!game.winner()) {
         switch (game.phase()) {
@@ -185,13 +219,17 @@ int play_match(bool show_bot_hand) {
             if (!game.deal(tiles)) {
                 throw std::logic_error("engine rejected a complete deal");
             }
+            if (use_search) {
+                candidates.emplace(Seat::second, game.player(Seat::second).hand,
+                                   game.player(Seat::first).hand.size());
+            }
             break;
         }
         case Phase::awaiting_highest_double:
             print_board(game, show_bot_hand);
             std::cout << "\nFirst Turn, playing the highest double." << std::endl;
             std::this_thread::sleep_for(2s);
-            announce(game.apply(PlayHighestDouble{}).value());
+            finish_turn(game.apply(PlayHighestDouble{}).value());
             break;
         case Phase::playing:
             print_board(game, show_bot_hand);
@@ -200,10 +238,20 @@ int play_match(bool show_bot_hand) {
                 if (!result) {
                     return 0;
                 }
-                announce(*result);
+                finish_turn(*result);
             } else {
                 show_robot_thinking();
-                announce(game.apply(choose_greedy_action(game, random).value()).value());
+                if (decision_log) {
+                    *decision_log << "ROBOT TURN (human " << game.player(Seat::first).score
+                                  << ", robot " << game.player(Seat::second).score << ")\n";
+                }
+                const auto action = choose_bot_action(game, candidates, depth, random, decision_log);
+                if (decision_log) {
+                    *decision_log << "FINAL DECISION: ";
+                    log_action(*decision_log, action);
+                    *decision_log << "\n\n" << std::flush;
+                }
+                finish_turn(game.apply(action).value());
             }
             break;
         case Phase::match_complete:
@@ -219,17 +267,46 @@ int play_match(bool show_bot_hand) {
 
 int main(int argc, char* argv[]) {
     bool show_bot_hand = false;
+    bool use_search = false;
+    int depth = 3;
+    const char* decision_log_path = nullptr;
     for (int i = 1; i < argc; ++i) {
         const std::string_view argument = argv[i];
         if (argument == "--show-bot-hand") {
             show_bot_hand = true;
+        } else if (argument == "--search") {
+            use_search = true;
+        } else if (argument == "--depth") {
+            const std::string_view value = i + 1 < argc ? argv[++i] : "";
+            const auto* end = value.data() + value.size();
+            const auto [parsed, error] = std::from_chars(value.data(), end, depth);
+            if (error != std::errc{} || parsed != end || depth < 1) {
+                std::cerr << "--depth requires a positive integer.\n";
+                return 1;
+            }
+            use_search = true;
+        } else if (argument == "--log-decisions") {
+            if (i + 1 == argc || std::string_view(argv[i + 1]).starts_with("--")) {
+                std::cerr << "--log-decisions requires a file path.\n";
+                return 1;
+            }
+            decision_log_path = argv[++i];
         } else if (argument == "--help" || argument == "-h") {
-            std::cout << "Usage: dominoes [--show-bot-hand]\n";
+            std::cout << "Usage: dominoes [--search] [--depth N] [--show-bot-hand] [--log-decisions FILE]\n"
+                         "--depth N enables search and sets its depth (default: 3).\n";
             return 0;
         } else {
             std::cerr << "Unknown option: " << argument << '\n';
             return 1;
         }
     }
-    return play_match(show_bot_hand);
+    std::ofstream decision_log;
+    if (decision_log_path) {
+        decision_log.open(decision_log_path);
+        if (!decision_log) {
+            std::cerr << "Could not open decision log: " << decision_log_path << '\n';
+            return 1;
+        }
+    }
+    return play_match(show_bot_hand, use_search, depth, decision_log_path ? &decision_log : nullptr);
 }
