@@ -52,11 +52,18 @@ void check_opening_and_draws() {
                   std::holds_alternative<Draw>(game.legal_actions().front()),
               "draw is the only action until a tile fits");
         const auto hand_size = game.player(Seat::first).hand.size();
+        Game simulated = game;
+        const auto simulation = simulated.apply(Draw{}, DrawEvidence::omit).value();
         const auto draw = game.apply(Draw{}).value();
         check(draw.pre_draw_hand_size == hand_size && draw.pre_draw_playable_tiles.size() == 6,
               "draw evidence describes the position before drawing");
         check(game.active_seat() == Seat::first && game.player(Seat::first).hand.front() == expected,
               "each draw prepends the next tile and preserves the turn");
+        check(!simulation.pre_draw_hand_size && simulation.pre_draw_playable_tiles.empty() &&
+                  simulation.actor == draw.actor && simulated.active_seat() == game.active_seat() &&
+                  simulated.player(Seat::first).hand == game.player(Seat::first).hand &&
+                  simulated.boneyard() == game.boneyard() && simulated.legal_moves() == game.legal_moves(),
+              "omitting draw evidence preserves the resulting position and legal moves");
     }
     check(game.legal_moves().size() == 4 && game.legal_actions().size() == 1,
           "the spinner accepts all four directions and canonicalizes to one");

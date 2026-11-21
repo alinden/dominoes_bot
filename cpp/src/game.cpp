@@ -122,7 +122,7 @@ std::vector<Move> Game::legal_moves() const {
     if (const auto seat = active_seat()) {
         for (auto direction : directions) {
             for (auto tile : player(*seat).hand) {
-                if (board_.place(tile, direction)) {
+                if (board_.can_place(tile, direction)) {
                     moves.push_back({tile, direction});
                 }
             }
@@ -152,7 +152,7 @@ std::vector<Action> Game::legal_actions() const {
     return actions;
 }
 
-std::optional<TurnResult> Game::apply(const Action& action) {
+std::optional<TurnResult> Game::apply(const Action& action, DrawEvidence draw_evidence) {
     if (std::holds_alternative<PlayHighestDouble>(action)) {
         return play_highest_double();
     }
@@ -181,8 +181,10 @@ std::optional<TurnResult> Game::apply(const Action& action) {
         if (boneyard_.empty()) {
             return std::nullopt;
         }
-        result.pre_draw_hand_size = hand.size();
-        result.pre_draw_playable_tiles = playable_tiles();
+        if (draw_evidence == DrawEvidence::collect) {
+            result.pre_draw_hand_size = hand.size();
+            result.pre_draw_playable_tiles = playable_tiles();
+        }
         hand.insert(hand.begin(), boneyard_.front());
         boneyard_.erase(boneyard_.begin());
         previous_pass_ = false;
@@ -265,7 +267,7 @@ std::vector<Domino> Game::playable_tiles() const {
     std::bitset<Domino::tile_count> seen;
     for (auto direction : directions) {
         for (auto tile : Domino::all()) {
-            if (!seen.test(tile.id()) && board_.place(tile, direction)) {
+            if (!seen.test(tile.id()) && board_.can_place(tile, direction)) {
                 tiles.push_back(tile);
                 seen.set(tile.id());
             }

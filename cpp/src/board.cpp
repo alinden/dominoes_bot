@@ -63,78 +63,62 @@ bool Board::contains(Domino tile) const {
     return false;
 }
 
-std::optional<Board> Board::place(Domino tile, Direction direction) const {
+std::optional<Board::Placement> Board::resolve_placement(Domino tile, Direction direction) const {
     if (contains(tile)) {
         return std::nullopt;
     }
 
-    switch (shape()) {
-    case BoardShape::empty: {
-        Board next;
-        if (tile.is_double()) {
-            next.spinner_.emplace(tile, tile.high());
-        } else {
-            next.chains_.front().emplace_back(tile, tile.high());
-        }
-        return next;
+    const auto current_shape = shape();
+    if (current_shape == BoardShape::empty) {
+        return Placement{current_shape, Direction::left, PlayedDomino(tile, tile.high())};
     }
-    case BoardShape::snake:
-        return extend_snake(tile, direction);
-    case BoardShape::spinner_only:
-        return extend_arm(tile, Direction::left);
-    case BoardShape::tee:
-        if (direction != Direction::left && direction != Direction::right) {
-            return std::nullopt;
-        }
-        return extend_arm(tile, direction);
-    case BoardShape::cross:
-        return extend_arm(tile, direction);
+    if ((current_shape == BoardShape::snake || current_shape == BoardShape::tee) &&
+        direction != Direction::left && direction != Direction::right) {
+        return std::nullopt;
+    }
+    if (current_shape == BoardShape::spinner_only) {
+        direction = Direction::left;
+    }
+
+    const auto& arm = chain(direction);
+    const auto end = current_shape == BoardShape::snake && direction == Direction::right
+                         ? chain(Direction::left).back().reversed()
+                         : arm.empty() ? *spinner_ : arm.front();
+    if (auto played = end.connect(tile)) {
+        return Placement{current_shape, direction, *played};
     }
     return std::nullopt;
 }
 
-std::optional<Board> Board::extend_snake(Domino tile, Direction direction) const {
-    if (direction != Direction::left && direction != Direction::right) {
-        return std::nullopt;
-    }
-    const auto& snake = chain(Direction::left);
-    const bool at_left = direction == Direction::left;
-    const auto end = at_left ? snake.front() : snake.back().reversed();
-    const auto played = end.connect(tile);
-    if (!played) {
+bool Board::can_place(Domino tile, Direction direction) const {
+    return resolve_placement(tile, direction).has_value();
+}
+
+std::optional<Board> Board::place(Domino tile, Direction direction) const {
+    const auto placement = resolve_placement(tile, direction);
+    if (!placement) {
         return std::nullopt;
     }
 
     Board next = *this;
-    auto& left = next.chains_.front();
-    if (tile.is_double()) {
+    const auto [shape, target, played] = *placement;
+    auto& arm = next.chains_.at(static_cast<std::size_t>(target));
+    if (shape == BoardShape::empty && tile.is_double()) {
         next.spinner_ = played;
-        if (at_left) {
+    } else if (shape == BoardShape::snake && tile.is_double()) {
+        next.spinner_ = played;
+        if (target == Direction::left) {
             // The old left end is now next to the spinner, so the far end faces out.
-            std::ranges::reverse(left);
-            for (auto& placed : left) {
+            std::ranges::reverse(arm);
+            for (auto& placed : arm) {
                 placed = placed.reversed();
             }
         }
-    } else if (at_left) {
-        left.insert(left.begin(), *played);
+    } else if (shape == BoardShape::snake && target == Direction::right) {
+        next.chains_.front().push_back(played.reversed());
     } else {
-        left.push_back(played->reversed());
+        arm.insert(arm.begin(), played);
     }
-    return next;
-}
-
-std::optional<Board> Board::extend_arm(Domino tile, Direction direction) const {
-    const auto& arm = chain(direction);
-    const auto& end = arm.empty() ? *spinner_ : arm.front();
-    const auto played = end.connect(tile);
-    if (!played) {
-        return std::nullopt;
-    }
-
-    Board next = *this;
-    auto& next_arm = next.chains_.at(static_cast<std::size_t>(direction));
-    next_arm.insert(next_arm.begin(), *played);
     return next;
 }
 

@@ -78,7 +78,7 @@ double score_draw(const Outcomes& outcomes, Seat perspective, int remaining, Sea
     for (const auto& outcome : outcomes) {
         Outcome drawn = outcome;
         const Domino tile = drawn.game.boneyard().front();
-        drawn.game.apply(Draw{}).value();
+        drawn.game.apply(Draw{}, DrawEvidence::omit).value();
         by_draw[tile.id()].push_back(std::move(drawn));
     }
 

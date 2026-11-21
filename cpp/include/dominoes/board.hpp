@@ -22,11 +22,17 @@ public:
     // Chains run from the exposed end toward the spinner. A snake is one left chain.
     const std::vector<PlayedDomino>& chain(Direction direction) const;
 
+    [[nodiscard]] bool can_place(Domino tile, Direction direction) const;
     [[nodiscard]] std::optional<Board> place(Domino tile, Direction direction) const;
 
 private:
-    std::optional<Board> extend_snake(Domino tile, Direction direction) const;
-    std::optional<Board> extend_arm(Domino tile, Direction direction) const;
+    struct Placement {
+        BoardShape shape;
+        Direction direction;
+        PlayedDomino played;
+    };
+
+    std::optional<Placement> resolve_placement(Domino tile, Direction direction) const;
 
     std::optional<PlayedDomino> spinner_;
     std::array<std::vector<PlayedDomino>, 4> chains_;

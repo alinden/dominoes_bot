@@ -10,6 +10,7 @@ namespace dominoes {
 enum class Seat { first, second };
 enum class Phase { awaiting_deal, awaiting_highest_double, playing, match_complete };
 enum class RoundEnd { dominoes, locked };
+enum class DrawEvidence { collect, omit };
 
 struct Move {
     Domino tile;
@@ -61,7 +62,8 @@ public:
     std::vector<Move> legal_moves() const;
     std::vector<Action> legal_actions() const;
     std::vector<Domino> playable_tiles() const;
-    [[nodiscard]] std::optional<TurnResult> apply(const Action& action);
+    [[nodiscard]] std::optional<TurnResult> apply(
+        const Action& action, DrawEvidence draw_evidence = DrawEvidence::collect);
 
 private:
     std::optional<TurnResult> play_highest_double();
