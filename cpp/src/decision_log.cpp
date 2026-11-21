@@ -1,7 +1,5 @@
 #include "dominoes/decision_log.hpp"
 
-#include "dominoes/hand_candidates.hpp"
-
 #include <algorithm>
 #include <iomanip>
 #include <ostream>
@@ -19,8 +17,9 @@ void log_action(std::ostream& log, const Action& action) {
     }
 }
 
-void log_search_scores(std::ostream& log, int depth, std::vector<ScoredAction>& scores) {
-    log << "Depth: " << depth << ", Samples: " << HandCandidates::search_samples << '\n';
+void log_search_scores(std::ostream& log, int depth, std::size_t samples,
+                       std::vector<ScoredAction>& scores) {
+    log << "Depth: " << depth << ", Samples: " << samples << '\n';
     std::ranges::stable_sort(scores, std::ranges::greater{}, &ScoredAction::score);
     for (const auto& scored : scores) {
         log_action(log, scored.action);

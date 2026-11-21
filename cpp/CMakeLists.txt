@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(dominoes_bot LANGUAGES CXX)
 
+find_package(Threads REQUIRED)
+
 add_library(dominoes_engine src/board.cpp src/domino.cpp src/game.cpp)
 target_include_directories(dominoes_engine PUBLIC include)
 target_compile_features(dominoes_engine PUBLIC cxx_std_20)
@@ -15,7 +17,7 @@ endif()
 add_library(dominoes_greedy src/greedy.cpp)
 target_link_libraries(dominoes_greedy PUBLIC dominoes_engine)
 add_library(dominoes_search src/search.cpp src/hand_candidates.cpp src/decision_log.cpp)
-target_link_libraries(dominoes_search PUBLIC dominoes_engine)
+target_link_libraries(dominoes_search PUBLIC dominoes_engine PRIVATE Threads::Threads)
 add_executable(dominoes src/terminal.cpp)
 target_link_libraries(dominoes PRIVATE dominoes_greedy dominoes_search)
 add_executable(dominoes_match_bot src/match_bot.cpp)

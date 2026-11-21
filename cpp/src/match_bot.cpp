@@ -37,7 +37,8 @@ void write_action(const Action& action) {
     std::cout << std::endl;
 }
 
-void run(Seat bot, int depth, int search_seconds, std::mt19937& random, std::ostream& log) {
+void run(Seat bot, int depth, int search_seconds, std::size_t breadth,
+         std::size_t workers, std::mt19937& random, std::ostream& log) {
     Game game;
     std::optional<HandCandidates> candidates;
     const Seat opponent = bot == Seat::first ? Seat::second : Seat::first;
@@ -63,16 +64,18 @@ void run(Seat bot, int depth, int search_seconds, std::mt19937& random, std::ost
             log << "TURN " << turn << '\n' << std::flush;
             const auto legal = game.legal_actions();
             TimedSearchResult search;
-            if (legal.size() > 1 && search_seconds > 0) {
+            if (legal.size() > 1) {
                 const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(search_seconds);
-                const auto samples = candidates->sample(game, HandCandidates::search_samples, random);
-                if (!samples.empty()) search = search_until(game, bot, depth, samples, deadline);
-                log << "Depth ceiling: " << depth << ", completed: " << search.depth << '\n';
-                if (search.timed_out) log << "Search deadline reached.\n";
-                if (search.reached_round_end) log << "All sampled branches reached round settlement.\n";
-            } else if (legal.size() > 1) {
-                search.scores = candidates->score_moves(game, depth, random);
-                search.depth = depth;
+                const auto samples = candidates->sample(game, breadth, random);
+                if (!samples.empty() && search_seconds > 0) {
+                    search = search_until(game, bot, depth, samples, deadline, workers);
+                    log << "Depth ceiling: " << depth << ", completed: " << search.depth << '\n';
+                    if (search.timed_out) log << "Search deadline reached.\n";
+                    if (search.reached_round_end) log << "All sampled branches reached round settlement.\n";
+                } else if (!samples.empty()) {
+                    search.scores = score_sampled_actions(game, bot, depth, samples, workers);
+                    search.depth = depth;
+                }
             }
             auto& scores = search.scores;
             const auto chosen = legal.size() == 1 ? legal.front()
@@ -80,7 +83,7 @@ void run(Seat bot, int depth, int search_seconds, std::mt19937& random, std::ost
                                  : std::ranges::max_element(scores, {}, &ScoredAction::score)->action;
             if (legal.size() == 1) log << "Forced action.\n";
             else if (scores.empty()) log << "No search pass completed. Using greedy play.\n";
-            else log_search_scores(log, search.depth, scores);
+            else log_search_scores(log, search.depth, breadth, scores);
             log << "FINAL DECISION: ";
             log_action(log, chosen);
             log << "\n\n" << std::flush;
@@ -98,20 +101,23 @@ void run(Seat bot, int depth, int search_seconds, std::mt19937& random, std::ost
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc != 5 && argc != 6) {
-            throw std::runtime_error("Usage: dominoes_match_bot SEAT DEPTH SEED LOG [SEARCH_SECONDS]");
+        if (argc < 5 || argc > 8) {
+            throw std::runtime_error("Usage: dominoes_match_bot SEAT DEPTH SEED LOG [SEARCH_SECONDS [BREADTH [WORKERS]]]");
         }
         const int seat = std::stoi(argv[1]);
         const int depth = std::stoi(argv[2]);
-        const int search_seconds = argc == 6 ? std::stoi(argv[5]) : 0;
-        if (seat < 0 || seat > 1 || depth < 1 || search_seconds < 0) {
-            throw std::runtime_error("invalid seat, depth, or search budget");
+        const int search_seconds = argc >= 6 ? std::stoi(argv[5]) : 0;
+        const int breadth = argc >= 7 ? std::stoi(argv[6]) : HandCandidates::search_samples;
+        const int workers = argc == 8 ? std::stoi(argv[7]) : 1;
+        if (seat < 0 || seat > 1 || depth < 1 || search_seconds < 0 || breadth < 1 || workers < 1) {
+            throw std::runtime_error("invalid seat, depth, search budget, breadth, or worker count");
         }
         std::mt19937 random(std::stoul(argv[3]));
         std::ofstream log(argv[4], std::ios::app);
         if (!log) throw std::runtime_error("could not open decision log");
         log << "GAME | seed " << argv[3] << " | C++ seat " << seat + 1 << '\n' << std::flush;
-        run(static_cast<Seat>(seat), depth, search_seconds, random, log);
+        run(static_cast<Seat>(seat), depth, search_seconds, static_cast<std::size_t>(breadth),
+            static_cast<std::size_t>(workers), random, log);
     } catch (const std::exception& error) {
         std::cerr << "C++ match bot: " << error.what() << '\n';
         return 1;

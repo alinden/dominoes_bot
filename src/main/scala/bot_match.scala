@@ -6,10 +6,10 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.TimeUnit
 
 final class CppMatchBot(binary: String, seat: Int, val depth: Int, seed: Int, log: Path,
-    searchSeconds: Int = 0)
+    searchSeconds: Int = 0, breadth: Int = 16, workers: Int = 1)
     extends AutoCloseable {
   private val process = new ProcessBuilder(binary, seat.toString, depth.toString,
-    Integer.toUnsignedString(seed), log.toString, searchSeconds.toString)
+    Integer.toUnsignedString(seed), log.toString, searchSeconds.toString, breadth.toString, workers.toString)
     .redirectError(ProcessBuilder.Redirect.INHERIT).start()
   private val input = new BufferedWriter(new OutputStreamWriter(process.getOutputStream, UTF_8))
   private val output = new BufferedReader(new InputStreamReader(process.getInputStream, UTF_8))
@@ -110,13 +110,17 @@ object CppDepthMatch {
     val settings = for {
       depthA <- args.lift(1).getOrElse("15").toIntOption.filter(_ > 0)
       depthB <- args.lift(2).getOrElse("68").toIntOption.filter(_ > 0)
-      seconds <- args.lift(3).getOrElse("60").toIntOption.filter(_ > 0)
+      seconds <- args.lift(3).getOrElse("60").toIntOption.filter(_ >= 0)
       pairs <- args.lift(4).getOrElse("1").toIntOption.filter(_ > 0)
       seed <- args.lift(5).getOrElse("48").toIntOption
-      binary <- args.headOption if args.length <= 7 && depthA != depthB
-    } yield (binary, depthA, depthB, seconds, pairs, seed)
-    val (binary, depthA, depthB, seconds, pairs, seed) = settings.getOrElse {
-      println("Usage: runMain CppDepthMatch CPP_BINARY [DEPTH_A [DEPTH_B [SECONDS [PAIRS [SEED [LOG_DIR]]]]]]")
+      breadthA <- args.lift(7).getOrElse("16").toIntOption.filter(_ > 0)
+      breadthB <- args.lift(8).getOrElse("16").toIntOption.filter(_ > 0)
+      secondsB <- args.lift(9).getOrElse(seconds.toString).toIntOption.filter(_ >= 0)
+      workers <- args.lift(10).getOrElse("1").toIntOption.filter(_ > 0)
+      binary <- args.headOption if args.length <= 11 && depthA != depthB
+    } yield (binary, depthA, depthB, seconds, pairs, seed, breadthA, breadthB, secondsB, workers)
+    val (binary, depthA, depthB, secondsA, pairs, seed, breadthA, breadthB, secondsB, workers) = settings.getOrElse {
+      println("Usage: runMain CppDepthMatch CPP_BINARY [DEPTH_A [DEPTH_B [SECONDS_A [PAIRS [SEED [LOG_DIR [BREADTH_A [BREADTH_B [SECONDS_B [WORKERS]]]]]]]]]]")
       return
     }
 
@@ -129,13 +133,15 @@ object CppDepthMatch {
 
     var winsA = 0
     var winsB = 0
+    def budget(seconds: Int): String = if (seconds == 0) "direct, uncapped" else s"${seconds}s cap"
     for (pair <- 0 until pairs; seatA <- 0 to 1) {
       val dealSeed = seed + pair
-      println(s"Pair ${pair + 1} | deal seed $dealSeed | depth $depthA seat ${seatA + 1} | " +
-        s"depth $depthB seat ${2 - seatA} | $seconds seconds per search")
-      val a = new CppMatchBot(binary, seatA, depthA, dealSeed, logA, seconds)
+      println(s"Pair ${pair + 1} | deal seed $dealSeed | depth $depthA breadth $breadthA seat ${seatA + 1} " +
+        s"(${budget(secondsA)}) | depth $depthB breadth $breadthB seat ${2 - seatA} (${budget(secondsB)}) | " +
+        s"$workers search worker(s) per bot")
+      val a = new CppMatchBot(binary, seatA, depthA, dealSeed, logA, secondsA, breadthA, workers)
       val (scoreA, scoreB) = try {
-        val b = new CppMatchBot(binary, 1 - seatA, depthB, dealSeed, logB, seconds)
+        val b = new CppMatchBot(binary, 1 - seatA, depthB, dealSeed, logB, secondsB, breadthB, workers)
         try App.playCppGame(a, seatA, dealSeed, 0, 0, None, Some(b))
         finally b.close()
       } finally a.close()

@@ -16,7 +16,8 @@ public:
     void observe(const Game& position, const TurnResult& result);
     std::vector<SearchSample> sample(const Game& position, std::size_t count,
                                      std::mt19937& random) const;
-    std::vector<ScoredAction> score_moves(const Game& position, int depth, std::mt19937& random) const;
+    std::vector<ScoredAction> score_moves(const Game& position, int depth, std::mt19937& random,
+                                         std::size_t workers = 1) const;
 
     static constexpr std::size_t search_samples = 16;
 

@@ -177,7 +177,7 @@ void show_robot_thinking() {
 }
 
 Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& candidates,
-                         int depth, std::mt19937& random, std::ostream* log) {
+                         int depth, std::size_t workers, std::mt19937& random, std::ostream* log) {
     if (candidates) {
         const auto legal = game.legal_actions();
         if (legal.size() == 1) {
@@ -185,11 +185,11 @@ Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& 
             return legal.front();
         }
 
-        auto scores = candidates->score_moves(game, depth, random);
+        auto scores = candidates->score_moves(game, depth, random, workers);
         if (!scores.empty()) {
             const auto chosen = std::ranges::max_element(scores, {}, &ScoredAction::score)->action;
             if (log) {
-                log_search_scores(*log, depth, scores);
+                log_search_scores(*log, depth, HandCandidates::search_samples, scores);
             }
             return chosen;
         }
@@ -200,7 +200,8 @@ Action choose_bot_action(const Game& game, const std::optional<HandCandidates>& 
     return choose_greedy_action(game, random).value();
 }
 
-int play_match(bool show_bot_hand, bool use_search, int depth, std::ostream* decision_log) {
+int play_match(bool show_bot_hand, bool use_search, int depth, std::size_t workers,
+               std::ostream* decision_log) {
     Game game;
     std::mt19937 random(std::random_device{}());
     std::optional<HandCandidates> candidates;
@@ -245,7 +246,7 @@ int play_match(bool show_bot_hand, bool use_search, int depth, std::ostream* dec
                     *decision_log << "ROBOT TURN (human " << game.player(Seat::first).score
                                   << ", robot " << game.player(Seat::second).score << ")\n";
                 }
-                const auto action = choose_bot_action(game, candidates, depth, random, decision_log);
+                const auto action = choose_bot_action(game, candidates, depth, workers, random, decision_log);
                 if (decision_log) {
                     *decision_log << "FINAL DECISION: ";
                     log_action(*decision_log, action);
@@ -269,6 +270,7 @@ int main(int argc, char* argv[]) {
     bool show_bot_hand = false;
     bool use_search = false;
     int depth = 3;
+    int workers = 1;
     const char* decision_log_path = nullptr;
     for (int i = 1; i < argc; ++i) {
         const std::string_view argument = argv[i];
@@ -276,12 +278,13 @@ int main(int argc, char* argv[]) {
             show_bot_hand = true;
         } else if (argument == "--search") {
             use_search = true;
-        } else if (argument == "--depth") {
+        } else if (argument == "--depth" || argument == "--workers") {
             const std::string_view value = i + 1 < argc ? argv[++i] : "";
             const auto* end = value.data() + value.size();
-            const auto [parsed, error] = std::from_chars(value.data(), end, depth);
-            if (error != std::errc{} || parsed != end || depth < 1) {
-                std::cerr << "--depth requires a positive integer.\n";
+            int& setting = argument == "--depth" ? depth : workers;
+            const auto [parsed, error] = std::from_chars(value.data(), end, setting);
+            if (error != std::errc{} || parsed != end || setting < 1) {
+                std::cerr << argument << " requires a positive integer.\n";
                 return 1;
             }
             use_search = true;
@@ -292,8 +295,9 @@ int main(int argc, char* argv[]) {
             }
             decision_log_path = argv[++i];
         } else if (argument == "--help" || argument == "-h") {
-            std::cout << "Usage: dominoes [--search] [--depth N] [--show-bot-hand] [--log-decisions FILE]\n"
-                         "--depth N enables search and sets its depth (default: 3).\n";
+            std::cout << "Usage: dominoes [--search] [--depth N] [--workers N] [--show-bot-hand] [--log-decisions FILE]\n"
+                         "--depth N enables search and sets its depth (default: 3).\n"
+                         "--workers N enables search and sets its worker limit (default: 1).\n";
             return 0;
         } else {
             std::cerr << "Unknown option: " << argument << '\n';
@@ -308,5 +312,6 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    return play_match(show_bot_hand, use_search, depth, decision_log_path ? &decision_log : nullptr);
+    return play_match(show_bot_hand, use_search, depth, static_cast<std::size_t>(workers),
+                      decision_log_path ? &decision_log : nullptr);
 }

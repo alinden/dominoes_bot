@@ -12,10 +12,6 @@ Domino::Domino(int first, int second)
     }
 }
 
-std::size_t Domino::id() const {
-    return static_cast<std::size_t>(high_ * (high_ + 1) / 2 + low_);
-}
-
 const std::array<Domino, Domino::tile_count>& Domino::all() {
     static const std::array<Domino, tile_count> tiles{{
         {0, 0},

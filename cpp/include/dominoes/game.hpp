@@ -64,8 +64,11 @@ public:
     std::vector<Domino> playable_tiles() const;
     [[nodiscard]] std::optional<TurnResult> apply(
         const Action& action, DrawEvidence draw_evidence = DrawEvidence::collect);
+    // Apply a prefix already checked by search to consist of forced draws.
+    void apply_search_draws(std::size_t count);
 
 private:
+    void take_draws(Seat seat, std::size_t count);
     std::optional<TurnResult> play_highest_double();
     TurnResult play_move(Seat seat, Move move, Board next);
     RoundResult settle(RoundEnd reason, Seat actor);

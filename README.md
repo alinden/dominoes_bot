@@ -18,6 +18,7 @@ Run `./cpp/build/debug/dominoes --show-bot-hand` to reveal the bot's hand for te
 Add `--search` to play against the lookahead bot. It samples equally from hands consistent with observed actions
 and searches three actions ahead across 16 samples. Use `--depth N` to enable search at a different depth. Both flags
 can be combined with `--show-bot-hand`.
+Use `--workers N` to enable parallel search with up to `N` workers. The default is one.
 
 Use `--log-decisions cpp-decisions.log` alongside `--search` or `--depth N` to record candidate moves, their mean
 search scores, and the chosen move. Each run overwrites the specified log file.
@@ -64,7 +65,12 @@ sbt 'runMain CppDepthMatch ./cpp/build/release/dominoes_match_bot 15 68 60 1 48'
 ```
 
 Each decision log shows the deepest completed pass and whether it reached round settlement on every sampled branch.
-On timeout the bot plays the best move from the last completed pass. The optional final argument sets the log directory.
+On timeout the bot plays the best move from the last completed pass. You can pass a log directory and a separate
+breadth for each bot after the seed. For example, `15 68 60 1 48 target/bot-match-logs 30 12` gives depth 15 a
+breadth of 30 and depth 68 a breadth of 12. Both breadths default to 16.
+The search budget defaults to the same value for both bots. After the breadths, optionally pass the second bot's
+budget and the worker limit for both bots. A budget of `0` runs one direct search at the configured depth without a
+time limit. For example, `68 15 60 1 49 target/bot-match-logs 12 30 60 4` uses up to four workers per search.
 
 To run unit tests: `sbt test`.
 

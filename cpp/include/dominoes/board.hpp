@@ -22,7 +22,7 @@ public:
     // Chains run from the exposed end toward the spinner. A snake is one left chain.
     const std::vector<PlayedDomino>& chain(Direction direction) const;
 
-    [[nodiscard]] bool can_place(Domino tile, Direction direction) const;
+    std::array<TileMask, 4> playable_masks() const;
     [[nodiscard]] std::optional<Board> place(Domino tile, Direction direction) const;
 
 private:
@@ -33,9 +33,11 @@ private:
     };
 
     std::optional<Placement> resolve_placement(Domino tile, Direction direction) const;
+    std::optional<int> exposed_pip(BoardShape shape, Direction direction) const;
 
     std::optional<PlayedDomino> spinner_;
     std::array<std::vector<PlayedDomino>, 4> chains_;
+    TileMask placed_tiles_ = 0;
 };
 
 }  // namespace dominoes

@@ -33,10 +33,11 @@ std::vector<ScoredAction> score_fixed_actions(const Game& scenario, Seat perspec
 // Score one root action across weighted hidden hands and scripted draw orders.
 // The perspective must be the active seat. Weights are relative and strictly positive.
 std::vector<ScoredAction> score_sampled_actions(
-    const Game& position, Seat perspective, int depth, std::span<const SearchSample> samples);
+    const Game& position, Seat perspective, int depth, std::span<const SearchSample> samples,
+    std::size_t workers = 1);
 
 TimedSearchResult search_until(
     const Game& position, Seat perspective, int max_depth, std::span<const SearchSample> samples,
-    std::chrono::steady_clock::time_point deadline);
+    std::chrono::steady_clock::time_point deadline, std::size_t workers = 1);
 
 }  // namespace dominoes

@@ -50,28 +50,10 @@ std::size_t Board::size() const {
 }
 
 bool Board::contains(Domino tile) const {
-    if (spinner_ && spinner_->tile() == tile) {
-        return true;
-    }
-    for (const auto& arm : chains_) {
-        if (std::ranges::any_of(arm, [tile](const PlayedDomino& played) {
-                return played.tile() == tile;
-            })) {
-            return true;
-        }
-    }
-    return false;
+    return (placed_tiles_ & tile_bit(tile)) != 0;
 }
 
-std::optional<Board::Placement> Board::resolve_placement(Domino tile, Direction direction) const {
-    if (contains(tile)) {
-        return std::nullopt;
-    }
-
-    const auto current_shape = shape();
-    if (current_shape == BoardShape::empty) {
-        return Placement{current_shape, Direction::left, PlayedDomino(tile, tile.high())};
-    }
+std::optional<int> Board::exposed_pip(BoardShape current_shape, Direction direction) const {
     if ((current_shape == BoardShape::snake || current_shape == BoardShape::tee) &&
         direction != Direction::left && direction != Direction::right) {
         return std::nullopt;
@@ -80,18 +62,52 @@ std::optional<Board::Placement> Board::resolve_placement(Domino tile, Direction 
         direction = Direction::left;
     }
 
-    const auto& arm = chain(direction);
-    const auto end = current_shape == BoardShape::snake && direction == Direction::right
-                         ? chain(Direction::left).back().reversed()
-                         : arm.empty() ? *spinner_ : arm.front();
-    if (auto played = end.connect(tile)) {
-        return Placement{current_shape, direction, *played};
+    if (current_shape == BoardShape::snake && direction == Direction::right) {
+        const auto& tail = chain(Direction::left).back();
+        return tail.tile().pip_total() - tail.exposed_pip();
     }
-    return std::nullopt;
+    const auto& arm = chain(direction);
+    return arm.empty() ? spinner_->exposed_pip() : arm.front().exposed_pip();
 }
 
-bool Board::can_place(Domino tile, Direction direction) const {
-    return resolve_placement(tile, direction).has_value();
+std::array<TileMask, 4> Board::playable_masks() const {
+    static const auto by_pip = [] {
+        std::array<TileMask, Domino::max_pip + 1> masks{};
+        for (auto tile : Domino::all()) {
+            masks[tile.high()] |= tile_bit(tile);
+            masks[tile.low()] |= tile_bit(tile);
+        }
+        return masks;
+    }();
+
+    std::array<TileMask, 4> masks{};
+    const auto current_shape = shape();
+    if (current_shape == BoardShape::empty) {
+        masks.fill((TileMask{1} << Domino::tile_count) - 1);
+    } else {
+        for (std::size_t i = 0; i < masks.size(); ++i) {
+            if (const auto pip = exposed_pip(current_shape, static_cast<Direction>(i))) {
+                masks[i] = by_pip[*pip] & ~placed_tiles_;
+            }
+        }
+    }
+    return masks;
+}
+
+std::optional<Board::Placement> Board::resolve_placement(Domino tile, Direction direction) const {
+    if (contains(tile)) {
+        return std::nullopt;
+    }
+    const auto current_shape = shape();
+    if (current_shape == BoardShape::empty) {
+        return Placement{current_shape, Direction::left, PlayedDomino(tile, tile.high())};
+    }
+    if (const auto pip = exposed_pip(current_shape, direction);
+        pip && (*pip == tile.high() || *pip == tile.low())) {
+        const auto target = current_shape == BoardShape::spinner_only ? Direction::left : direction;
+        return Placement{current_shape, target, PlayedDomino(tile, tile.pip_total() - *pip)};
+    }
+    return std::nullopt;
 }
 
 std::optional<Board> Board::place(Domino tile, Direction direction) const {
@@ -101,6 +117,7 @@ std::optional<Board> Board::place(Domino tile, Direction direction) const {
     }
 
     Board next = *this;
+    next.placed_tiles_ |= tile_bit(tile);
     const auto [shape, target, played] = *placement;
     auto& arm = next.chains_.at(static_cast<std::size_t>(target));
     if (shape == BoardShape::empty && tile.is_double()) {

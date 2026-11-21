@@ -47,6 +47,8 @@ void check_opening_and_draws() {
     check(!game.apply(Pass{}) && !game.apply(Move{{5, 0}, Direction::left}),
           "reject passing with a boneyard and playing a tile outside the hand");
 
+    Game batched = game;
+    batched.apply_search_draws(2);
     for (const auto expected : {Domino(4, 4), Domino(5, 0)}) {
         check(game.legal_actions().size() == 1 &&
                   std::holds_alternative<Draw>(game.legal_actions().front()),
@@ -65,6 +67,9 @@ void check_opening_and_draws() {
                   simulated.boneyard() == game.boneyard() && simulated.legal_moves() == game.legal_moves(),
               "omitting draw evidence preserves the resulting position and legal moves");
     }
+    check(batched.player(Seat::first).hand == game.player(Seat::first).hand &&
+              batched.boneyard() == game.boneyard() && batched.active_seat() == game.active_seat(),
+          "a batched draw preserves repeated draws' hand order, boneyard, and active seat");
     check(game.legal_moves().size() == 4 && game.legal_actions().size() == 1,
           "the spinner accepts all four directions and canonicalizes to one");
     check(!game.apply(Draw{}), "drawing is illegal when a placement is available");

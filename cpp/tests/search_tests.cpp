@@ -44,19 +44,29 @@ void check_sampled_hands(const Game& game) {
 
     const std::array samples{first, second};
     const auto scores = score_sampled_actions(game, Seat::second, 2, samples);
+    const auto parallel = score_sampled_actions(game, Seat::second, 2, samples, 4);
     if (scores.size() != 2 || std::get<Move>(scores.front().action) != Move{{6, 3}, Direction::left}) {
         throw std::runtime_error("sampled search did not preserve the root moves");
     }
     expect_score(scores.front().score, 0.25 * std::tanh(10.0 / 135) + 0.75 * std::tanh(15.0 / 135),
                  "a counterplay available in one hand must receive only that hand's weight");
     expect_score(scores.back().score, 0.0, "the second root move scores zero against both hands");
+    if (parallel.size() != scores.size()) {
+        throw std::runtime_error("parallel search must return all root moves");
+    }
+    for (std::size_t i = 0; i < scores.size(); ++i) {
+        if (std::get<Move>(parallel[i].action) != std::get<Move>(scores[i].action) ||
+            parallel[i].score != scores[i].score) {
+            throw std::runtime_error("parallel search must retain move order and exact scores");
+        }
+    }
 
     const auto expired = search_until(game, Seat::second, 68, samples, std::chrono::steady_clock::now());
     if (!expired.timed_out || expired.depth != 0 || !expired.scores.empty()) {
         throw std::runtime_error("an expired deadline must discard the unfinished search");
     }
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-    const auto timed = search_until(game, Seat::second, 2, samples, deadline);
+    const auto timed = search_until(game, Seat::second, 2, samples, deadline, 4);
     if (timed.timed_out || timed.depth != 2 || timed.reached_round_end ||
         timed.scores.size() != scores.size()) {
         throw std::runtime_error("timed search should complete the requested shallow pass");
@@ -83,17 +93,22 @@ void check_sampled_draws(const Game& game) {
 
     SearchSample first{drawing.player(Seat::second).hand, drawing.boneyard(), 1.0};
     auto second = first;
-    second.weight = 3.0;
+    auto third = first;
+    second.weight = 2.0;
     draw_at(first, {2, 1}, 0); // Miss, then draw a tile that scores five.
     draw_at(first, {6, 2}, 1);
-    draw_at(second, {6, 5}, 0); // Playable, but scores zero.
-    const std::array samples{first, second};
+    draw_at(second, {2, 1}, 0); // Same miss, then a playable tile that scores zero.
+    draw_at(second, {6, 5}, 1);
+    draw_at(third, {6, 5}, 0); // The same zero-point tile on the first draw.
+    const std::array samples{first, second, third};
     const auto scores = score_sampled_actions(drawing, Seat::first, 2, samples);
     if (scores.size() != 1 || !std::holds_alternative<Draw>(scores.front().action)) {
         throw std::runtime_error("a blocked hand must draw");
     }
     expect_score(scores.front().score, -0.25 * std::tanh(10.0 / 135) - 0.75 * std::tanh(15.0 / 135),
                  "draw branches must average their weighted replies and repeated draws share a ply");
+    expect_score(score_sampled_actions(drawing, Seat::first, 1, samples).front().score,
+                 -std::tanh(15.0 / 135), "a draw at the cutoff does not score a follow-up placement");
 }
 
 void check_public_draw_evidence() {

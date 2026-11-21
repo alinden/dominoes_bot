@@ -129,10 +129,10 @@ std::vector<SearchSample> HandCandidates::sample(const Game& position, std::size
 }
 
 std::vector<ScoredAction> HandCandidates::score_moves(const Game& position, int depth,
-                                                      std::mt19937& random) const {
+                                                      std::mt19937& random, std::size_t workers) const {
     const auto samples = sample(position, search_samples, random);
     return samples.empty() ? std::vector<ScoredAction>{}
-                           : score_sampled_actions(position, observer_, depth, samples);
+                           : score_sampled_actions(position, observer_, depth, samples, workers);
 }
 
 }  // namespace dominoes

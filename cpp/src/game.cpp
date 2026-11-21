@@ -1,8 +1,11 @@
 #include "dominoes/game.hpp"
 
 #include <algorithm>
+#include <bit>
 #include <bitset>
+#include <iterator>
 #include <numeric>
+#include <stdexcept>
 #include <utility>
 
 namespace dominoes {
@@ -120,10 +123,14 @@ std::optional<Game> Game::with_hidden_tiles(
 std::vector<Move> Game::legal_moves() const {
     std::vector<Move> moves;
     if (const auto seat = active_seat()) {
-        for (auto direction : directions) {
+        const auto masks = board_.playable_masks();
+        for (std::size_t i = 0; i < directions.size(); ++i) {
+            if (masks[i] == 0) {
+                continue;
+            }
             for (auto tile : player(*seat).hand) {
-                if (board_.can_place(tile, direction)) {
-                    moves.push_back({tile, direction});
+                if (masks[i] & tile_bit(tile)) {
+                    moves.push_back({tile, directions[i]});
                 }
             }
         }
@@ -185,9 +192,7 @@ std::optional<TurnResult> Game::apply(const Action& action, DrawEvidence draw_ev
             result.pre_draw_hand_size = hand.size();
             result.pre_draw_playable_tiles = playable_tiles();
         }
-        hand.insert(hand.begin(), boneyard_.front());
-        boneyard_.erase(boneyard_.begin());
-        previous_pass_ = false;
+        take_draws(*seat, 1);
     } else {
         if (!boneyard_.empty()) {
             return std::nullopt;
@@ -198,6 +203,22 @@ std::optional<TurnResult> Game::apply(const Action& action, DrawEvidence draw_ev
         }
     }
     return result;
+}
+
+void Game::apply_search_draws(std::size_t count) {
+    const auto seat = active_seat();
+    if (!seat || count == 0 || count > boneyard_.size()) {
+        throw std::logic_error("invalid forced draw count");
+    }
+    take_draws(*seat, count);
+}
+
+void Game::take_draws(Seat seat, std::size_t count) {
+    auto& hand = players_[static_cast<std::size_t>(seat)].hand;
+    const auto end = boneyard_.begin() + count;
+    hand.insert(hand.begin(), std::make_reverse_iterator(end), boneyard_.rend());
+    boneyard_.erase(boneyard_.begin(), end);
+    previous_pass_ = false;
 }
 
 std::optional<TurnResult> Game::play_highest_double() {
@@ -264,14 +285,12 @@ RoundResult Game::settle(RoundEnd reason, Seat actor) {
 
 std::vector<Domino> Game::playable_tiles() const {
     std::vector<Domino> tiles;
-    std::bitset<Domino::tile_count> seen;
-    for (auto direction : directions) {
-        for (auto tile : Domino::all()) {
-            if (!seen.test(tile.id()) && board_.can_place(tile, direction)) {
-                tiles.push_back(tile);
-                seen.set(tile.id());
-            }
+    TileMask seen = 0;
+    for (const auto mask : board_.playable_masks()) {
+        for (TileMask unseen = mask & ~seen; unseen != 0; unseen &= unseen - 1) {
+            tiles.push_back(Domino::all()[std::countr_zero(unseen)]);
         }
+        seen |= mask;
     }
     return tiles;
 }
