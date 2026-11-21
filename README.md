@@ -48,6 +48,28 @@ budgets with `--inference-time-seconds N` and `--turn-time-seconds N` in the `ru
 of time, search uses the available hand estimate or samples one from the unknown tiles. Setting `--turn-time-seconds 0`
 uses the original timing policy. Display pauses are outside both budgets.
 
+### Play in a browser
+
+The terminal-style web app runs the C++ bot in a Web Worker. Open **Settings** to
+start a series and choose Greedy or Search, depth, breadth, Bayes, separate search
+and inference budgets, and the number of games. The browser build uses one search
+thread. A search budget of zero runs to the selected depth without a time limit.
+
+With a recent Emscripten SDK activated and Node.js installed, run from the repo root:
+
+```sh
+emcmake cmake -S cpp -B cpp/build/web -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build/web --parallel
+mkdir -p web/public/engine
+cp cpp/build/web/dominoes.mjs cpp/build/web/dominoes.wasm web/public/engine/
+npm --prefix web ci
+npm --prefix web run dev
+```
+
+Open the local URL Vite prints. Choose a tile from the row for its direction,
+or use Draw or Pass when available. After a C++ change, rebuild and copy both engine files again.
+Run `npm --prefix web run build` to generate the static site in `web/dist`.
+
 ### C++ versus Scala
 
 Build the Release C++ binaries, then run a paired head-to-head match from the repository root.

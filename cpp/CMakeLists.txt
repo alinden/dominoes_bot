@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(dominoes_bot LANGUAGES CXX)
 
-find_package(Threads REQUIRED)
+if(EMSCRIPTEN)
+    add_compile_options(-fexceptions)
+else()
+    find_package(Threads REQUIRED)
+endif()
 
 add_library(dominoes_engine src/board.cpp src/domino.cpp src/game.cpp)
 target_include_directories(dominoes_engine PUBLIC include)
@@ -17,7 +21,18 @@ endif()
 add_library(dominoes_greedy src/greedy.cpp)
 target_link_libraries(dominoes_greedy PUBLIC dominoes_engine)
 add_library(dominoes_search src/search.cpp src/hand_candidates.cpp src/decision_log.cpp)
-target_link_libraries(dominoes_search PUBLIC dominoes_engine PRIVATE Threads::Threads)
+target_link_libraries(dominoes_search PUBLIC dominoes_engine)
+if(EMSCRIPTEN)
+    add_executable(dominoes_web src/browser.cpp)
+    target_link_libraries(dominoes_web PRIVATE dominoes_greedy dominoes_search)
+    target_link_options(dominoes_web PRIVATE
+        -fexceptions --no-entry
+        -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker
+        -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_RUNTIME_METHODS=cwrap)
+    set_target_properties(dominoes_web PROPERTIES OUTPUT_NAME dominoes SUFFIX ".mjs")
+    return()
+endif()
+target_link_libraries(dominoes_search PRIVATE Threads::Threads)
 add_executable(dominoes src/terminal.cpp)
 target_link_libraries(dominoes PRIVATE dominoes_greedy dominoes_search)
 add_executable(dominoes_match_bot src/match_bot.cpp)

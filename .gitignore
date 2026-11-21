@@ -4,3 +4,6 @@ project/target/*
 src/target/*
 src/project/*
 /cpp/build/
+/web/node_modules/
+/web/dist/
+/web/public/engine/

@@ -213,6 +213,7 @@ std::uint32_t hand_mask(std::span<const Domino> hand) {
 
 using HandOutcomes = std::map<std::uint32_t, Outcomes>;
 
+#if !defined(__EMSCRIPTEN__) || defined(__EMSCRIPTEN_PTHREADS__)
 struct TaskScore {
     double score = 0.0;
     bool reached_cutoff = false;
@@ -285,13 +286,19 @@ std::vector<ScoredAction> score_root_parallel(
     return scores;
 }
 
+#endif
+
 std::vector<ScoredAction> score_root(const Game& position, Seat perspective, int depth,
                                     const HandOutcomes& groups, double total_weight, SearchPass& pass,
                                     std::size_t workers = 1) {
     const auto actions = position.legal_actions();
+#if !defined(__EMSCRIPTEN__) || defined(__EMSCRIPTEN_PTHREADS__)
     if (workers > 1 && actions.size() * groups.size() > 1) {
         return score_root_parallel(actions, perspective, depth, groups, total_weight, pass, workers);
     }
+#else
+    (void)workers;
+#endif
     std::vector<ScoredAction> scores;
     for (const auto& action : actions) {
         double score = 0.0;
