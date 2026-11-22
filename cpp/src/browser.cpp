@@ -27,6 +27,7 @@ struct Session {
     std::optional<Game> before;
     std::optional<TurnResult> pending;
     std::string notice;
+    std::optional<Domino> last_played;
     bool round_ended = false;
     int depth;
     int breadth;
@@ -39,6 +40,7 @@ struct Session {
           search_seconds(search_seconds), inference_seconds(inference_seconds), search(search) {}
 
     void deal() {
+        last_played.reset();
         round_ended = false;
         auto tiles = Domino::all();
         std::shuffle(tiles.begin(), tiles.end(), random);
@@ -48,6 +50,7 @@ struct Session {
     }
 
     void announce(const TurnResult& result) {
+        if (result.placement) last_played = result.placement->tile;
         round_ended = result.round.has_value();
         if (!result.actor) {
             notice = "Nobody had a double. Redealing.";
@@ -188,6 +191,7 @@ EMSCRIPTEN_KEEPALIVE const char* game_state(int show_bot_hand) {
         else out << -1;
     });
     out << ",\"boneyard\":" << game.boneyard().size()
+        << ",\"lastPlayed\":" << (current.last_played ? static_cast<int>(current.last_played->id()) : -1)
         << ",\"spinner\":" << (board.spinner() ? static_cast<int>(board.spinner()->tile().id()) : -1)
         << ",\"boardScore\":" << board.score() << ",\"chains\":[";
     for (int i = 0; i < draw; ++i) {

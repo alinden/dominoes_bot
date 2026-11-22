@@ -25,6 +25,7 @@ export interface GameState {
   botHand: number[];
   boneyard: number;
   spinner: number;
+  lastPlayed: number;
   boardScore: number;
   chains: [number, number][][];
   actions: Action[];

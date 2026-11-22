@@ -47,6 +47,7 @@ function updateControls() {
   draw.disabled = actions.length !== 1 || actions[0][1] !== 4;
   pass.disabled = actions.length !== 1 || actions[0][1] !== 5;
   const graphical = display.value === 'board';
+  get('board-help').hidden = !graphical || busy || !state?.boardMoves.length;
   get('direction-rows').hidden = graphical;
   setBoardMoves(graphical && !busy ? state?.boardMoves ?? [] : []);
   if (graphical) return;

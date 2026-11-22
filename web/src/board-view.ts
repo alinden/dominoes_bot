@@ -147,7 +147,7 @@ export function renderBoard(root: HTMLElement, state: GameState) {
   showTiles(boneyard, 'Boneyard', Array<number>(state.boneyard).fill(-1));
   showTiles(human, `You${state.active === 0 ? '*' : ''} (${state.humanScore})`, state.humanHand, true);
 
-  const position = JSON.stringify([state.spinner, state.chains]);
+  const position = JSON.stringify([state.spinner, state.chains, state.lastPlayed]);
   if (viewport.dataset.position === position) return;
   viewport.dataset.position = position;
   const table = document.createElement('div');
@@ -160,8 +160,12 @@ export function renderBoard(root: HTMLElement, state: GameState) {
   table.style.width = `calc(${width} * var(--tile-unit))`;
   if (arrangement) {
     const { tiles, left, top } = arrangement;
-    for (const tile of tiles) {
+    for (const [index, tile] of tiles.entries()) {
       const element = face(tile.pips, tile.height > tile.width);
+      const high = Math.max(...tile.pips);
+      const id = high * (high + 1) / 2 + Math.min(...tile.pips);
+      if (index === 0 && state.spinner >= 0) element.classList.add('spinner-tile');
+      else if (id === state.lastPlayed) element.classList.add('last-played-tile');
       element.style.left = `${(tile.x - tile.width / 2 - left) / width * 100}%`;
       element.style.top = `${(tile.y - tile.height / 2 - top) / height * 100}%`;
       element.style.width = `${tile.width / width * 100}%`;
