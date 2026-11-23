@@ -1,6 +1,9 @@
 # C++ game engine rewrite plan
 
-This is stage 1 of [the C++ rewrite](rewrite_plan.md). Work on `feature/cpp_rewrite` with the C++ project under `cpp/`. Use Scala commit `a5f8cbed46002bf0d16ae7f3ab5771d758637899` as the behavioral reference. If the reference changes, update the SHA and review any changes to expected fixture results together.
+This is the original implementation plan for the completed C++ engine port.
+Scala commit `a5f8cbed46002bf0d16ae7f3ab5771d758637899` was the behavioral
+reference for the port. The [replay instructions](#run-and-regenerate-the-scala-replays)
+below still apply to the parity tests.
 
 The deliverable is a headless C++ engine that can play a complete scripted match, including redeals and round scoring. Its API will also serve the terminal and search stages. Terminal commands and rendering, AI policies, and Bayesian inference belong to those later stages.
 

@@ -164,5 +164,6 @@ files in opening, midgame, and late order to use neural search for the first bot
 The [training guide](training/README.md) covers generating labels, comparing
 architectures on held-out deal seeds, benchmarking move ordering, and
 exporting the weights. The [sample games](games_vs_greedy/) illustrate the
-original Scala bot's play. The [rewrite plan](rewrite_plan.md) and
-[potential improvements](potential_improvements.md) record development notes.
+original Scala bot's play. The [engine port notes](game_engine_rewrite_plan.md)
+explain how to regenerate the Scala parity fixtures.
+[Potential improvements](potential_improvements.md) tracks follow-up experiments.
