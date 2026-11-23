@@ -7,3 +7,8 @@ src/project/*
 /web/node_modules/
 /web/dist/
 /web/public/engine/
+
+__pycache__/
+*.py[cod]
+/decisions.log
+/cpp-decisions.log
