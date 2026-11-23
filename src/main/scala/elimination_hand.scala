@@ -75,6 +75,7 @@ case class EliminationHand(
       val total = hands.iterator.map(_._2).sum
 
       val probabilities = hands.map { case (ph, likelihood) =>
+        TurnDeadline.check()
         (ph, likelihood / total)
       }
 
@@ -98,7 +99,10 @@ case class EliminationHand(
 
   def normalize(): EliminationHand = {
     val combined = possibilities
-      .groupMapReduce(_.mask)(ph => (ph, ph.likelihood)) {
+      .groupMapReduce(_.mask) { ph =>
+        TurnDeadline.check()
+        (ph, ph.likelihood)
+      } {
         case ((ph, likelihood1), (_, likelihood2)) =>
           (ph, likelihood1 + likelihood2)
       }
@@ -133,7 +137,10 @@ case class EliminationHand(
           .map(d => (d, HandMask.tileBit(d)))
 
       val updatedPossibilities = possibilities
-        .filter(ph => !HandMask.intersects(ph.mask, legalMask))
+        .filter { ph =>
+          TurnDeadline.check()
+          !HandMask.intersects(ph.mask, legalMask)
+        }
         .flatMap { ph =>
           eligibleTiles.collect {
             case (d, bit) if (ph.mask & bit) == 0 =>
@@ -359,6 +366,7 @@ case class EliminationHand(
     remainingHand: Set[Domino],
     config: BayesConfig
   ): BayesObservation = {
+    TurnDeadline.check()
 
     val originalHand = move.domino :: remainingHand.toList
     val hypotheticalGame = before.withReplacedActiveHand(originalHand)
@@ -451,21 +459,20 @@ case class EliminationHand(
       val config = bayesConfig(updated.possibilities.size)
       val canonicalMove = before.canonicalMove(move)
 
-      EliminationHand.benchmark(
-        s"${config.phaseName} | " +
-        s"method=${config.method} | " +
-        s"hands=${updated.possibilities.size} | " +
-        s"depth=${config.depth} | " +
-        s"simulations=${config.simulations}"
-      ) {
-        config.method match {
-          case DirectBayes =>
-            updateHandsDirectly(updated, canonicalMove, before, config)
-
-          case TileBayes =>
-            updateUsingTileEvidence(updated, canonicalMove, before, config)
+      TurnDeadline.attempt {
+        EliminationHand.benchmark(
+          s"${config.phaseName} | " +
+            s"method=${config.method} | " +
+            s"hands=${updated.possibilities.size} | " +
+            s"depth=${config.depth} | " +
+            s"simulations=${config.simulations}"
+        ) {
+          config.method match {
+            case DirectBayes => updateHandsDirectly(updated, canonicalMove, before, config)
+            case TileBayes => updateUsingTileEvidence(updated, canonicalMove, before, config)
+          }
         }
-      }
+      }.getOrElse(updated)
     }
   }
 
@@ -484,6 +491,10 @@ case class EliminationHand(
     case x: MoveLogEntry => {
       val updated = updateForMove(x, before, skipBayes)
       if (skipBayes) updated.normalizeUnique()
+      else if (x.playerName == playerName) {
+        // The observed tile was already removed and normalized before the likelihood search.
+        TurnDeadline.attempt(updated.normalize()).getOrElse(updated)
+      }
       else updated.normalize()
     }
     case x: HighestDoubleEntry => updateForHighestDouble(x).normalizeUnique()
@@ -587,7 +598,10 @@ object EliminationHand {
   ): EliminationHand = {
     val impossible = opponentHand.toSet
     val possibleTiles = Domino.all().filterNot(impossible.contains).toSet
-    val possibleHands = possibleTiles.subsets(initialHandSize).toVector
+    val possibleHands = possibleTiles.subsets(initialHandSize).map { hand =>
+      TurnDeadline.check()
+      hand
+    }.toVector
 
     if (possibleHands.isEmpty) {
       EliminationHand(playerName, Vector.empty, impossible)
@@ -599,6 +613,7 @@ object EliminationHand {
       val likelihood = 1.0 / possibleHands.length.toDouble
 
       val possibilities = possibleHands.zipWithIndex.map { case (hand, index) =>
+        TurnDeadline.check()
         val cumulativeLikelihood =
           if (index == possibleHands.length - 1) 1.0
           else (index + 1) * likelihood
@@ -630,6 +645,7 @@ object EliminationHand {
       val target = math.min(numSamples.toLong, maxHands).toInt
 
       while (sampledHands.size < target) {
+        TurnDeadline.check()
         val hand = random
           .shuffle(possibleTiles)
           .take(initialHandSize)

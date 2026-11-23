@@ -1,141 +1,169 @@
-# dominoes_bot
 Beats you at dominoes.
 
-## How to run the program
-To try it, install [sbt](https://www.scala-sbt.org/) and then run `sbt -J-Xmx4G "run --play_human"`.
-This sets the maximum JVM heap size to 4 GB, which is recommended for AI search. The program can run
-with less memory, but performance may suffer.
+**[bonefishdominoes.com](https://bonefishdominoes.com/)**
 
-To see how its thinking, use the decision log: `sbt -J-Xmx4G "run --play_human --log-decisions decisions.log"`.
-Consider reading through the sample [decisions.log](decisions.log) in the repo to see an example of how the bot thinks
-without needing to run a game yourself.
-
-To run unit tests: `sbt test`.
+It plays two-player All Fives. A game ends after round scoring when one
+player has at least 150 points and leads. A tie starts another round, even
+above 150. The browser runs the engine and its neural models on your device.
 
 ## How the AI works
 
-The primary challenge in dominoes is making decisions with incomplete information. Each player knows their own tiles and the public game state,
-but not the opponent's hand. Drawing tiles introduces an additional source of randomness.
+### Infer the opponent's hand
 
-The AI maintains a probability distribution over possible opponent hands, updating it as new information becomes available. Representing complete
-hands rather than independent tile probabilities captures dependencies between tiles and allows observations to eliminate impossible configurations and
-to reduce the likelihood of hands that would've likely been played differently.
+Each player knows their own hand and the public history of the round. The AI
+represents a possible opponent hand as a 28-bit tile mask and keeps a weight
+for each feasible hand. Plays, draws, and passes rule out hands that conflict
+with the rules. For example, a draw means the player had no playable tile
+before they drew.
 
-Move selection uses a Monte Carlo approximation of [Expectiminimax](https://en.wikipedia.org/wiki/Expectiminimax). For each available move,
-the AI samples possible opponent hands from the probability distribution and evaluates the resulting game states through a recursive game-tree
-search. The sampling approach handles uncertainty about the opponent's hand and randomness from future tile draws within the same search framework.
+Bayesian inference adds softer evidence from the move the opponent chose.
+It reconstructs a candidate hand, then scores the move and its
+alternatives from the opponent's perspective using sampled hidden tiles.
+In the browser, it downweights a hand only when a shallow neural search and a
+deeper check with fresh samples both favor the same alternative by more than
+0.15 on the engine's −1 to +1 value scale. If inference runs out of time, it
+keeps the hard evidence and skips the reweighting for that turn.
 
-To estimate how likely an observed move would be for a particular hand, the AI simulates the opponent's decision-making process from their perspective.
-It uses these estimates to update the probability distribution through Bayesian inference.
+### Search sampled futures
 
-The implementation uses bounded search depths, sampling, and additional heuristics to manage computational complexity. The resulting algorithm is an
-approximation rather than an exhaustive solution to the game.
+The engine uses a Monte Carlo approximation of expectiminimax. It samples
+opponent hands from the current distribution and pairs them with possible
+boneyard orders. Each legal move is scored against the same samples. Search
+maximizes the bot's value on its turns, minimizes it on the opponent's turns,
+and averages the outcomes at draws. When few hands or draw orders remain,
+the C++ engine can enumerate them.
+
+Search groups worlds that share a draw prefix and uses alpha-beta bounds to
+skip branches that cannot change the choice. With a move deadline, it searches
+at increasing depths and keeps the last complete pass. This lets it compare
+all root moves at the same depth even if the next pass times out.
+
+### Use neural models for ordering and evaluation
+
+Three small networks specialize in opening, midgame, and endgame positions.
+Their inputs include both hands in the sampled world, played tiles, exposed
+ends, scores, and boneyard size. The models learn from positions scored by
+search. Some opening labels use a midgame network at a cutoff, and deeper
+labels come from search through round settlement under sampled hidden tiles.
+
+During play, the networks order promising moves so search can find useful
+bounds sooner. They also estimate the value of a position when search reaches
+its depth limit. If a branch reaches round settlement, the engine scores the
+settled position directly.
 
 ## Architecture
 
-The implementation is divided into three main components: the game engine, the search algorithm, and the opponent-hand model.
+| Component | Responsibility |
+| --- | --- |
+| [C++ engine](cpp/src/game.cpp) and [board](cpp/src/board.cpp) | Headless All Fives rules, legal moves, spinner geometry, scoring, and round transitions. |
+| [C++ search](cpp/src/search.cpp) and [hand inference](cpp/src/hand_candidates.cpp) | Sample hidden worlds, score moves, and update the opponent-hand distribution. Native search supports multiple workers. |
+| [Neural search policy](cpp/include/dominoes/neural_search.hpp) | Shared model selection, move ordering, and depth-limit evaluation for the browser and native match bot. |
+| [Browser](web/) | Vite and TypeScript render the interactive board. A Web Worker runs the C++ engine compiled to WebAssembly. GitHub Pages serves the static build. |
+| [Training](training/) | C++ tools generate labels, PyTorch fits and evaluates models, and an exporter writes weights the C++ runtime can load. |
+| [Tests and matches](cpp/tests/) | Rule and search fixtures include positions replayed from Scala. The [match runner](src/main/scala/bot_match.scala) can swap seats on the same deal seed and checks score agreement after each action. |
 
-### Game engine
+## Scala and C++
 
-`Game` and `Board` represent the current game state, including the players' hands, scores, tiles on the board, and remaining boneyard. The game engine handles legal moves, scoring, drawing, passing, and round termination independently of the AI.
+**Scala is the original implementation and the easiest place to read the core
+algorithm.** Start with [the move-selection code](src/main/scala/robot.scala) and
+the explicit [max](src/main/scala/max_node.scala),
+[min](src/main/scala/min_node.scala), and [average](src/main/scala/avg_node.scala)
+search nodes.
 
-### Game-tree search
+**C++ is the faster, current implementation behind the browser game.** It uses the
+same underlying search ideas with compact hand representations, bounded
+draw branches, shared search work across workers in native builds, and neural
+move ordering and evaluation.
 
-`Robot` coordinates move selection using a Monte Carlo approximation of expectiminimax. The search tree contains three types of nodes:
+## Build, test, and experiment
 
-- `MaxNode` selects the highest-valued move for the robot.
-- `MinNode` selects the lowest-valued move from the robot's perspective, representing the opponent's decisions.
-- `AvgNode` evaluates uncertain outcomes by sampling possible opponent hands and simulating draws.
+### Run the terminal versions
 
-```text
-MaxNode (robot chooses a move)
-  |
-  +-- AvgNode (Move A)
-  |     |
-  |     +-- MinNode (sampled opponent hand 1)
-  |     |     |
-  |     |     +-- AvgNode (opponent response)
-  |     |           |
-  |     |           +-- MaxNode (next robot turn)
-  |     |           |
-  |     |           +-- MaxNode (next robot turn)
-  |     |
-  |     +-- MinNode (sampled opponent hand 2)
-  |
-  +-- AvgNode (Move B)
-        |
-        +-- ...
+From the repository root, build C++ with a C++20 compiler and CMake.
+
+```sh
+cmake -S cpp -B cpp/build/debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build cpp/build/debug
+ctest --test-dir cpp/build/debug --output-on-failure
+./cpp/build/debug/dominoes
 ```
 
-The search alternates between player decisions and probabilistic evaluations. At terminal positions, it evaluates the resulting scores; at the search depth limit, it uses a heuristic.
+The terminal defaults to a greedy opponent. Use `--search` for lookahead,
+`--depth N` and `--workers N` to tune it, and `--bayes` for hand weighting.
+To record a trace, add `--log-decisions target/cpp-decisions.log`. The log
+includes the real opponent hand for diagnostics. Type `h` in the game for
+terminal commands.
 
-To balance playing strength and response time, the robot performs successive searches with increasing depth and simulation budgets. It stops after a search exceeds a configurable time target or the available search configurations are exhausted.
+For Scala, install sbt and run:
 
-### Opponent-hand inference
-
-`Perspective` represents a player's knowledge of the game, including a probability distribution over possible opponent hands.
-
-The distribution is updated as the opponent plays, draws, or passes. Bayesian inference uses both the constraints imposed by observed actions and estimates of how likely the opponent would have been to choose those actions with different hands.
-
-Possible hands are represented using a 28-bit integer mask, with one bit for each domino in a double-six set. This allows efficient membership checks and hand updates while reducing memory allocation during inference.
-
-The search algorithm samples from this distribution, allowing the robot to evaluate moves against plausible opponent hands rather than assuming that the hidden tiles are uniformly distributed.
-
-## How to play
-When it's your turn, you'll see a `*` next to **human** in the score. You're **human** and it's **robot**.  It'll
-look something like this:
-
-```
-----------------------------------
-human*(0): [5,0] [4,4] [2,1] [3,0] [1,1] [6,3] [5,4]
-robot(10): [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-boneyard: [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x] [x,x]
-tiles: 28
-spinner: [5,5]
-left:
-right:
-up:
-down:
-board score: 10
+```sh
+sbt test
+sbt -J-Xmx4G 'run --play_human --log-decisions target/decisions.log'
 ```
 
-Type `h` for the help menu. Type `m 0 l` to move the 0th piece to the left, for example. Type `d` to draw and
-`p` to pass.
+### Build and deploy the browser game
 
-After that, it'll be the computer's turn. It can take a while to decide what to play, especially at the beginning
-of the game.
+With Emscripten activated and Node.js installed, build the engine and fetch
+the published weights. Local training is optional.
 
-The rules are based on the **Fives** version of dominoes. The game is made up of several rounds and ends when one player
-has more than 150 points - and more points than their opponent - at the end of a round. Rounds can end in **dominoes** if
-a player is able to play all of their tiles. It can also end in a **locked game** if neither player is able to play and
-the **boneyard** - the pile of dominoes to draw from - is empty. If a player gets **dominoes**, they start the next round
-with the piece of their choice. The first round and any round following a **locked game** starts with the highest double
-that either player has. The program will play that piece automatically. If neither player has a double, the round is
-restarted after shuffling the pieces.
+```sh
+emcmake cmake -S cpp -B cpp/build/web -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build/web --parallel
+mkdir -p web/public/engine
+cp cpp/build/web/dominoes.mjs cpp/build/web/dominoes.wasm web/public/engine/
+for model in opening specialist late; do
+  curl -fsSL "https://bonefishdominoes.com/engine/$model.weights" \
+    -o "web/public/engine/$model.weights"
+done
+npm --prefix web ci
+npm --prefix web run dev
+```
 
-During a round, players alternate turns, playing one tile per turn. They can play a piece if it connects to the end
-of one of parts of the board: the **spinner** or the **left**, **right**, **up** or **down** chain. It connects if either of its numbers
-match the number on the outside of the piece its connecting to. The **spinner** is the first double played in a round. It is the only
-piece in a round that players can connect to from 4 directions, so ends up influencing play in the round significantly. Before there
-is a **spinner**, players can play on both sides of the **left** chain. For example, in a round that has no **spinner** and only
-a **left**, where the **left** is `[6,2] - [2,3]`, players could play tiles with at least one 3 to the right or tiles with
-at least one 6 to the left. If all 4 directions off of the **spinner** have some tiles, players can no longer play off of the
-**spinner**. To see some sample play, [here](https://github.com/alinden/dominoes_bot/blob/main/games_vs_greedy/best_of_11.txt) are some games between the AI and a greedy algorithm playing as human.
+Fast uses depth 9 and up to two seconds of move search. Full strength uses
+depth 15 through five tiles and searches toward round settlement from six
+onward with a 10-second move cap. Inference has a separate budget and runs
+at up to 1,000 hands for Fast and 6,000 for Full strength.
 
-If a player doesn't have any legal moves, they have to **draw**. By drawing, they take one tile from the boneyard and
-then have a new turn. If the piece they drew doesn't connect to the board, they will have to draw again.
+Use `npm --prefix web run build` to produce `web/dist`. With the
+`gh-pages` branch checked out as a sibling worktree at `../bonefish-pages`,
+run `bash web/deploy-pages.sh --dry-run` to preview the deployment or
+`bash web/deploy-pages.sh` to publish. Set `GH_PAGES_WORKTREE` for a
+different path. The script preserves the custom-domain file.
 
-If there are no tiles in the boneyard and a player can't play, they have to **pass**.
+### Run paired bot matches
 
-When both players **pass** consecutively, the game is locked.
+Build the native Release bot before running a match.
 
-Players can score points during a round by playing their tiles so that the board score is a multiple of 5 after their turn.
-For example, if the board score is 25 after your turn, you will score 25 points. If the board score is not a multiple of 5,
-neither player gets any points. The board score is the sum of the ends of the chains on the board. With doubles, both numbers
-are counted. For other pieces, only the number that can be connected to counts.
+```sh
+cmake -S cpp -B cpp/build/release -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build/release --parallel
+```
 
-At the end of a round that ends in **dominoes**, the player who played all their tiles get the sum of the opponent's tiles,
-rounded to the nearest 5.
+Compare C++ depth 15 to Scala with 30 seconds each for Scala inference and
+move search. The last two arguments are the pair count and first deal seed.
 
-At the end of a round that ends in a **locked game**, the player with a lower tile count gets the sum of their opponent's tiles minus the sum
-of the their tiles, rounded to the nearest 5.
+```sh
+sbt -J-Xmx4G 'runMain BotMatch ./cpp/build/release/dominoes_match_bot 15 30 30 1 42'
+```
+
+Compare two C++ bots with depth ceilings of 15 and 68, a 60-second move cap,
+and one seat-swapped pair starting at seed 48.
+
+```sh
+sbt 'runMain CppDepthMatch ./cpp/build/release/dominoes_match_bot 15 68 60 1 48'
+```
+
+The runners print the scoreboard and paths to separate decision logs under
+`target/bot-match-logs` by default. After the seed, `CppDepthMatch` accepts
+a log directory, both breadths, the second bot's move budget, worker count,
+and both inference budgets. You can also append three exported neural weight
+files in opening, midgame, and late order to use neural search for the first bot.
+
+### Train and evaluate models
+
+The [training guide](training/README.md) covers generating labels, comparing
+architectures on held-out deal seeds, benchmarking move ordering, and
+exporting the weights. The [sample games](games_vs_greedy/) illustrate the
+original Scala bot's play. The [engine port notes](game_engine_rewrite_plan.md)
+explain how to regenerate the Scala parity fixtures.
+[Potential improvements](potential_improvements.md) tracks follow-up experiments.

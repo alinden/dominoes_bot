@@ -1,8 +1,40 @@
 package game
 
 import org.scalatest.flatspec.AnyFlatSpec
+import monix.execution.Scheduler.Implicits.global
+import scala.concurrent.duration._
+import java.nio.file.{Files, Paths}
 
 class RobotSpec extends AnyFlatSpec {
+  "A Robot" should "match the shared fixed-position C++ scores" in {
+    val lines = Files.readString(Paths.get("cpp/tests/fixed_search.txt")).linesIterator.toList
+    val tiles = lines.head.split(" ").toList.map(id => Domino.all()(id.toInt))
+    val opening = Game(
+      Board.empty(),
+      Player("human", tiles.take(7), 0),
+      Player("robot", tiles.slice(7, 14), 0),
+      HighestDouble,
+      tiles.drop(14),
+      GameLog.empty(),
+    )
+    val game = opening.playHighestDouble(Domino(6, 6)).get._1
+    val hand = game.playerOne.hand
+    val perspective = robotPerspective(game, List(hand.mkString(" ") -> 1.0))
+      .copy(maybeOpponentHand = Some(hand))
+
+    for ((depth, rows) <- lines.tail.groupBy(_.takeWhile(_ != ' ').toInt)) {
+      val scores = MaxNode(perspective, game, depth, 1).getScoredMoves()
+      val expected = rows.map { row =>
+        val Array(_, id, lead, runway) = row.split(" "): @unchecked
+        (Move(Domino.all()(id.toInt), Left), math.tanh(lead.toDouble / runway.toDouble))
+      }
+      assert(scores.map(_._2) == expected.map(_._1))
+      scores.zip(expected).foreach { case ((score, _), (_, expectedScore)) =>
+        assert(math.abs(score.value - expectedScore) < 1e-12)
+      }
+    }
+  }
+
   "A Robot" should "know the score at the move before dominoes" in {
     val gameState = parseGame(
       center = "[6,6]",
@@ -132,6 +164,49 @@ class RobotSpec extends AnyFlatSpec {
     val action = Robot.greedyMove(game)
 
     assert(action.contains(Move(Domino(6, 3), Left)))
+  }
+
+  "A Robot" should "fall back to greedy when its search deadline has already expired" in {
+    val game = parseGame(
+      center = "[6,6]",
+      robot = "[6,3] [6,1]",
+      human = "[5,4] [4,2]",
+      boneyard = "[5,5] [4,4]",
+    )
+    val guess = robotPerspective(game, List("[5,4] [4,2]" -> 1.0)).opponentHand
+    val deadline = Some(TurnDeadline.after(Duration.Zero))
+    val task = TurnDeadline.withCurrent(deadline) {
+      assert(Robot.act(game, Some(guess), debug = false).contains(Move(Domino(6, 3), Left)))
+      Robot.getBestMove(game, guess, false, 1, 1)
+    }
+    // Run outside the deadline scope to verify that each deferred root task receives it.
+    intercept[TurnDeadline.Expired.type] { task.runSyncUnsafe() }
+    assert(TurnDeadline.current.isEmpty)
+  }
+
+  "A Robot" should "search with a sampled hand estimate after inference expires" in {
+    val game = parseGame(
+      center = "[6,6]",
+      robot = "[6,3] [6,1]",
+      human = "[5,4] [4,2]",
+      boneyard = "[5,5] [4,4]",
+    )
+    val expired = Some(TurnDeadline.after(Duration.Zero))
+    val inferred = TurnDeadline.withCurrent(expired) {
+      TurnDeadline.attempt(Robot.sampleUnknownHand(game))
+    }
+    assert(inferred.isEmpty)
+
+    val fallback = Robot.sampleUnknownHand(game)
+    val known = (game.playerTwo.hand ++ game.board.tiles()).toSet
+    assert(fallback.possibilities.nonEmpty)
+    assert(fallback.possibilities.forall(hand => hand.hand.size == 2 && !hand.hand.exists(known)))
+
+    val searchDeadline = Some(TurnDeadline.after(5.seconds))
+    val (_, action) = TurnDeadline.withCurrent(searchDeadline) {
+      Robot.getBestMove(game, fallback, false, 1, 1).runSyncUnsafe()
+    }
+    assert(game.allLegalActions().contains(action))
   }
 
   private def dominoes(s: String): List[Domino] =

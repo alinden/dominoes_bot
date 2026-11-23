@@ -3,3 +3,12 @@ project/project/*
 project/target/*
 src/target/*
 src/project/*
+/cpp/build/
+/web/node_modules/
+/web/dist/
+/web/public/engine/
+
+__pycache__/
+*.py[cod]
+/decisions.log
+/cpp-decisions.log

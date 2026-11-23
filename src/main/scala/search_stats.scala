@@ -13,7 +13,10 @@ object SearchStats {
     drawSimulations.reset()
   }
 
-  def visit(): Unit = nodes.increment()
+  def visit(): Unit = {
+    TurnDeadline.check()
+    nodes.increment()
+  }
 
   def visitDraw(simulations: Int): Unit = {
     drawNodes.increment()

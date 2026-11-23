@@ -26,26 +26,33 @@ case class MaxNode(
   def asyncGetScoredMoves(
       limitToMoves: List[Action] = List(),
   ): Task[List[(Score, Action)]] = {
+    val deadline = TurnDeadline.current
     val tasks = possibleFutures()
       .filter { case (_, move) =>
         limitToMoves.isEmpty || limitToMoves.contains(move)
       }
       .map { case (future, move) =>
         Task {
-          val score = AvgNode(
-            perspective,
-            game,
-            future,
-            move,
-            depthRemaining - 1,
-            childSimulations,
-          ).score()
-
-          (score, move)
+          TurnDeadline.withCurrent(deadline) {
+            TurnDeadline.attempt {
+              TurnDeadline.check()
+              val score = AvgNode(
+                perspective,
+                game,
+                future,
+                move,
+                depthRemaining - 1,
+                childSimulations,
+              ).score()
+              TurnDeadline.check()
+              (score, move)
+            }
+          }
         }
       }
 
-    Task.parSequence(tasks)
+    // Wait for every worker to leave its search before falling back to an earlier pass.
+    Task.parSequence(tasks).map(_.map(_.getOrElse(throw TurnDeadline.Expired)))
   }
 
   def isBetterScore(
