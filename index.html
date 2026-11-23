@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Play All Fives dominoes against Bonefish. The opponent runs right in your browser.">
+    <meta name="theme-color" content="#101613">
+    <meta property="og:title" content="Bonefish Dominoes">
+    <meta property="og:description" content="Play All Fives dominoes against an opponent that runs in your browser.">
+    <meta property="og:image" content="https://alinden.github.io/dominoes_bot/bonefish.jpg">
+    <link rel="icon" type="image/svg+xml" href="./bonefish-icon.svg">
+    <title>Bonefish Dominoes</title>
+    <script type="module" crossorigin src="./assets/index-BEIRI6ps.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-9ZrOnB7d.css">
+  </head>
+  <body>
+    <main>
+      <header class="site-header">
+        <div class="brand">
+          <img src="./bonefish-icon.svg" alt="" width="72" height="72">
+          <div>
+            <h1>Bonefish Dominoes</h1>
+            <p>Play All Fives against Bonefish</p>
+          </div>
+        </div>
+        <button id="settings-button" type="button">Settings</button>
+      </header>
+      <div class="series-bar">
+        <p id="series"></p>
+        <span id="model-label"></span>
+      </div>
+      <section class="game-panel" aria-label="Game">
+        <div id="board-view"></div>
+        <pre id="notice" aria-live="polite"></pre>
+        <div id="status" role="status"></div>
+      </section>
+      <section id="legal-actions" aria-label="Legal moves">
+        <div class="forced-actions">
+          <button id="draw" type="button" disabled>Draw</button>
+          <button id="pass" type="button" disabled>Pass</button>
+        </div>
+      </section>
+      <button id="next-game" type="button" hidden>Next game</button>
+    </main>
+    <dialog id="settings">
+      <h2>Settings</h2>
+      <form id="settings-form">
+        <fieldset class="strength-setting">
+          <legend>Bonefish strength</legend>
+          <div class="radio-toggle">
+            <label><input type="radio" name="strength" value="fast" checked><span>Fast</span></label>
+            <label><input type="radio" name="strength" value="full"><span>Full strength</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Best of</legend>
+          <div class="radio-toggle series-length-toggle">
+            <label><input type="radio" name="bestOf" value="1" checked><span>1</span></label>
+            <label><input type="radio" name="bestOf" value="3"><span>3</span></label>
+            <label><input type="radio" name="bestOf" value="5"><span>5</span></label>
+          </div>
+        </fieldset>
+        <div class="dialog-actions">
+          <button id="close-settings" type="button">Cancel</button>
+          <button type="submit">Start new series</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
