@@ -1,8 +1,8 @@
 Beats you at dominoes.
 
-**[Play Bonefish Dominoes](https://bonefishdominoes.com/)**
+**[bonefishdominoes.com](https://bonefishdominoes.com/)**
 
-Bonefish plays two-player All Fives. A game ends after round scoring when one
+It plays two-player All Fives. A game ends after round scoring when one
 player has at least 150 points and leads. A tie starts another round, even
 above 150. The browser runs the engine and its neural models on your device.
 
@@ -10,18 +10,18 @@ above 150. The browser runs the engine and its neural models on your device.
 
 ### Infer the opponent's hand
 
-Each player knows their own hand and the public history of the round. Bonefish
+Each player knows their own hand and the public history of the round. The AI
 represents a possible opponent hand as a 28-bit tile mask and keeps a weight
 for each feasible hand. Plays, draws, and passes rule out hands that conflict
 with the rules. For example, a draw means the player had no playable tile
 before they drew.
 
 Bayesian inference adds softer evidence from the move the opponent chose.
-Bonefish reconstructs a candidate hand, then scores the move and its
+It reconstructs a candidate hand, then scores the move and its
 alternatives from the opponent's perspective using sampled hidden tiles.
 In the browser, it downweights a hand only when a shallow neural search and a
 deeper check with fresh samples both favor the same alternative by more than
-0.15 on the engine's −1 to +1 value scale. If inference runs out of time, Bonefish
+0.15 on the engine's −1 to +1 value scale. If inference runs out of time, it
 keeps the hard evidence and skips the reweighting for that turn.
 
 ### Search sampled futures
@@ -29,7 +29,7 @@ keeps the hard evidence and skips the reweighting for that turn.
 The engine uses a Monte Carlo approximation of expectiminimax. It samples
 opponent hands from the current distribution and pairs them with possible
 boneyard orders. Each legal move is scored against the same samples. Search
-maximizes Bonefish's value on its turns, minimizes it on the opponent's turns,
+maximizes the bot's value on its turns, minimizes it on the opponent's turns,
 and averages the outcomes at draws. When few hands or draw orders remain,
 the C++ engine can enumerate them.
 
@@ -70,7 +70,7 @@ the explicit [max](src/main/scala/max_node.scala),
 [min](src/main/scala/min_node.scala), and [average](src/main/scala/avg_node.scala)
 search nodes.
 
-**C++ is the faster, current implementation behind Bonefish.** It uses the
+**C++ is the faster, current implementation behind the browser game.** It uses the
 same underlying search ideas with compact hand representations, bounded
 draw branches, shared search work across workers in native builds, and neural
 move ordering and evaluation.
