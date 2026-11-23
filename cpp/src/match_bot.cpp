@@ -1,6 +1,7 @@
 #include "dominoes/decision_log.hpp"
 #include "dominoes/greedy.hpp"
 #include "dominoes/hand_candidates.hpp"
+#include "dominoes/neural_search.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -38,12 +39,15 @@ void write_action(const Action& action) {
 }
 
 void run(Seat bot, int depth, int search_seconds, std::size_t breadth,
-         std::size_t workers, int inference_seconds, unsigned long seed, std::ostream& log) {
+         std::size_t workers, int inference_seconds, unsigned long seed, std::ostream& log,
+         const std::optional<NeuralSearch>& neural) {
     std::mt19937 random(seed);
     std::mt19937 inference_random(seed ^ 0x9e3779b9UL);
     Game game;
     std::optional<HandCandidates> candidates;
     const Seat opponent = bot == Seat::first ? Seat::second : Seat::first;
+    const auto phases = neural ? neural->phases() : std::array<OrderingPhase, 3>{};
+    const auto options = neural ? neural->options(phases) : SettlementSearchOptions{{}, false};
     std::string line;
     while (std::getline(std::cin, line)) {
         std::istringstream command(line);
@@ -82,17 +86,21 @@ void run(Seat bot, int depth, int search_seconds, std::size_t breadth,
             TimedSearchResult search;
             DecisionSamples samples;
             if (legal.size() > 1) {
-                const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(search_seconds);
+                const auto start = std::chrono::steady_clock::now();
+                const auto deadline = start + std::chrono::seconds(search_seconds);
+                const int max_depth = neural ? NeuralSearch::max_depth(game) : depth;
                 samples = candidates->sample_for_search(game, breadth, random);
                 if (!samples.worlds.empty() && search_seconds > 0) {
-                    search = search_until(game, bot, depth, samples.worlds, deadline, workers);
-                    log << "Depth ceiling: " << depth << ", completed: " << search.depth << '\n';
+                    search = search_until(game, bot, max_depth, samples.worlds, deadline, workers, options);
+                    log << "Depth ceiling: " << max_depth << ", completed: " << search.depth << '\n';
                     if (search.timed_out) log << "Search deadline reached.\n";
                     if (search.reached_round_end) log << "All sampled branches reached round settlement.\n";
                 } else if (!samples.worlds.empty()) {
-                    search.scores = score_sampled_actions(game, bot, depth, samples.worlds, workers);
-                    search.depth = depth;
+                    search.scores = score_sampled_actions(game, bot, max_depth, samples.worlds, workers, options);
+                    search.depth = max_depth;
                 }
+                log << "Move search seconds: "
+                    << std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << '\n';
             }
             auto& scores = search.scores;
             const auto chosen = legal.size() == 1 ? legal.front()
@@ -118,25 +126,29 @@ void run(Seat bot, int depth, int search_seconds, std::size_t breadth,
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc < 5 || argc > 9) {
-            throw std::runtime_error("Usage: dominoes_match_bot SEAT DEPTH SEED LOG [SEARCH_SECONDS [BREADTH [WORKERS [INFERENCE_SECONDS]]]]");
+        if (argc < 5 || (argc > 9 && argc != 12)) {
+            throw std::runtime_error("Usage: dominoes_match_bot SEAT DEPTH SEED LOG [SEARCH_SECONDS [BREADTH [WORKERS [INFERENCE_SECONDS [OPENING MIDGAME LATE]]]]]");
         }
         const int seat = std::stoi(argv[1]);
         const int depth = std::stoi(argv[2]);
         const int search_seconds = argc >= 6 ? std::stoi(argv[5]) : 0;
         const int breadth = argc >= 7 ? std::stoi(argv[6]) : HandCandidates::search_samples;
         const int workers = argc >= 8 ? std::stoi(argv[7]) : 1;
-        const int inference_seconds = argc == 9 ? std::stoi(argv[8]) : 0;
+        const int inference_seconds = argc >= 9 ? std::stoi(argv[8]) : 0;
         if (seat < 0 || seat > 1 || depth < 1 || search_seconds < 0 || breadth < 1 ||
             workers < 1 || inference_seconds < 0) {
             throw std::runtime_error("invalid seat, depth, timing budget, breadth, or worker count");
         }
         const auto seed = std::stoul(argv[3]);
+        std::optional<NeuralSearch> neural;
+        if (argc == 12) {
+            neural.emplace(NeuralSearch{ValueOrder(argv[9]), ValueOrder(argv[10]), ValueOrder(argv[11])});
+        }
         std::ofstream log(argv[4], std::ios::app);
         if (!log) throw std::runtime_error("could not open decision log");
         log << "GAME | seed " << argv[3] << " | C++ seat " << seat + 1 << '\n' << std::flush;
         run(static_cast<Seat>(seat), depth, search_seconds, static_cast<std::size_t>(breadth),
-            static_cast<std::size_t>(workers), inference_seconds, seed, log);
+            static_cast<std::size_t>(workers), inference_seconds, seed, log, neural);
     } catch (const std::exception& error) {
         std::cerr << "C++ match bot: " << error.what() << '\n';
         return 1;

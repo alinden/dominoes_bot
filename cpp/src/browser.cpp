@@ -1,5 +1,6 @@
 #include "dominoes/greedy.hpp"
 #include "dominoes/hand_candidates.hpp"
+#include "dominoes/neural_search.hpp"
 
 #include <emscripten/emscripten.h>
 
@@ -18,6 +19,7 @@ constexpr Seat robot = Seat::second;
 constexpr int draw = 4;
 constexpr int pass = 5;
 constexpr const char* directions[]{"left", "right", "up", "down"};
+std::optional<NeuralSearch> neural_models;
 
 struct Session {
     Game game;
@@ -34,10 +36,12 @@ struct Session {
     int search_seconds;
     int inference_seconds;
     bool search;
+    bool neural;
 
-    Session(unsigned seed, bool search, int depth, int breadth, int search_seconds, int inference_seconds)
+    Session(unsigned seed, int model, int depth, int breadth, int search_seconds, int inference_seconds)
         : random(seed), inference_random(seed ^ 0x9e3779b9U), depth(depth), breadth(breadth),
-          search_seconds(search_seconds), inference_seconds(inference_seconds), search(search) {}
+          search_seconds(search_seconds), inference_seconds(inference_seconds),
+          search(model != 0), neural(model == 2) {}
 
     void deal() {
         last_played.reset();
@@ -98,9 +102,12 @@ struct Session {
             const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(search_seconds);
             const auto samples = candidates->sample_for_search(game, breadth, random);
             if (!samples.worlds.empty()) {
+                const auto phases = neural ? neural_models.value().phases() : std::array<OrderingPhase, 3>{};
+                const auto options = neural ? neural_models->options(phases) : SettlementSearchOptions{{}, false};
+                const int max_depth = neural ? NeuralSearch::max_depth(game) : depth;
                 const auto scores = search_seconds == 0
-                    ? score_sampled_actions(game, robot, depth, samples.worlds)
-                    : search_until(game, robot, depth, samples.worlds, deadline).scores;
+                    ? score_sampled_actions(game, robot, max_depth, samples.worlds, 1, options)
+                    : search_until(game, robot, max_depth, samples.worlds, deadline, 1, options).scores;
                 if (!scores.empty()) return std::ranges::max_element(scores, {}, &ScoredAction::score)->action;
             }
         }
@@ -146,9 +153,24 @@ int seat_id(std::optional<Seat> seat) {
 
 extern "C" {
 
-EMSCRIPTEN_KEEPALIVE void start_game(unsigned seed, int search, int depth, int breadth,
+EMSCRIPTEN_KEEPALIVE int load_neural_models(const char* opening_weights, const char* midgame_weights,
+                                           const char* late_weights) {
+    try {
+        std::istringstream opening(opening_weights);
+        std::istringstream midgame(midgame_weights);
+        std::istringstream late(late_weights);
+        NeuralSearch models{ValueOrder(opening), ValueOrder(midgame), ValueOrder(late)};
+        session.reset();
+        neural_models.emplace(std::move(models));
+        return 1;
+    } catch (const std::exception&) {
+        return 0;
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE void start_game(unsigned seed, int model, int depth, int breadth,
                                     int search_seconds, int inference_seconds) {
-    session.emplace(seed, search != 0, depth, breadth, search_seconds, inference_seconds);
+    session.emplace(seed, model, depth, breadth, search_seconds, inference_seconds);
     session->deal();
 }
 

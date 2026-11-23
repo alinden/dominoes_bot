@@ -2,10 +2,38 @@ import type { GameState, Reply, Request } from './protocol';
 
 interface Engine {
   cwrap(name: string, result: string | null, args: string[]): (...values: number[]) => unknown;
+  _malloc(size: number): number;
+  _free(pointer: number): void;
+  HEAPU8: Uint8Array;
 }
 
 let engine: Engine | undefined;
 let showHand = false;
+let modelsLoaded = false;
+
+async function loadModels(engine: Engine, engineUrl: string) {
+  const weights = await Promise.all(['opening.weights', 'specialist.weights', 'late.weights'].map(async (name) => {
+    const response = await fetch(new URL(name, engineUrl));
+    if (!response.ok) throw new Error(`Could not load ${name}.`);
+    return new Uint8Array(await response.arrayBuffer());
+  }));
+  const pointers: number[] = [];
+  try {
+    for (const bytes of weights) {
+      const pointer = engine._malloc(bytes.length + 1);
+      if (!pointer) throw new Error('Could not allocate model weights.');
+      pointers.push(pointer);
+      engine.HEAPU8.set(bytes, pointer);
+      engine.HEAPU8[pointer + bytes.length] = 0;
+    }
+    if (!engine.cwrap('load_neural_models', 'number', ['number', 'number', 'number'])(...pointers)) {
+      throw new Error('The neural weights could not be loaded.');
+    }
+    modelsLoaded = true;
+  } finally {
+    for (const pointer of pointers) engine._free(pointer);
+  }
+}
 
 self.onmessage = async ({ data }: MessageEvent<Request>) => {
   const send = (reply: Reply) => self.postMessage(reply);
@@ -19,10 +47,12 @@ self.onmessage = async ({ data }: MessageEvent<Request>) => {
           locateFile: (file: string) => new URL(file, engineUrl).href,
         }) as Engine;
       }
+      if (settings.model === 'neural' && !modelsLoaded) await loadModels(engine, engineUrl);
       showHand = settings.showHand;
+      const model = settings.model === 'neural' ? 2 : settings.model === 'search' ? 1 : 0;
       engine.cwrap('start_game', null, Array(6).fill('number'))(
-        seed, Number(settings.model === 'search'), settings.depth, settings.breadth,
-        settings.searchSeconds, settings.model === 'search' && settings.bayes ? settings.inferenceSeconds : 0,
+        seed, model, settings.depth, settings.breadth,
+        settings.searchSeconds, model && settings.bayes ? settings.inferenceSeconds : 0,
       );
     } else {
       if (!engine) throw new Error('Start a game first.');

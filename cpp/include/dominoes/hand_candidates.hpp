@@ -43,6 +43,9 @@ public:
     DecisionSamples sample_for_search(const Game& position, std::size_t breadth,
                                       std::mt19937& random) const;
     void log_estimates(std::ostream& log, std::span<const Domino> actual_hand) const;
+    std::vector<std::vector<Domino>> feasible_hands() const;
+    std::vector<std::vector<Domino>> sample_distinct_hands(
+        std::span<const Domino> included, std::size_t limit, std::mt19937& random) const;
 
     static constexpr std::size_t search_samples = 16;
 

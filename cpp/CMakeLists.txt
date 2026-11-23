@@ -28,7 +28,8 @@ if(EMSCRIPTEN)
     target_link_options(dominoes_web PRIVATE
         -fexceptions --no-entry
         -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker
-        -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_RUNTIME_METHODS=cwrap)
+        -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=524288
+        -sEXPORTED_FUNCTIONS=_malloc,_free -sEXPORTED_RUNTIME_METHODS=cwrap,HEAPU8)
     set_target_properties(dominoes_web PROPERTIES OUTPUT_NAME dominoes SUFFIX ".mjs")
     return()
 endif()

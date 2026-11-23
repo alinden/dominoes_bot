@@ -67,8 +67,9 @@ function updateControls() {
 
 function render(position: GameState) {
   get('series').textContent = `Best of ${settings.bestOf} · Game ${game} · You ${wins[0]} / Bot ${wins[1]}`;
+  const modelName = settings.model === 'neural' ? 'Neural search' : 'Search';
   get('model-label').textContent = settings.model === 'greedy' ? 'Greedy bot'
-    : settings.bayes ? 'Search + Bayes' : 'Search bot';
+    : settings.bayes ? `${modelName} + Bayes` : `${modelName} bot`;
   renderDisplay(position);
   notice.textContent = position.notice;
 }
@@ -154,7 +155,7 @@ pass.onclick = () => submitAction([-1, 5]);
 function readSettings(): Settings {
   const input = (name: string) => settingsForm.elements.namedItem(name) as HTMLInputElement;
   return {
-    model: modelInput.value === 'search' ? 'search' : 'greedy',
+    model: modelInput.value === 'neural' ? 'neural' : modelInput.value === 'search' ? 'search' : 'greedy',
     depth: input('depth').valueAsNumber,
     breadth: input('breadth').valueAsNumber,
     bayes: input('bayes').checked,

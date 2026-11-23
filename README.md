@@ -23,7 +23,7 @@ or fewer boneyard tiles, it also checks every draw order. The decision log repor
 Use `--workers N` to enable parallel search with up to `N` workers. The default is one.
 
 Use `--bayes` to enable Bayesian hand weighting. Public plays, draws, and passes first eliminate impossible hands.
-After an opponent play, the bot evaluates each feasible hand directly when at most 200 remain. It updates the weights
+After an opponent play, the bot evaluates each feasible hand directly when at most 300 remain. It updates the weights
 only after every sampled search branch reaches round settlement. If the inference deadline expires, it keeps the hard
 evidence and previously learned weights. The 15-second inference budget is independent of move search. Set a different
 budget with `--inference-time-seconds N`. The decision log reports when inference runs, skips, or times out.
@@ -53,7 +53,7 @@ uses the original timing policy. Display pauses are outside both budgets.
 The terminal-style web app runs the C++ bot in a Web Worker. Open **Settings** to
 start a series and choose Greedy or Search, depth, breadth, Bayes, separate search
 and inference budgets, and the number of games. The browser build uses one search
-thread. A search budget of zero runs to the selected depth without a time limit.
+thread. A search budget of zero removes the move-time limit.
 
 With a recent Emscripten SDK activated and Node.js installed, run from the repo root:
 
@@ -72,6 +72,24 @@ click the highlighted end. Draw and Pass
 are available in both views. Switch views in Settings during play. After a C++
 change, rebuild and copy both engine files again.
 Run `npm --prefix web run build` to generate the static site in `web/dist`.
+
+**Neural search** orders moves with the opening specialist through five tiles,
+the midgame specialist at 6–12 tiles with at least eight boneyard tiles, and
+the late model at 13 or more tiles with four to six boneyard tiles. At a depth
+cutoff it chooses the value model by the leaf's tile count. If fewer than six
+tiles are placed at the start of a turn, the search goes up to depth 15.
+From six tiles onward it aims for round settlement, subject to the search time
+setting. The depth input controls the regular Search model.
+To enable this option, stage these files before running or building Vite:
+
+```sh
+cp target/neural-opening-specialist-18000/3x128.weights web/public/engine/opening.weights
+cp target/neural-early-specialist-20000/2x128.weights web/public/engine/specialist.weights
+cp target/neural-50000-medium/2x64.weights web/public/engine/late.weights
+```
+
+See the [training guide](training/README.md) for exporting checkpoints to
+`.weights` files.
 
 ### C++ versus Scala
 

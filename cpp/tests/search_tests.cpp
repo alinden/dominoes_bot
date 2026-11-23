@@ -76,6 +76,24 @@ void check_sampled_hands(const Game& game) {
     expect_score(timed.scores.front().score, scores.front().score,
                  "timed search must reuse the supplied samples");
 
+    int ordered_nodes = 0;
+    const std::array phases{OrderingPhase{[&](const Game& child, Seat mover) {
+        ++ordered_nodes;
+        return evaluate_position(child, mover);
+    }, 0, 12, 8, 14}};
+    const SettlementSearchOptions ordered{{}, true, false, 0, phases};
+    const auto plain = search_until(game, Seat::second, 6, samples, deadline);
+    const auto ranked = search_until(game, Seat::second, 6, samples, deadline, 1, ordered);
+    if (ordered_nodes == 0 || plain.timed_out || ranked.timed_out ||
+        plain.depth != ranked.depth || plain.reached_round_end != ranked.reached_round_end ||
+        plain.scores.size() != ranked.scores.size()) {
+        throw std::runtime_error("bounded move ordering must preserve completion and depth");
+    }
+    for (std::size_t i = 0; i < plain.scores.size(); ++i) {
+        expect_score(ranked.scores[i].score, plain.scores[i].score,
+                     "bounded move ordering must preserve weighted move values");
+    }
+
     auto invalid = second;
     invalid.opponent_hand.front() = {6, 6};
     try {

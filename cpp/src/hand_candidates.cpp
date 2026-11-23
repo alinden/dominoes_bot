@@ -219,6 +219,36 @@ void HandCandidates::log_estimates(std::ostream& log, std::span<const Domino> ac
     log << summary.str();
 }
 
+std::vector<std::vector<Domino>> HandCandidates::feasible_hands() const {
+    std::vector<std::vector<Domino>> result;
+    result.reserve(hands_.size());
+    for (const auto& candidate : hands_) result.push_back(tiles_from(candidate.hand));
+    return result;
+}
+
+std::vector<std::vector<Domino>> HandCandidates::sample_distinct_hands(
+    std::span<const Domino> included, std::size_t limit, std::mt19937& random) const {
+    if (limit == 0) return {};
+    const auto actual = std::ranges::find(hands_, mask(included), &Candidate::hand);
+    if (actual == hands_.end()) throw std::logic_error("Hard constraints excluded the dealt hand");
+    std::vector<std::size_t> indices{static_cast<std::size_t>(actual - hands_.begin())};
+    const auto wanted = std::min(limit, hands_.size());
+    std::uniform_int_distribution<std::size_t> pick(0, hands_.size() - 1);
+    if (wanted == hands_.size()) {
+        for (std::size_t i = 0; i < hands_.size(); ++i) {
+            if (i != indices.front()) indices.push_back(i);
+        }
+    } else {
+        while (indices.size() < wanted) {
+            const auto next = pick(random);
+            if (std::ranges::find(indices, next) == indices.end()) indices.push_back(next);
+        }
+    }
+    std::vector<std::vector<Domino>> selected;
+    for (auto index : indices) selected.push_back(tiles_from(hands_[index].hand));
+    return selected;
+}
+
 std::vector<SearchSample> HandCandidates::sample(const Game& position, std::size_t count,
                                                  std::mt19937& random) const {
     if (hands_.empty()) {
@@ -257,7 +287,7 @@ InferenceReport HandCandidates::infer(const Game& before, Move observed, std::mt
     report.candidates = hands_.size();
     if (hands_.size() < 2 || before.active_seat() != opponent) return report;
 
-    if (hands_.size() > 200) {
+    if (hands_.size() > 300) {
         report.too_many_hands = true;
         return report;
     }

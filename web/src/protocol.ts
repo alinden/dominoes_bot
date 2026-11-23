@@ -1,5 +1,5 @@
 export interface Settings {
-  model: 'greedy' | 'search';
+  model: 'greedy' | 'search' | 'neural';
   depth: number;
   breadth: number;
   bayes: boolean;
