@@ -92,6 +92,15 @@ cp target/neural-50000-medium/2x64.weights web/public/engine/late.weights
 See the [training guide](training/README.md) for exporting checkpoints to
 `.weights` files.
 
+### Deploy the browser build
+
+With the SDK activated, the web dependencies installed, and the three weights
+staged, run `bash web/deploy-pages.sh --dry-run` to preview the changes or
+`bash web/deploy-pages.sh` to publish. The script rebuilds WebAssembly and the
+site, then updates the `gh-pages` worktree at `../bonefish-pages`. Set
+`GH_PAGES_WORKTREE` if yours lives elsewhere. It preserves GitHub's custom
+domain file and pushes only the deployment branch.
+
 ### C++ versus Scala
 
 Build the Release C++ binaries, then run a paired head-to-head match from the repository root.
