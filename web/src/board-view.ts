@@ -37,85 +37,85 @@ function face(pips: Pips | undefined, vertical = false) {
   return element;
 }
 
-function layout(state: GameState) {
+function layout(state: GameState, preferredWidth: number, preferredHeight: number) {
   const chains = state.chains.map((chain) => [...chain].reverse());
   const anchor = pipsById[state.spinner] ?? chains[0].shift();
   if (!anchor) return;
   const spinner = state.spinner >= 0;
   const center: Tile = { x: 0, y: 0, width: spinner ? 1 : 2, height: spinner ? 2 : 1, pips: anchor };
-  let best: { tiles: Tile[]; ends: Vector[]; left: number; top: number; width: number; height: number } | undefined;
-  let bestCost = Infinity;
-
-  // Try a straight route and either turn at each candidate bend. Reject arrangements
-  // where tile interiors overlap. A straight cross is always available.
-  function route(arm: number, placed: Tile[], ends: Vector[], bends: number) {
-    if (arm === axes.length) {
-      const left = Math.min(...placed.map((t) => t.x - t.width / 2));
-      const right = Math.max(...placed.map((t) => t.x + t.width / 2));
-      const top = Math.min(...placed.map((t) => t.y - t.height / 2));
-      const bottom = Math.max(...placed.map((t) => t.y + t.height / 2));
-      const width = Math.max(startingSize, right - left + 2);
-      const height = Math.max(startingSize, bottom - top + 2);
-      const cost = Math.max(width / 1.35, height) + (width + height) / 10 + bends / 4;
-      if (cost < bestCost) {
-        bestCost = cost;
-        best = { tiles: placed, ends, left: (left + right - width) / 2,
-          top: (top + bottom - height) / 2, width, height };
-      }
-      return;
-    }
-
-    const chain = chains[arm];
-    const routes = [{ bend: 0, bendAt: -1 }];
-    for (let bendAt = 2; bendAt < chain.length; bendAt++) {
-      if (chain.length >= 5) routes.push({ bend: -1, bendAt }, { bend: 1, bendAt });
-    }
-    for (const { bend, bendAt } of routes) {
-      let [dx, dy] = axes[arm];
-      let px = dx * center.width / 2;
-      let py = dy * center.height / 2;
-      const tiles = [...placed];
-      for (let index = 0; index < chain.length; index++) {
-        const [outer, inner] = chain[index];
-        const double = outer === inner;
-        const corner = bend !== 0 && index === bendAt;
-        if (corner) {
-          // A turning double sits across the outer half of the previous tile.
-          // For a regular tile, its inner half touches the previous tile's end.
-          const offset = double ? -.5 : .5;
-          px += dx * offset;
-          py += dy * offset;
-          [dx, dy] = [-dy * bend, dx * bend];
-          if (double) {
-            px += dx / 2;
-            py += dy / 2;
-          }
-        }
-        const vertical = double ? dx !== 0 : dy !== 0;
-        const reach = double || corner ? .5 : 1;
-        const tile: Tile = {
-          x: px + dx * reach, y: py + dy * reach,
-          width: vertical ? 1 : 2, height: vertical ? 2 : 1,
-          pips: dx < 0 || dy < 0 ? [outer, inner] : [inner, outer],
-        };
-        if (tiles.some((other) => Math.abs(other.x - tile.x) < (other.width + tile.width) / 2
-          && Math.abs(other.y - tile.y) < (other.height + tile.height) / 2)) break;
-        tiles.push(tile);
-        px = tile.x + dx * reach;
-        py = tile.y + dy * reach;
-        if (corner && !double) {
-          px += dx / 2;
-          py += dy / 2;
-        }
-      }
-      if (tiles.length === placed.length + chain.length) {
-        route(arm + 1, tiles, [...ends, [px, py]], bends + Number(bend !== 0));
-      }
-    }
+  function bounds(tiles: Tile[]) {
+    const left = Math.min(...tiles.map((t) => t.x - t.width / 2));
+    const right = Math.max(...tiles.map((t) => t.x + t.width / 2));
+    const top = Math.min(...tiles.map((t) => t.y - t.height / 2));
+    const bottom = Math.max(...tiles.map((t) => t.y + t.height / 2));
+    const width = Math.max(startingSize, right - left + 2);
+    const height = Math.max(startingSize, bottom - top + 2);
+    return { left: (left + right - width) / 2, top: (top + bottom - height) / 2, width, height };
   }
 
-  route(0, [center], [], 0);
-  return best;
+  interface Route {
+    tiles: Tile[];
+    ends: Vector[];
+    bends: number;
+    near: number;
+    cost: number;
+  }
+
+  function route(allowBends: boolean) {
+    let routes: Route[] = [{ tiles: [center], ends: [], bends: 0, near: 0, cost: 0 }];
+    for (const [arm, chain] of chains.entries()) {
+      const [ax, ay] = axes[arm];
+      let choices = routes.map((r) => ({ ...r, dx: ax, dy: ay, px: ax * center.width / 2, py: ay * center.height / 2 }));
+      for (const [index, [outer, inner]] of chain.entries()) {
+        const turns = allowBends && index >= 2 ? [0, -1, 1] : [0];
+        choices = choices.flatMap((choice) => turns.flatMap((bend) => {
+          let { dx, dy, px, py } = choice;
+          const double = outer === inner;
+          const corner = bend !== 0;
+          if (corner) {
+            // A turning double sits across the outer half of the previous tile.
+            // For a regular tile, its inner half touches the previous tile's end.
+            const offset = double ? -.5 : .5;
+            px += dx * offset;
+            py += dy * offset;
+            [dx, dy] = [-dy * bend, dx * bend];
+            if (double) {
+              px += dx / 2;
+              py += dy / 2;
+            }
+          }
+          const vertical = double ? dx !== 0 : dy !== 0;
+          const reach = double || corner ? .5 : 1;
+          const tile: Tile = {
+            x: px + dx * reach, y: py + dy * reach,
+            width: vertical ? 1 : 2, height: vertical ? 2 : 1,
+            pips: dx < 0 || dy < 0 ? [outer, inner] : [inner, outer],
+          };
+          const previous = index === 0 ? center : choice.tiles.at(-1);
+          let near = choice.near;
+          for (const other of choice.tiles) {
+            const xGap = Math.abs(other.x - tile.x) - (other.width + tile.width) / 2;
+            const yGap = Math.abs(other.y - tile.y) - (other.height + tile.height) / 2;
+            if (xGap < 0 && yGap < 0) return [];
+            // Keep unrelated branches visibly apart, even when they just touch at a corner.
+            if (other !== previous && Math.hypot(Math.max(0, xGap), Math.max(0, yGap)) < .25) near++;
+          }
+          const tiles = [...choice.tiles, tile];
+          const bends = choice.bends + Number(corner);
+          const { width, height } = bounds(tiles);
+          const overflow = Math.max(1, width / preferredWidth, height / preferredHeight);
+          const cost = 12 * overflow + 3 * near + bends / 2 + (width + height) / 12;
+          const endReach = corner && !double ? 1 : reach;
+          return [{ ...choice, tiles, bends, near, cost, dx, dy, px: tile.x + dx * endReach, py: tile.y + dy * endReach }];
+        })).sort((a, b) => a.cost - b.cost).slice(0, 48);
+      }
+      routes = choices.map(({ px, py, ...choice }) => ({ ...choice, ends: [...choice.ends, [px, py]] }));
+    }
+    return routes[0];
+  }
+
+  const best = route(true) ?? route(false);
+  if (best) return { tiles: best.tiles, ends: best.ends, ...bounds(best.tiles) };
 }
 
 export function renderBoard(root: HTMLElement, state: GameState) {
@@ -127,9 +127,15 @@ export function renderBoard(root: HTMLElement, state: GameState) {
     }
   }
   const [robot, boneyard, viewport, human] = Array.from(root.children) as HTMLElement[];
-  const showTiles = (row: HTMLElement, name: string, hand: number[], interactive = false) => {
+  const showTiles = (row: HTMLElement, name: string, hand: number[], interactive = false, points = 0) => {
     const label = document.createElement('strong');
     label.textContent = name;
+    if (points > 0) {
+      const gain = document.createElement('span');
+      gain.className = 'score-gain';
+      gain.textContent = ` +${points}`;
+      label.append(gain);
+    }
     row.replaceChildren(label, ...hand.map((id) => {
       const tile = face(pipsById[id]);
       if (!interactive) return tile;
@@ -143,9 +149,9 @@ export function renderBoard(root: HTMLElement, state: GameState) {
       return button;
     }));
   };
-  showTiles(robot, `Robot${state.active === 1 ? '*' : ''} (${state.botScore})`, state.botHand);
+  showTiles(robot, `Bonefish${state.active === 1 ? '*' : ''} (${state.botScore})`, state.botHand, false, state.botPoints);
   showTiles(boneyard, 'Boneyard', Array<number>(state.boneyard).fill(-1));
-  showTiles(human, `You${state.active === 0 ? '*' : ''} (${state.humanScore})`, state.humanHand, true);
+  showTiles(human, `You${state.active === 0 ? '*' : ''} (${state.humanScore})`, state.humanHand, true, state.humanPoints);
 
   const position = JSON.stringify([state.spinner, state.chains, state.lastPlayed]);
   if (viewport.dataset.position === position) return;
@@ -153,11 +159,14 @@ export function renderBoard(root: HTMLElement, state: GameState) {
   const table = document.createElement('div');
   table.className = 'tile-table';
   table.setAttribute('aria-label', 'Domino board');
-  const arrangement = layout(state);
+  const tileUnit = parseFloat(getComputedStyle(root).getPropertyValue('--tile-unit'))
+    * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const arrangement = layout(state, Math.max(startingSize, (viewport.clientWidth - 2) / tileUnit),
+    Math.max(startingSize, window.innerHeight * .52 / tileUnit));
   const width = arrangement?.width ?? startingSize;
   const height = arrangement?.height ?? startingSize;
   table.style.aspectRatio = `${width} / ${height}`;
-  table.style.width = `calc(${width} * var(--tile-unit))`;
+  table.style.width = `min(100%, calc(${width} * var(--tile-unit)), ${52 * width / height}vh)`;
   if (arrangement) {
     const { tiles, left, top } = arrangement;
     for (const [index, tile] of tiles.entries()) {
@@ -182,6 +191,8 @@ export function renderBoard(root: HTMLElement, state: GameState) {
     target.setAttribute('aria-label', arrangement ? `Play on the ${['left', 'right', 'up', 'down'][direction]} end` : 'Start the round here');
     target.style.left = arrangement ? `${(x - arrangement.left) / arrangement.width * 100}%` : '50%';
     target.style.top = arrangement ? `${(y - arrangement.top) / arrangement.height * 100}%` : '50%';
+    target.style.width = `${125 / width}%`;
+    target.style.height = `${125 / height}%`;
     target.hidden = true;
     table.append(target);
   });

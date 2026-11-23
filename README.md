@@ -50,10 +50,9 @@ uses the original timing policy. Display pauses are outside both budgets.
 
 ### Play in a browser
 
-The terminal-style web app runs the C++ bot in a Web Worker. Open **Settings** to
-start a series and choose Greedy or Search, depth, breadth, Bayes, separate search
-and inference budgets, and the number of games. The browser build uses one search
-thread. A search budget of zero removes the move-time limit.
+The web app runs the C++ bot in a Web Worker. Use **Settings** to choose
+**Fast** or **Full strength** and set the series length. Both modes use neural
+search on one worker and allow up to 15 seconds for Bayesian inference.
 
 With a recent Emscripten SDK activated and Node.js installed, run from the repo root:
 
@@ -66,21 +65,19 @@ npm --prefix web ci
 npm --prefix web run dev
 ```
 
-Open the local URL Vite prints. In Terminal view, choose a tile from its direction
-row. In Board view, drag a tile to a highlighted end, or click the tile and then
-click the highlighted end. Draw and Pass
-are available in both views. Switch views in Settings during play. After a C++
-change, rebuild and copy both engine files again.
+Open the local URL Vite prints. Drag a tile to a highlighted end, or click the
+tile and then click the highlighted end. Use Draw or Pass when prompted.
+After a C++ change, rebuild and copy both engine files again.
 Run `npm --prefix web run build` to generate the static site in `web/dist`.
 
 **Neural search** orders moves with the opening specialist through five tiles,
 the midgame specialist at 6–12 tiles with at least eight boneyard tiles, and
 the late model at 13 or more tiles with four to six boneyard tiles. At a depth
-cutoff it chooses the value model by the leaf's tile count. If fewer than six
-tiles are placed at the start of a turn, the search goes up to depth 15.
-From six tiles onward it aims for round settlement, subject to the search time
-setting. The depth input controls the regular Search model.
-To enable this option, stage these files before running or building Vite:
+cutoff it chooses the value model by the leaf's tile count. Fast caps move
+search at depth 9 and two seconds. Full strength uses depth 15 through five
+tiles and aims for round settlement from six onward, with a 10-second move
+search cap. Both sample up to 16 worlds. Stage these files before running or
+building Vite:
 
 ```sh
 cp target/neural-opening-specialist-18000/3x128.weights web/public/engine/opening.weights

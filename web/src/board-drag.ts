@@ -3,6 +3,7 @@ import type { Action } from './protocol';
 export function createBoardDrag(root: HTMLElement, play: (action: Action) => void) {
   let moves: Action[] = [];
   let selected: HTMLButtonElement | null = null;
+  let lastTap: { tile: HTMLButtonElement; time: number } | undefined;
   let drag: {
     pointer: number;
     x: number;
@@ -57,6 +58,13 @@ export function createBoardDrag(root: HTMLElement, play: (action: Action) => voi
     if (move) play(move);
   }
 
+  function playOnlyMove(tile: HTMLButtonElement) {
+    const legal = moves.filter(([id]) => id === Number(tile.dataset.tile));
+    if (legal.length !== 1) return;
+    select(null);
+    play(legal[0]);
+  }
+
   root.addEventListener('pointerdown', (event) => {
     if (!event.isPrimary || event.button !== 0) return;
     const tile = (event.target as Element).closest<HTMLButtonElement>('.tile-pick:not(:disabled)');
@@ -92,6 +100,16 @@ export function createBoardDrag(root: HTMLElement, play: (action: Action) => voi
     const target = drag.ghost ? targetAt(event.clientX, event.clientY, drag.ghost) : null;
     const moved = Boolean(drag.ghost);
     finishDrag();
+    if (!moved && selected) {
+      if (lastTap?.tile === selected && event.timeStamp - lastTap.time <= 350) {
+        lastTap = undefined;
+        playOnlyMove(selected);
+        return;
+      }
+      lastTap = { tile: selected, time: event.timeStamp };
+    } else {
+      lastTap = undefined;
+    }
     if (target) drop(target);
     else if (moved) select(null);
   });
@@ -115,6 +133,11 @@ export function createBoardDrag(root: HTMLElement, play: (action: Action) => voi
     }
   });
 
+  root.addEventListener('dblclick', (event) => {
+    const tile = (event.target as Element).closest<HTMLButtonElement>('.tile-pick:not(:disabled)');
+    if (tile) playOnlyMove(tile);
+  });
+
   root.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape' || !selected) return;
     selected.focus();
@@ -125,6 +148,7 @@ export function createBoardDrag(root: HTMLElement, play: (action: Action) => voi
   return (legalMoves: Action[]) => {
     finishDrag();
     moves = legalMoves;
+    lastTap = undefined;
     select(null);
     for (const tile of root.querySelectorAll<HTMLButtonElement>('.tile-pick')) {
       tile.disabled = !moves.some(([id]) => id === Number(tile.dataset.tile));

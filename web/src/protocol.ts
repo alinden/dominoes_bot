@@ -1,12 +1,6 @@
 export interface Settings {
-  model: 'greedy' | 'search' | 'neural';
-  depth: number;
-  breadth: number;
-  bayes: boolean;
-  searchSeconds: number;
-  inferenceSeconds: number;
+  strength: 'fast' | 'full';
   bestOf: number;
-  showHand: boolean;
 }
 
 export type Action = [tile: number, direction: number];
@@ -17,16 +11,16 @@ export interface GameState {
   winner: number;
   pendingInference: boolean;
   roundEnded: boolean;
-  forcedRobotPlay: boolean;
   notice: string;
   humanScore: number;
   botScore: number;
+  humanPoints: number;
+  botPoints: number;
   humanHand: number[];
   botHand: number[];
   boneyard: number;
   spinner: number;
   lastPlayed: number;
-  boardScore: number;
   chains: [number, number][][];
   actions: Action[];
   boardMoves: Action[];
