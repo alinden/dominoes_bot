@@ -37,19 +37,23 @@ function face(pips: Pips | undefined, vertical = false) {
   return element;
 }
 
-function layout(state: GameState, preferredWidth: number, preferredHeight: number) {
+function layout(state: GameState, preferredWidth: number, preferredHeight: number, narrow: boolean) {
   const chains = state.chains.map((chain) => [...chain].reverse());
   const anchor = pipsById[state.spinner] ?? chains[0].shift();
   if (!anchor) return;
   const spinner = state.spinner >= 0;
   const center: Tile = { x: 0, y: 0, width: spinner ? 1 : 2, height: spinner ? 2 : 1, pips: anchor };
+  const padding = narrow ? 1.5 : 2;
+  const armOrder = chains.map((_, arm) => arm);
+  // Route the longest chain last on narrow screens, when the space it must avoid is known.
+  if (narrow) armOrder.sort((a, b) => chains[a].length - chains[b].length);
   function bounds(tiles: Tile[]) {
     const left = Math.min(...tiles.map((t) => t.x - t.width / 2));
     const right = Math.max(...tiles.map((t) => t.x + t.width / 2));
     const top = Math.min(...tiles.map((t) => t.y - t.height / 2));
     const bottom = Math.max(...tiles.map((t) => t.y + t.height / 2));
-    const width = Math.max(startingSize, right - left + 2);
-    const height = Math.max(startingSize, bottom - top + 2);
+    const width = Math.max(startingSize, right - left + padding);
+    const height = Math.max(startingSize, bottom - top + padding);
     return { left: (left + right - width) / 2, top: (top + bottom - height) / 2, width, height };
   }
 
@@ -63,11 +67,12 @@ function layout(state: GameState, preferredWidth: number, preferredHeight: numbe
 
   function route(allowBends: boolean) {
     let routes: Route[] = [{ tiles: [center], ends: [], bends: 0, near: 0, cost: 0 }];
-    for (const [arm, chain] of chains.entries()) {
+    for (const arm of armOrder) {
+      const chain = chains[arm];
       const [ax, ay] = axes[arm];
       let choices = routes.map((r) => ({ ...r, dx: ax, dy: ay, px: ax * center.width / 2, py: ay * center.height / 2 }));
       for (const [index, [outer, inner]] of chain.entries()) {
-        const turns = allowBends && index >= 2 ? [0, -1, 1] : [0];
+        const turns = allowBends && index >= (narrow ? 1 : 2) ? [0, -1, 1] : [0];
         choices = choices.flatMap((choice) => turns.flatMap((bend) => {
           let { dx, dy, px, py } = choice;
           const double = outer === inner;
@@ -104,12 +109,16 @@ function layout(state: GameState, preferredWidth: number, preferredHeight: numbe
           const bends = choice.bends + Number(corner);
           const { width, height } = bounds(tiles);
           const overflow = Math.max(1, width / preferredWidth, height / preferredHeight);
-          const cost = 12 * overflow + 3 * near + bends / 2 + (width + height) / 12;
+          const cost = (narrow ? 48 : 12) * overflow + 3 * near + bends / 2 + (width + height) / 12;
           const endReach = corner && !double ? 1 : reach;
           return [{ ...choice, tiles, bends, near, cost, dx, dy, px: tile.x + dx * endReach, py: tile.y + dy * endReach }];
-        })).sort((a, b) => a.cost - b.cost).slice(0, 48);
+        })).sort((a, b) => a.cost - b.cost).slice(0, narrow ? 96 : 48);
       }
-      routes = choices.map(({ px, py, ...choice }) => ({ ...choice, ends: [...choice.ends, [px, py]] }));
+      routes = choices.map(({ px, py, ...choice }) => {
+        const ends = [...choice.ends];
+        ends[arm] = [px, py];
+        return { ...choice, ends };
+      });
     }
     return routes[0];
   }
@@ -161,12 +170,16 @@ export function renderBoard(root: HTMLElement, state: GameState) {
   table.setAttribute('aria-label', 'Domino board');
   const tileUnit = parseFloat(getComputedStyle(root).getPropertyValue('--tile-unit'))
     * parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const arrangement = layout(state, Math.max(startingSize, (viewport.clientWidth - 2) / tileUnit),
-    Math.max(startingSize, window.innerHeight * .52 / tileUnit));
+  const narrow = matchMedia('(max-width: 36rem)').matches;
+  const heightBudget = narrow ? .78 : .52;
+  const arrangement = layout(state, (viewport.clientWidth - 2) / tileUnit,
+    Math.max(startingSize, window.innerHeight * heightBudget / tileUnit), narrow);
   const width = arrangement?.width ?? startingSize;
   const height = arrangement?.height ?? startingSize;
   table.style.aspectRatio = `${width} / ${height}`;
-  table.style.width = `min(100%, calc(${width} * var(--tile-unit)), ${52 * width / height}vh)`;
+  const minHeightWidth = startingSize * width / height;
+  const viewportHeightWidth = 100 * heightBudget * width / height;
+  table.style.width = `min(100%, calc(${width} * var(--tile-unit)), max(calc(${minHeightWidth} * var(--tile-unit)), ${viewportHeightWidth}vh))`;
   if (arrangement) {
     const { tiles, left, top } = arrangement;
     for (const [index, tile] of tiles.entries()) {

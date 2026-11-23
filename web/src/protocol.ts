@@ -10,6 +10,7 @@ export interface GameState {
   active: number;
   winner: number;
   pendingInference: boolean;
+  inferenceTimedOut: boolean;
   roundEnded: boolean;
   notice: string;
   humanScore: number;

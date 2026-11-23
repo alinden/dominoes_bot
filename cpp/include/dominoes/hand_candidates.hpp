@@ -37,7 +37,8 @@ public:
     void observe(const Game& position, const TurnResult& result);
     InferenceReport observe_with_inference(
         const Game& before, const Game& after, const TurnResult& result, std::mt19937& random,
-        std::chrono::steady_clock::time_point deadline, std::size_t workers);
+        std::chrono::steady_clock::time_point deadline, std::size_t workers,
+        const SettlementSearchOptions* neural_options = nullptr, std::size_t neural_hand_limit = 1000);
     std::vector<SearchSample> sample(const Game& position, std::size_t count,
                                      std::mt19937& random) const;
     DecisionSamples sample_for_search(const Game& position, std::size_t breadth,
@@ -57,7 +58,8 @@ private:
 
     std::discrete_distribution<std::size_t> weighted_picker() const;
     InferenceReport infer(const Game& before, Move observed, std::mt19937& random,
-                          std::chrono::steady_clock::time_point deadline, std::size_t workers);
+                          std::chrono::steady_clock::time_point deadline, std::size_t workers,
+                          const SettlementSearchOptions* neural_options, std::size_t neural_hand_limit);
     Seat observer_;
     bool bayesian_;
     std::vector<Candidate> hands_;

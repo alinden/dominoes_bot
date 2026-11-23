@@ -77,7 +77,9 @@ function receive(reply: Reply) {
     next.hidden = seriesComplete();
   } else if (state.phase === 0) queueAdvance('Dealing the next round…', state.roundEnded ? 5000 : 950);
   else if (state.phase === 1) queueAdvance('First turn, playing the highest double…', 1500);
-  else if (state.active === 1) queueAdvance('Thinking...', 450);
+  else if (state.active === 1) {
+    queueAdvance(state.inferenceTimedOut ? 'Hand inference timed out. Thinking...' : 'Thinking...', 450);
+  }
   else status.textContent = 'Your turn.';
   updateControls();
 }

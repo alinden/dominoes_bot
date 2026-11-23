@@ -18,7 +18,6 @@ constexpr Seat human = Seat::first;
 constexpr Seat robot = Seat::second;
 constexpr int draw = 4;
 constexpr int pass = 5;
-constexpr int inference_seconds = 15;
 constexpr const char* directions[]{"left", "right", "up", "down"};
 std::optional<NeuralSearch> neural_models;
 
@@ -34,6 +33,7 @@ struct Session {
     int bonefish_draws = 0;
     std::array<int, 2> last_points{};
     bool round_ended = false;
+    bool inference_timed_out = false;
     bool fast;
 
     Session(unsigned seed, bool fast) : random(seed), inference_random(seed ^ 0x9e3779b9U), fast(fast) {}
@@ -41,6 +41,7 @@ struct Session {
     void deal() {
         last_played.reset();
         round_ended = false;
+        inference_timed_out = false;
         bonefish_draws = 0;
         last_points = {};
         auto tiles = Domino::all();
@@ -101,8 +102,13 @@ struct Session {
             return false;
         }
         announce(*result);
-        if (infer) pending = result;
-        else if (candidates) candidates->observe(game, *result);
+        inference_timed_out = false;
+        if (infer && !result->round) {
+            pending = result;
+        } else if (candidates) {
+            before.reset();
+            candidates->observe(game, *result);
+        }
         return true;
     }
 
@@ -127,8 +133,14 @@ struct Session {
 
     void advance() {
         if (pending) {
-            const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(inference_seconds);
-            candidates->observe_with_inference(*before, game, *pending, inference_random, deadline, 1);
+            const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(fast ? 2 : 30);
+            const auto& model = neural_models.value();
+            const auto phases = model.phases();
+            const auto options = model.options(phases);
+            const auto report =
+                candidates->observe_with_inference(*before, game, *pending, inference_random, deadline, 1,
+                                                   &options, fast ? 1000 : 6000);
+            inference_timed_out = report.timed_out;
             before.reset();
             pending.reset();
         } else if (game.phase() == Phase::awaiting_deal) {
@@ -206,6 +218,7 @@ EMSCRIPTEN_KEEPALIVE const char* game_state() {
         << ",\"active\":" << seat_id(game.active_seat())
         << ",\"winner\":" << seat_id(game.winner())
         << ",\"pendingInference\":" << (current.pending ? "true" : "false")
+        << ",\"inferenceTimedOut\":" << (current.inference_timed_out ? "true" : "false")
         << ",\"roundEnded\":" << (current.round_ended ? "true" : "false")
         << ",\"notice\":\"" << current.notice << "\""
         << ",\"humanScore\":" << game.player(human).score

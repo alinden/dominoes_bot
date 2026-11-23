@@ -52,7 +52,11 @@ uses the original timing policy. Display pauses are outside both budgets.
 
 The web app runs the C++ bot in a Web Worker. Use **Settings** to choose
 **Fast** or **Full strength** and set the series length. Both modes use neural
-search on one worker and allow up to 15 seconds for Bayesian inference.
+search on one worker. Fast allows two seconds for shallow neural inference when
+at most 1,000 feasible opponent hands remain. Full strength allows 30 seconds
+when at most 6,000 hands remain. These budgets are separate from move search.
+It downweights whole hands only when a separate deeper search confirms that
+the observed move trails the same alternative by more than 0.15.
 
 With a recent Emscripten SDK activated and Node.js installed, run from the repo root:
 

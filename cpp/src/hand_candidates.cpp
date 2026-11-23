@@ -270,28 +270,32 @@ std::vector<SearchSample> HandCandidates::sample(const Game& position, std::size
 
 InferenceReport HandCandidates::observe_with_inference(
     const Game& before, const Game& after, const TurnResult& result, std::mt19937& random,
-    std::chrono::steady_clock::time_point deadline, std::size_t workers) {
+    std::chrono::steady_clock::time_point deadline, std::size_t workers,
+    const SettlementSearchOptions* neural_options, std::size_t neural_hand_limit) {
     observe(after, result);
     if (bayesian_ && !result.round && result.actor && result.actor != observer_) {
         if (const auto* move = std::get_if<Move>(&result.action)) {
-            return infer(before, *move, random, deadline, workers);
+            return infer(before, *move, random, deadline, workers, neural_options, neural_hand_limit);
         }
     }
     return {};
 }
 
 InferenceReport HandCandidates::infer(const Game& before, Move observed, std::mt19937& random,
-                                    std::chrono::steady_clock::time_point deadline, std::size_t workers) {
+                                    std::chrono::steady_clock::time_point deadline, std::size_t workers,
+                                    const SettlementSearchOptions* neural_options, std::size_t neural_hand_limit) {
     const Seat opponent = observer_ == Seat::first ? Seat::second : Seat::first;
     InferenceReport report;
     report.candidates = hands_.size();
     if (hands_.size() < 2 || before.active_seat() != opponent) return report;
 
-    if (hands_.size() > 300) {
+    const std::size_t hand_limit = neural_options ? neural_hand_limit : 300;
+    if (hands_.size() > hand_limit) {
         report.too_many_hands = true;
         return report;
     }
-    constexpr std::size_t breadth = 10;
+    const std::size_t breadth = neural_options ? 4 : 10;
+    const double gap = neural_options ? 0.15 : 0.025;
     const auto original_unknown = unknown_tiles(before, observer_);
     const auto own_size = before.player(observer_).hand.size();
     const auto canonical = before.canonical_move(observed);
@@ -315,27 +319,42 @@ InferenceReport HandCandidates::infer(const Game& before, Move observed, std::mt
         auto unknown = tiles_from(unknown_tiles(hypothetical, opponent));
         std::vector<SearchSample> worlds;
         worlds.reserve(breadth);
-        for (std::size_t i = 0; i < breadth; ++i) {
-            std::shuffle(unknown.begin(), unknown.end(), random);
-            const auto middle = unknown.begin() + own_size;
-            worlds.push_back({{unknown.begin(), middle}, {middle, unknown.end()}, 1.0});
-        }
-        const auto search = search_to_round_end(hypothetical, opponent, worlds, deadline, workers);
-        if (!search.reached_round_end) {
+        const auto sample_worlds = [&] {
+            worlds.clear();
+            for (std::size_t i = 0; i < breadth; ++i) {
+                std::shuffle(unknown.begin(), unknown.end(), random);
+                const auto middle = unknown.begin() + own_size;
+                worlds.push_back({{unknown.begin(), middle}, {middle, unknown.end()}, 1.0});
+            }
+        };
+        sample_worlds();
+        const auto search = neural_options
+            ? search_until(hypothetical, opponent, 3, worlds, deadline, workers, *neural_options)
+            : search_to_round_end(hypothetical, opponent, worlds, deadline, workers);
+        if (search.timed_out || (!search.reached_round_end && !neural_options)) {
             report.timed_out = search.timed_out;
             report.incomplete = !search.timed_out;
             return report;
         }
-        const auto observed_score = std::ranges::find_if(search.scores, [&](const ScoredAction& scored) {
-            const auto* move = std::get_if<Move>(&scored.action);
-            return move && *move == canonical;
-        });
-        if (observed_score == search.scores.end()) {
-            throw std::logic_error("observed move is missing from the hypothetical legal actions");
+        const auto score_for = [](const TimedSearchResult& result, Move action) {
+            const auto scored = std::ranges::find_if(result.scores, [&](const ScoredAction& score) {
+                const auto* move = std::get_if<Move>(&score.action);
+                return move && *move == action;
+            });
+            if (scored == result.scores.end()) throw std::logic_error("missing hypothetical action score");
+            return scored->score;
+        };
+        const auto& best = *std::ranges::max_element(search.scores, {}, &ScoredAction::score);
+        bool plausible = best.score - score_for(search, canonical) <= gap;
+        if (!plausible && neural_options) {
+            sample_worlds();
+            const auto confirm = search_until(hypothetical, opponent, 5, worlds, deadline, workers, *neural_options);
+            if (confirm.timed_out) {
+                report.timed_out = true;
+                return report;
+            }
+            plausible = score_for(confirm, std::get<Move>(best.action)) - score_for(confirm, canonical) <= gap;
         }
-        const double best = std::ranges::max_element(search.scores, {}, &ScoredAction::score)->score;
-        constexpr double near_best = 0.025;
-        const bool plausible = best - observed_score->score <= near_best;
         if (plausible) {
             ++report.good;
         } else {
@@ -349,7 +368,7 @@ InferenceReport HandCandidates::infer(const Game& before, Move observed, std::mt
         return report;
     }
     if (bad_hands.empty() || bad_hands.size() == hands_.size()) return report;
-    for (auto index : bad_hands) hands_[index].weight *= 0.2;
+    for (auto index : bad_hands) hands_[index].weight *= neural_options ? 0.65 : 0.2;
     report.updated = true;
     return report;
 }
