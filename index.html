@@ -10,8 +10,8 @@
     <meta property="og:image" content="https://alinden.github.io/dominoes_bot/bonefish.jpg">
     <link rel="icon" type="image/svg+xml" href="./bonefish-icon.svg">
     <title>Bonefish Dominoes</title>
-    <script type="module" crossorigin src="./assets/index-B3yczwXz.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-9ZrOnB7d.css">
+    <script type="module" crossorigin src="./assets/index-Qg0VfPT6.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D-KNgVbE.css">
   </head>
   <body>
     <main>
@@ -33,12 +33,50 @@
         <div id="board-view"></div>
         <pre id="notice" aria-live="polite"></pre>
         <div id="status" role="status"></div>
-      </section>
-      <section id="legal-actions" aria-label="Legal moves">
-        <div class="forced-actions">
-          <button id="draw" type="button" disabled>Draw</button>
-          <button id="pass" type="button" disabled>Pass</button>
-        </div>
+        <section id="review-overview" aria-label="Game overview" hidden>
+          <h2>Game overview</h2>
+          <div id="overview-content" hidden>
+            <p id="overview-rounds"></p>
+            <h3>Score by round</h3>
+            <p class="score-legend"><span>You</span><span>Bonefish</span></p>
+            <div id="overview-graph">
+              <div class="overview-plot">
+                <canvas id="overview-chart" aria-label="Cumulative score by round"></canvas>
+                <div id="overview-score-points"></div>
+                <div id="overview-mistake-markers" aria-label="Mistakes by turn"></div>
+              </div>
+            </div>
+            <h3>Your decisions</h3>
+            <p id="overview-progress" role="status"></p>
+            <dl id="overview-stats"></dl>
+            <div id="overview-mistakes" hidden>
+              <h3>Mistakes to review</h3>
+              <div id="overview-mistake-links"></div>
+            </div>
+          </div>
+          <p id="overview-loading" role="status"></p>
+          <div class="overview-buttons">
+            <button id="overview-review" type="button" disabled>Review first decision</button>
+            <button id="overview-close" type="button">Back to result</button>
+          </div>
+        </section>
+        <section id="review-panel" aria-label="Game review" hidden>
+          <nav id="review-controls" aria-label="Replay navigation">
+            <button id="review-previous-decision" type="button">Previous decision</button>
+            <button id="review-previous" type="button">Previous</button>
+            <span id="review-position"></span>
+            <button id="review-next" type="button">Next</button>
+            <button id="review-next-decision" type="button">Next decision</button>
+            <button id="review-close" type="button">Back to result</button>
+            <button id="review-back-overview" type="button">Overview</button>
+          </nav>
+          <div id="review-notice">
+            <p id="review-description"></p>
+            <ol id="review-moves" aria-label="Move rankings"></ol>
+            <div id="review-status" role="status"></div>
+            <button id="review-deepen" type="button" hidden>Continue analyzing</button>
+          </div>
+        </section>
       </section>
       <button id="next-game" type="button" hidden>Next game</button>
     </main>
