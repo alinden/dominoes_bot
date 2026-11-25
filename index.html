@@ -10,8 +10,8 @@
     <meta property="og:image" content="https://alinden.github.io/dominoes_bot/bonefish.jpg">
     <link rel="icon" type="image/svg+xml" href="./bonefish-icon.svg">
     <title>Bonefish Dominoes</title>
-    <script type="module" crossorigin src="./assets/index-BEHr7XFD.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DekScyzL.css">
+    <script type="module" crossorigin src="./assets/index-BKRP62ka.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BhIDW-HG.css">
   </head>
   <body>
     <main>
@@ -29,6 +29,7 @@
             <button id="settings-button" type="button">Settings</button>
             <button id="history-button" type="button">Game history</button>
             <button id="help-button" type="button">How to play</button>
+            <button id="about-button" type="button">About</button>
           </nav>
         </details>
       </header>
@@ -142,6 +143,12 @@
         <li>Draw or Pass appears beside your hand when that action is required.</li>
         <li>After a game, use <strong>Analyze game</strong> to review your decisions.</li>
       </ul>
+      <form method="dialog" class="dialog-actions"><button>Close</button></form>
+    </dialog>
+    <dialog id="about" aria-labelledby="about-title">
+      <h2 id="about-title">About</h2>
+      <p>Bonefish is a modern All Fives dominoes engine inspired by Stockfish. Its C++ search compares how different moves could play out across possible opponent hands. Neural networks help it explore promising moves first and estimate how strong a position is when the search can’t reach the end of the round.</p>
+      <p>Play against it, then select <strong>Analyze game</strong> to review your moves and see where you could have improved.</p>
       <form method="dialog" class="dialog-actions"><button>Close</button></form>
     </dialog>
   </body>
