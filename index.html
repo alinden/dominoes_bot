@@ -10,8 +10,8 @@
     <meta property="og:image" content="https://alinden.github.io/dominoes_bot/bonefish.jpg">
     <link rel="icon" type="image/svg+xml" href="./bonefish-icon.svg">
     <title>Bonefish Dominoes</title>
-    <script type="module" crossorigin src="./assets/index-Qg0VfPT6.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-D-KNgVbE.css">
+    <script type="module" crossorigin src="./assets/index-BEHr7XFD.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DekScyzL.css">
   </head>
   <body>
     <main>
@@ -23,7 +23,14 @@
             <p>Play All Fives against Bonefish</p>
           </div>
         </div>
-        <button id="settings-button" type="button">Settings</button>
+        <details id="site-menu">
+          <summary aria-label="Menu"><span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span></summary>
+          <nav aria-label="Main menu">
+            <button id="settings-button" type="button">Settings</button>
+            <button id="history-button" type="button">Game history</button>
+            <button id="help-button" type="button">How to play</button>
+          </nav>
+        </details>
       </header>
       <div class="series-bar">
         <p id="series"></p>
@@ -57,7 +64,7 @@
           <p id="overview-loading" role="status"></p>
           <div class="overview-buttons">
             <button id="overview-review" type="button" disabled>Review first decision</button>
-            <button id="overview-close" type="button">Back to result</button>
+            <button id="overview-close" type="button">Close analysis</button>
           </div>
         </section>
         <section id="review-panel" aria-label="Game review" hidden>
@@ -67,7 +74,7 @@
             <span id="review-position"></span>
             <button id="review-next" type="button">Next</button>
             <button id="review-next-decision" type="button">Next decision</button>
-            <button id="review-close" type="button">Back to result</button>
+            <button id="review-close" type="button">Close analysis</button>
             <button id="review-back-overview" type="button">Overview</button>
           </nav>
           <div id="review-notice">
@@ -80,8 +87,8 @@
       </section>
       <button id="next-game" type="button" hidden>Next game</button>
     </main>
-    <dialog id="settings">
-      <h2>Settings</h2>
+    <dialog id="settings" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
       <form id="settings-form">
         <fieldset class="strength-setting">
           <legend>Bonefish strength</legend>
@@ -103,6 +110,39 @@
           <button type="submit">Start new series</button>
         </div>
       </form>
+    </dialog>
+    <dialog id="history" aria-labelledby="history-title">
+      <h2 id="history-title">Game history</h2>
+      <table class="history-table">
+        <thead>
+          <tr><th scope="col">Strength</th><th scope="col">Wins</th><th scope="col">Losses</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Fast</th><td id="fast-wins">0</td><td id="fast-losses">0</td></tr>
+          <tr><th scope="row">Full strength</th><td id="full-wins">0</td><td id="full-losses">0</td></tr>
+        </tbody>
+      </table>
+      <p>Counts completed games, including each game in a series. Saved in this browser.</p>
+      <form method="dialog" class="dialog-actions"><button>Close</button></form>
+    </dialog>
+    <dialog id="help" aria-labelledby="help-title">
+      <h2 id="help-title">How to play</h2>
+      <h3>All Fives rules</h3>
+      <ul class="help-list">
+        <li>Each player starts with seven tiles. The highest double opens the first round. After someone gets dominoes, they open the next round with any tile. After a lock, the highest double opens again.</li>
+        <li>Match a tile to an open end. The first double is the spinner. Once both sides of it are connected, you can start the two side branches.</li>
+        <li>Add up the exposed pips after each play, counting both halves of an exposed double. When the total is a multiple of five, you score that total.</li>
+        <li>If you can’t play, draw from the boneyard until you can, or pass once it’s empty. Two passes in a row lock the board.</li>
+        <li>Play your last tile to get dominoes and score the pips left in your opponent’s hand, rounded to the nearest five. On a lock, the lower hand scores the difference, also rounded to the nearest five.</li>
+        <li>Win by finishing a round with at least 150 points and a higher score than Bonefish. A tie means another round.</li>
+      </ul>
+      <h3>Controls</h3>
+      <ul class="help-list">
+        <li>Drag a tile to an open end, or select the tile and then select the end. Double-click to play a tile with only one available placement.</li>
+        <li>Draw or Pass appears beside your hand when that action is required.</li>
+        <li>After a game, use <strong>Analyze game</strong> to review your decisions.</li>
+      </ul>
+      <form method="dialog" class="dialog-actions"><button>Close</button></form>
     </dialog>
   </body>
 </html>
